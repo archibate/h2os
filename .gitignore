@@ -1,5 +1,6 @@
 # Prerequisites
 *.d
+*.i
 
 # Object files
 *.o
@@ -36,6 +37,10 @@
 *.x86_64
 *.hex
 
+# Kernel Images
+vmlinu*
+*Image
+
 # Debug files
 *.dSYM/
 *.su
@@ -50,3 +55,18 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# CMake generate Results
+*.cmake
+CMakeFiles/
+CMakeCache.txt
+build
+
+# Mac OS X Store Files
+.DS_Store
+
+# Vim temperate files
+*~
+.*.un~
+.*.swp
+.*.swo
