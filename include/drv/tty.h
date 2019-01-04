@@ -40,10 +40,10 @@
 
 #include <inttypes.h>
 
-void con_init(void);
-size_t con_write(const char *s, size_t n);
-void con_putchar(char c);
-void con_puts(const char *s);
-void con_clear(void);
-void con_setcur(int x, int y);
-void con_getcur(int *px, int *py);
+void tty_init(void);
+size_t tty_write(const char *s, size_t n);
+void tty_putchar(char c);
+void tty_puts(const char *s);
+void tty_clear(void);
+void tty_setcur(int x, int y);
+void tty_getcur(int *px, int *py);

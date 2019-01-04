@@ -3,7 +3,7 @@ include $Dmake/general.mak
 .PHONY: all
 all: libc.a
 
-SRCS+=$(shell $Dscripts/r-wildexts.sh c asm)
+SRCS+=$(shell find src | grep '\.c$')
 OBJS=$(SRCS:%=%.o)
 
 CLEAN+=libc.a $(OBJS)

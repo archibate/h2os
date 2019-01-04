@@ -65,6 +65,9 @@ build
 # Mac OS X Store Files
 .DS_Store
 
+# ISO Root Files
+isodir/
+
 # Vim temperate files
 *~
 .*.un~

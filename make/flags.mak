@@ -8,8 +8,9 @@ WARNINGS+=all no-unused-function implicit-function-declaration no-main \
 					error=incompatible-pointer-types error=int-conversion
 FUNCTIONS+=no-stack-protector
 
-INCPATH+=$Dh
-LIBPATH+=$Dc/libc
+INCPATH+=include arch/$(ARCH)/include \
+				 $Dinclude $Darch_include/$(ARCH)
+LIBPATH+=$Dsrc/libc
 
 CFLAGS+=-nostdinc
 CFLAGS+=$(OPTIMIZE:%=-O%) $(MODES:%=-m%) \

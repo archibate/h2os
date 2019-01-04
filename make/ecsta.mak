@@ -1,2 +1,2 @@
-EC=@$Dscripts/ec.sh
-EL=@$Dscripts/el.sh
+EC=@$Dtools/ec.sh
+EL=@$Dtools/el.sh

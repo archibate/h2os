@@ -1,5 +1,5 @@
 // https://github.com/archibate/OS67/blob/master/drv/vga.c
-#include <drv/console.h>
+#include <drv/tty.h>
 
 #include <memory.h>
 #include <string.h>
@@ -10,24 +10,24 @@
 
 #define IO_VGA_CRT  0x3d4
 
-struct con_color
+struct tty_color
 {
 	char fc: 4;
 	char bc: 4;
 };
 
-struct con_char
+struct tty_char
 {
 	char ch;
-	struct con_color clr;
+	struct tty_color clr;
 };
 
-static struct con_char *buf;
-static struct con_color color;
+static struct tty_char *buf;
+static struct tty_color color;
 static int cx, cy, oldcx, oldcy;
 static int scrnx, scrny;
 
-static void con_enter(void)
+static void tty_enter(void)
 {
 	outb(IO_VGA_CRT+0, 0xe);
 	int hi = inb(IO_VGA_CRT+1);
@@ -35,10 +35,10 @@ static void con_enter(void)
 	int lo = inb(IO_VGA_CRT+1);
 	int off = (hi << 8) | lo;
 	div_t d = div(off, scrnx);
-	con_setcur(d.rem, d.quot);
+	tty_setcur(d.rem, d.quot);
 }
 
-static void con_leave(void)
+static void tty_leave(void)
 {
 	int off = cy * scrnx + cx;
 	outb(IO_VGA_CRT+0, 0xe);
@@ -47,19 +47,19 @@ static void con_leave(void)
 	outb(IO_VGA_CRT+1, off & 0xff);
 }
 
-void con_init(void)
+void tty_init(void)
 {
-	buf = (struct con_char *)0xb8000;
+	buf = (struct tty_char *)0xb8000;
 	scrnx = 80;
 	scrny = 25;
 	color.bc = COL_BLACK;
 	color.fc = COL_L_GREY;
 	cx = cy = 0;
 	oldcx = oldcy = 0;
-	con_enter();
+	tty_enter();
 }
 
-void con_setcur(int x, int y)
+void tty_setcur(int x, int y)
 {
 	if (x < 0) x = 0;
 	if (x >= scrnx) x = scrnx;
@@ -67,12 +67,12 @@ void con_setcur(int x, int y)
 	if (y >= scrny) y = scrny;
 	cx = x;
 	cy = y;
-	con_leave();
+	tty_leave();
 }
 
-void con_getcur(int *px, int *py)
+void tty_getcur(int *px, int *py)
 {
-	con_enter();
+	tty_enter();
 	*px = cx;
 	*py = cy;
 }
@@ -80,7 +80,7 @@ void con_getcur(int *px, int *py)
 static ushort getblank(void)
 {
 	union {
-		struct con_char vc;
+		struct tty_char vc;
 		ushort raw;
 	} u = { .vc = {
 		.ch = ' ',
@@ -89,28 +89,28 @@ static ushort getblank(void)
 	return u.raw;
 }
 
-void con_clear(void)
+void tty_clear(void)
 {
 	memsetw((ushort*)buf, getblank(), scrnx * scrny);
 	cx = cy = 0;
-	con_leave();
+	tty_leave();
 }
 
-static void con_chk_scroll(void)
+static void tty_chk_scroll(void)
 {
 	int rel = cy - scrny;
 	if (rel++ >= 0) {
 		memcpy(buf, buf + scrnx,
-			   scrnx * (scrny - rel) * sizeof(struct con_char));
+			   scrnx * (scrny - rel) * sizeof(struct tty_char));
 		memsetw((ushort *)(buf + scrnx * (scrny - rel)),
 				getblank(), scrnx * rel);
 		cy -= rel;
 	}
 }
 
-static void __con_putchar(char ch)
+static void __tty_putchar(char ch)
 {
-	struct con_char *pixel;
+	struct tty_char *pixel;
 	switch (ch) {
 	case '\r':	cx = 0; break;
 	case '\n':	cy++; cx = 0; break;
@@ -120,21 +120,21 @@ static void __con_putchar(char ch)
 				pixel->ch = ' ';
 				pixel->clr = color;
 				break;
-	case '\t':	do con_putchar(' '); while (cx % 4); break;
+	case '\t':	do tty_putchar(' '); while (cx % 4); break;
 	default:	pixel = &buf[cy * scrnx + cx];
 				pixel->ch = ch;
 				pixel->clr = color;
 				cy += (cx + 1) / scrnx;
 				cx = (cx + 1) % 80;
 	}
-	con_chk_scroll();
+	tty_chk_scroll();
 }
 
-void con_puts(const char *s)
+void tty_puts(const char *s)
 {
-	con_enter();
-	con_write(s, strlen(s));
-	con_leave();
+	tty_enter();
+	tty_write(s, strlen(s));
+	tty_leave();
 }
 
 #define XCHGI(x, y) do { (x)^=(y); (y)^=(x); (x)^=(y); } while(0)
@@ -162,11 +162,11 @@ static void ansi_color(int num)
 	}
 }
 
-size_t con_write(const char *s, size_t n)
+size_t tty_write(const char *s, size_t n)
 {
 	int num, num_old;
-	const char *end = s + n;
-	con_enter();
+	ttyst char *end = s + n;
+	tty_enter();
 
 	while (s < end) {
 		if (s[0] == '\033' && s[1] == '[') {
@@ -190,8 +190,8 @@ size_t con_write(const char *s, size_t n)
 					case 'C': cx += (num?num:1) * 8; if (cx > scrnx) cy = scrnx; break;
 					case 'D': cx -= (num?num:1) * 8; if (cx < 0) cx = 0; break;
 					//case 'a': moveright(AT(cx, cy), 8, (num?num:1) * 8); break;
-					case 'J': con_clear(); cy = 0; break;
-					case 'K': while (cx < scrnx) __con_putchar(' '); break;
+					case 'J': tty_clear(); cy = 0; break;
+					case 'K': while (cx < scrnx) __tty_putchar(' '); break;
 					case 'H': cx = num; cy = num_old; break;
 					case 's': oldcx = cx; oldcy = cy; break;
 					case 'u': cx = oldcx; cy = oldcy; break;
@@ -201,15 +201,15 @@ size_t con_write(const char *s, size_t n)
 					break;
 				}
 			}
-		} else __con_putchar(*s++);
+		} else __tty_putchar(*s++);
 	}
-	con_leave();
+	tty_leave();
 	return n;
 }
 
-void con_putchar(char c)
+void tty_putchar(char c)
 {
-	con_enter();
-	__con_putchar(c);
-	con_leave();
+	tty_enter();
+	__tty_putchar(c);
+	tty_leave();
 }

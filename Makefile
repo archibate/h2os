@@ -1,16 +1,18 @@
+export ARCH=x86
 export D=$(PWD)/
 
 CLEAN+=Image
 .PHONY: Image
 Image:
 	rm -f $@
-	make -C c all
-	ln -s c/kern/kernel.elf $@
+	make -C src all
+	ln -s src/kern/kernel.elf $@
 
 CLEAN+=isodir
 .PHONY: isodir
-isodir:
-	mkdir -p isodir/boot
+isodir: $Dscripts/grub.cfg
+	mkdir -p isodir/boot/grub
+	cp $Dscripts/grub.cfg
 
 CLEAN+=h2os.iso
 h2os.iso: isodir
