@@ -1,7 +1,7 @@
 bits 32
 section .text
 
-extern hwintr
+extrn hwintr
 
 introute:
 	push ds
@@ -25,7 +25,7 @@ intreturn:
 	iretd
 
 section .data
-global __intrents
+globl __intrents
 __intrents:
 
 %macro NC 1

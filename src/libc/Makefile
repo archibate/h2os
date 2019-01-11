@@ -3,7 +3,7 @@ include $Dmake/general.mak
 .PHONY: all
 all: libc.a
 
-SRCS+=$(shell find src | grep '\.c$')
+SRCS+=$(shell find src | grep '\.c$$')
 OBJS=$(SRCS:%=%.o)
 
 CLEAN+=libc.a $(OBJS)

@@ -2,8 +2,11 @@
 #include <asm/mmu.h>
 #include <ccutils.h>
 
-static pde_t kern_pd  [PDXSIZE] _ALIGNED(PDXSIZE * sizeof(pde_t));
-static pte_t kern_ptes[PTXSIZE] _ALIGNED(PTXSIZE * sizeof(pte_t));
+//extern pde_t kern_pd  [PDXSIZE] _ALIGNED(PDXSIZE * sizeof(pde_t));
+//extern pte_t kern_ptes[PTXSIZE] _ALIGNED(PTXSIZE * sizeof(pte_t));
+// for now:
+#define kern_pd   ((pde_t*)0x400000)
+#define kern_ptes ((pte_t*)0x401000)
 
 _SECTION(".phys.text") void setup_boot_vm(void)
 {

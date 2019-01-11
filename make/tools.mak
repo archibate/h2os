@@ -1,4 +1,4 @@
-CROSS=/opt/i686-elf/bin/i686-elf-
+#CROSS=/opt/i686-elf/bin/i686-elf-
 
 ASM=nasm
 AS=$(CROSS)as

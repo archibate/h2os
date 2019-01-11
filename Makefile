@@ -1,4 +1,3 @@
-export ARCH=x86
 export D=$(PWD)/
 
 CLEAN+=Image
@@ -20,13 +19,13 @@ h2os.iso: isodir
 
 .PHONY: runiso
 runiso: h2os.iso
-	qemu-system-i386 -cdrom $<
+	qemu-system-x86_64 -cdrom $<
 
 .PHONY: run
 run: Image
-	qemu-system-i386 -kernel $<
+	qemu-system-x86_64 -kernel $<
 
 .PHONY: clean
 clean:
 	rm -rf $(CLEAN)
-	make -C c clean
+	make -C src clean

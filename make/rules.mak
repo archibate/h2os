@@ -36,3 +36,7 @@
 %.d: %
 	$(EC) dep $@
 	$(CC) $(CFLAGS) -xc -D_GPCPP_=1 -M -MT $*.i -P -o $@ $<
+
+%.elf: %.pe
+	$(EC) objcopy $@
+	$(OBJCOPY) -O elf32-i386 -S $< $@

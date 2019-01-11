@@ -5,9 +5,10 @@ section .phys.stub
 section .phys.text
 
 global _start
-extern check_mboot
-extern setup_boot_vm
-extern kern_phys_start
+globl _start
+extrn check_mboot
+extrn setup_boot_vm
+extrn kern_phys_start
 
 _start:
   cli

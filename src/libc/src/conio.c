@@ -1,16 +1,16 @@
 #include <conio.h>
-#include <drv/tty.h>
+#include <drv/console.h>
 #include <stdio.h>
 
 int cputs(const char *s)
 {
-	tty_puts(s);
+	con_puts(s);
 	return 0;
 }
 
 int cputchar(int ch)
 {
-	tty_putchar(ch);
+	con_putchar(ch);
 	return 0;
 }
 

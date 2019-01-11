@@ -2,7 +2,7 @@
 #include <asm/page.h>
 
 ENTRY(_start)
-OUTPUT_FORMAT("elf32-i386")
+/*OUTPUT_FORMAT("elf32-i386")*/
 
 #define PSEC(sec) sec :
 #define VSEC(sec) sec : AT(ADDR(sec) - KBASE)

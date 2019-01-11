@@ -14,13 +14,13 @@
 #define _SECTION(x) 	__attribute__((section(x)))
 #define _ALIGNED(x) 	__attribute__((aligned(x)))
 
-#if 1
+#if !defined(_MINGW)
 #define UNREACHABLE()		__builtin_unreachable()
 #else
 #define UNREACHABLE()		for (;;)
 #endif
 
-#if 1
+#if !defined(_MINGW)
 #define likely(x)			(__builtin_expect(!!(x), 1))
 #define unlikely(x)			(__builtin_expect(!!(x), 0))
 #else
