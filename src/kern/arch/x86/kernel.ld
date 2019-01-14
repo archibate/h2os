@@ -1,52 +1,62 @@
 #include <hydro/kbase.h>
 #include <asm/page.h>
 
+#ifndef _MINGW
 ENTRY(_start)
-/*OUTPUT_FORMAT("elf32-i386")*/
+#else
+ENTRY(__start)
+#endif
+#ifndef _MINGW
+OUTPUT_FORMAT("elf32-i386")
+#endif
 
+/*#ifndef _MINGW
 #define PSEC(sec) sec :
 #define VSEC(sec) sec : AT(ADDR(sec) - KBASE)
+#else
+#define PSEC(sec) sec :
+#define VSEC(sec) sec :
+#endif*/
 
 /* https://github.com/archibate/jos/blob/master/lab4/partB/kern/kernel.ld */
 SECTIONS
 {
 	. = KPBEG;
 
-	PSEC(.phys)
+	.header :
 	{
-		*(.phys.header)
-		*(.phys.stub)
-		*(.phys .phys.*)
+		*(.mboot_header)
+		*(.stub)
 	}
 
-	. += KBASE;
+	/*. += KBASE;*/
 
-	VSEC(.text)
+	.text :
 	{
 		*(.text .text.* .gnu.linkonce.t.*)
 	}
-	VSEC(.rodata)
+	.rodata :
 	{
 		*(.rodata .rodata.* .gnu.linkonce.r.*)
 	}
-	VSEC(.stab)
+	.stab :
 	{
 		*(.stab)
 	}
-	VSEC(.stabstr)
+	.stabstr :
 	{
 		*(.stabstr)
 	}
 
 	. = ALIGN(PGSIZE);
-	VSEC(.data)
+	.data :
 	{
 		*(.data .data.*)
 		*(.note* .comment*)
 	}
 
 	. = ALIGN(PGSIZE);
-	VSEC(.bss)
+	.bss :
 	{
 		*(.bss .bss.*)
 	}

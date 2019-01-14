@@ -1,4 +1,14 @@
 export D=$(PWD)/
+export MINGW=1
+export ARCH=x86
+
+ifndef MINGW
+QEMU=qemu-system-i386
+else
+QEMU=C:\Users\Lenovo\Intel\OSD\QEMU\qemu-system-i386w.exe
+#QEMU=./tools/qemu.bat
+#QEMU=./tools/qemu/qemu-win.bat
+endif
 
 CLEAN+=Image
 .PHONY: Image
@@ -19,11 +29,11 @@ h2os.iso: isodir
 
 .PHONY: runiso
 runiso: h2os.iso
-	qemu-system-x86_64 -cdrom $<
+	$(QEMU) -cdrom $(if $(MINGW),$(PWD)/,)$<
 
 .PHONY: run
 run: Image
-	qemu-system-x86_64 -kernel $<
+	$(QEMU) -kernel $(if $(MINGW),$(PWD)/,)$<
 
 .PHONY: clean
 clean:

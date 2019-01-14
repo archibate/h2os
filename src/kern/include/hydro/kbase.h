@@ -1,8 +1,8 @@
 #pragma once
 
 #define KPBEG 0x100000
-#define KBASE 0xc0000000
 #define PHYSTOP 0x10000000
+/*#define KBASE 0x00000000//????
 
 #ifndef _GPCPP_
 #define KP2V(pa) ((typeof(pa) __unphys)((ulong)(pa) + KBASE))
@@ -11,3 +11,4 @@
 #define KP2V(pa) ((pa) + KBASE)
 #define KV2P(va) ((va) - KBASE)
 #endif
+*/
