@@ -6,7 +6,7 @@ section .text
 
 globl _start
 extrn check_mboot
-extrn setup_boot_vm
+extrn setup_paging
 extrn kern_phys_start
 
 _start:
@@ -19,7 +19,7 @@ _start:
   push ebx
   call check_mboot
   add esp, 8
-  ;call setup_boot_vm
+  call setup_paging
   call kern_phys_start
 stop:
   hlt
