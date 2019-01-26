@@ -4,5 +4,6 @@
 
 void hwintr(struct intr_frame *iframe)
 {
-  printk("hwintr(%d/%#x)", iframe->ifr_intnr, iframe->ifr_intnr);
+	int nr = iframe->ifr_intnr;
+	printk("hwintr(%d/%#x)", nr, nr);
 }

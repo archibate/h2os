@@ -15,8 +15,6 @@ void kern_start(void)
 
 	printk("Hello, World!");
 
-	asm volatile ("int $0x80");
-
 	cli();
 	hlt();
 }

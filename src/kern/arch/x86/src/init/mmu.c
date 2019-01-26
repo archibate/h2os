@@ -11,6 +11,7 @@ void init_mmu(void)
 	pa_t pa;
 	for (pa = 0; pa < KernPhysEnd; pa += PageSize)
 		kern_ptes[PageNum(pa)] = Pte(pa, PtePerm_KernRW);
+	kern_ptes[0] = 0;
 
 	for (pa = 0; pa < KernPhysEnd; pa += BigPageSize)
 		kern_pd[PageNum(pa)] = PdePgtab((va_t)&kern_ptes[PageNum(pa)]);
