@@ -1,35 +1,23 @@
 #include <k/kbase.h>
-#define PGSIZE 4096
+#include <asm/mmu/page.h>
 
 #ifndef _MINGW
 ENTRY(_start)
+OUTPUT_FORMAT("elf32-i386")
 #else
 ENTRY(__start)
 #endif
-#ifndef _MINGW
-OUTPUT_FORMAT("elf32-i386")
-#endif
-
-/*#ifndef _MINGW
-#define PSEC(sec) sec :
-#define VSEC(sec) sec : AT(ADDR(sec) - KBASE)
-#else
-#define PSEC(sec) sec :
-#define VSEC(sec) sec :
-#endif*/
 
 /* https://github.com/archibate/jos/blob/master/lab4/partB/kern/kernel.ld */
 SECTIONS
 {
-	. = KPBEG;
+	. = KernPhysBegin;
 
 	.header :
 	{
 		*(.mboot_header)
 		*(.stub)
 	}
-
-	/*. += KBASE;*/
 
 	.text :
 	{
@@ -48,14 +36,14 @@ SECTIONS
 		*(.stabstr)
 	}
 
-	. = ALIGN(PGSIZE);
+	. = ALIGN(PageSize);
 	.data :
 	{
 		*(.data .data.*)
 		*(.note* .comment*)
 	}
 
-	. = ALIGN(PGSIZE);
+	. = ALIGN(PageSize);
 	.bss :
 	{
 		*(.bss .bss.*)

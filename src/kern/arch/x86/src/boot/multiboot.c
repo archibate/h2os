@@ -9,8 +9,7 @@ _SECTION(".mboot_header") ulong multiboot_header[] =
 
 struct mboot_info *mboot_ptr;
 
-void check_mboot(struct mboot_info *mb_ptr,
-                 int mb_magic)
+void save_mboot_pointer(struct mboot_info *mb_ptr, int mb_magic)
 {
   mboot_ptr = mb_magic == MB_MAGIC_EAX ? mb_ptr : 0;
 }
