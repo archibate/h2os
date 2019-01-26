@@ -1,6 +1,6 @@
 #pragma once
 
-#include <hydro/printk.h>
+#include <k/printk.h>
 #include <asm/clsti.h>
 #include <drv/console.h>
 #include <ccutils.h>

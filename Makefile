@@ -1,5 +1,5 @@
-export D=$(PWD)/
-export MINGW=1
+export D=$(shell pwd)/
+#export MINGW=1
 export ARCH=x86
 
 ifndef MINGW

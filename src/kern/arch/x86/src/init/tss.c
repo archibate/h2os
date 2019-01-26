@@ -1,5 +1,5 @@
 #include <x86/tss.h>
-#include <hydro/x86/gdt.h>
+#include <k/x86/gdt.h>
 #include <x86/gate.h>
 #include <x86/xdtr.h>
 #include <stddef.h>

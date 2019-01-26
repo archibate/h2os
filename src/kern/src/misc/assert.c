@@ -1,5 +1,5 @@
 #include <assert.h>
-#include <hydro/panic.h>
+#include <k/panic.h>
 
 void _NORETURN _assert_failed(const char *info, const char *file,
 							 const char *func, int line)

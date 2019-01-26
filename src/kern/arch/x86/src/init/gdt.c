@@ -1,4 +1,4 @@
-#include <hydro/x86/gdt.h>
+#include <k/x86/gdt.h>
 #include <x86/xdtr.h>
 #include <x86/sregs.h>
 

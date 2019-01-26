@@ -1,6 +1,6 @@
-#include <hydro/x86/idt.h>
-#include <hydro/asm/iframe.h>
-#include <hydro/printk.h>
+#include <k/x86/idt.h>
+#include <k/asm/iframe.h>
+#include <k/printk.h>
 
 void hwintr(struct intr_frame *iframe)
 {

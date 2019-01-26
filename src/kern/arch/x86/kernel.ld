@@ -1,5 +1,5 @@
-#include <hydro/kbase.h>
-#include <asm/page.h>
+#include <k/kbase.h>
+#define PGSIZE 4096
 
 #ifndef _MINGW
 ENTRY(_start)
