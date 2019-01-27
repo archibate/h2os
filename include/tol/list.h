@@ -1,8 +1,4 @@
-#ifndef __LIST_H
-#define __LIST_H
-
-#include <compile.h>
-#include <types.h>
+#pragma once
 
 #define list_entry(ptr, type, member) container_of(ptr, type, member)
 #define list_first_entry(ptr, type, member) list_entry((ptr)->next, type, member)
@@ -187,5 +183,3 @@ static _inline void hlist_add_after(struct hlist_node *n, struct hlist_node *nex
 	for (node = (head)->first;\
 		node && (entry = hlist_entry(node, typeof(*entry), member));\
 		node = node->next)
-
-#endif	/* list.h */

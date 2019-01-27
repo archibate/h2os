@@ -37,6 +37,6 @@
 	$(EC) dep $@
 	$(CC) $(CFLAGS) -xc -D_GPCPP_=1 -M -MT $*.i -P -o $@ $<
 
-%.elf: %.pe
-	$(EL) objcopy $@
-	$(OBJCOPY) -O elf32-i386 -S $< $@
+%.strip: %
+	$(EL) strip $<
+	$(STRIP) -S -O elf32-i386 -o $@ $<

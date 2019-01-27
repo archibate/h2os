@@ -1,14 +1,15 @@
 #pragma once
 
 #include "pte-bits.h"
+#include "page.h"
 
 #define PteInitialValue (PG_P)
 #define PteIsValid(x)   ((x) & PG_P)
 
 #define PtePerm_KernRO  (0)
 #define PtePerm_KernRW  (PG_W)
-#define PtePerm_RO      (PG_U)
-#define PtePerm_RW      (PG_W | PG_U)
+#define PtePerm_UserRO  (PG_U)
+#define PtePerm_UserRW  (PG_W | PG_U)
 #define PtePermMask     (PG_W | PG_U)
 #define PtePerm(x)      ((x) & PtePermMask)
 #define setPtePerm(x,a) (((x) &= PtePermMask) |= PtePerm(a))
@@ -28,8 +29,8 @@
 #define PdeType(x)      ((x) & PdeTypeMask)
 #define setPdeType(x,t) (((x) &= PdeTypeMask) |= PdeType(t))
 
-#define PdeAddrMask     (PGMASK)
-#define PdeAddr(x)      ((x) & PdeAddrMask)
+#define PdePgtabAddr(x)   ((x) & PgtabHimask)
+#define PdeSectionAddr(x) ((x) & SectionHimask)
 
-#define PdePgtab(x)     (PdeInitialValue | PdeAddr(x) | PdeType_Pgtab)
-#define PdeBigPage(x)   (PdeInitialValue | PdeAddr(x) | PdeType_BigPage)
+#define PdePgtab(x)     (PdeInitialValue | PdePgtabAddr(x) | PdeType_Pgtab)
+#define PdeSection(x)   (PdeInitialValue | PdeSectionAddr(x) | PdeType_Section)

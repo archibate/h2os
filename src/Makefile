@@ -1,13 +1,11 @@
 include $Dmake/general.mak
 
-.PHONY: all
-all: h2os.img
+.PHONY: kern/kernel.elf.strip
+kern/kernel.elf.strip: libc/libc.a init/init.elf.strip
+	make -C $(@D) $(@F)
 
-CLEAN+=h2os.img
-h2os.img: kern/kernel.elf
-
-.PHONY: kern/kernel.elf
-kern/kernel.elf: libc/libc.a
+.PHONY: init/init.elf.strip
+init/init.elf.strip: libc/libc.a
 	make -C $(@D) $(@F)
 
 .PHONY: libc/libc.a

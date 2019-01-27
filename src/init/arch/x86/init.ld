@@ -1,5 +1,5 @@
-#include <k/kbase.h>
-#include <mmu/page.h>
+#define PageSize       4096
+#define UserCodeBegin  0x10000000
 
 #ifndef _MINGW
 ENTRY(_start)
@@ -11,11 +11,10 @@ ENTRY(__start)
 /* https://github.com/archibate/jos/blob/master/lab4/partB/kern/kernel.ld */
 SECTIONS
 {
-	. = KernPhysBegin;
+	. = UserCodeBegin;
 
 	.header :
 	{
-		*(.mboot_header)
 		*(.stub)
 	}
 

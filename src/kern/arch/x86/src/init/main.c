@@ -13,7 +13,7 @@ void kern_start(void)
 	CALL(init_tss);
 	CALL(con_init);
 
-	printk("Hello, World!");
+	CALL(setup_user);
 
 	cli();
 	hlt();

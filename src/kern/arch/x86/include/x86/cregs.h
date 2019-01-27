@@ -1,6 +1,6 @@
 #pragma once
 
-#include <x86/movregs.h>
+#include <x86/asmregs.h>
 #include "creg-bits.h"
 
 #define getcr2()     get_reg(cr2)

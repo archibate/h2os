@@ -5,5 +5,4 @@ AS=$(CROSS)as
 CC=$(CROSS)gcc
 LD=$(CROSS)ld
 AR=$(CROSS)ar
-OBJCOPY=$(CROSS)objcopy
 STRIP=$(CROSS)strip

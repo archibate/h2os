@@ -1,6 +1,6 @@
 #pragma once
 
-#include <x86/movregs.h>
+#include <x86/asmregs.h>
 
 #define set_cs(cs) \
 	asm volatile ("pushl %0\npushl $1f\nretf\n1:\n" :: "r" (cs));
