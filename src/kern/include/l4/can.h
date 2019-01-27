@@ -1,8 +1,9 @@
 #pragma once
 
-// `Can' Permissions:
-#define CanRead  1
-#define CanWrite 2
-#define CanGrant 4
+#include <l4/can-bits.h>
 #define CanRW    (CanRead | CanWrite)
 #define CanRO    (CanRead)
+
+#include <inttypes.h>
+typedef uchar can_t;
+typedef uint wcan_t;

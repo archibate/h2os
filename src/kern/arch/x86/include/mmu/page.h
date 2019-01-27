@@ -47,10 +47,3 @@
 
 #define PteIndex(x)    (PageNum(x) & PgtabLomask)
 #define PdeIndex(x)    (SectionNum(x))
-
-#ifndef _GPCPP_
-#include <inttypes.h>
-#include <ptrdeco.h>
-typedef ulong va_t, __phys pa_t;
-typedef pa_t pde_t, pte_t;
-#endif
