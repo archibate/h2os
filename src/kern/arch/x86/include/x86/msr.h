@@ -27,3 +27,5 @@ static void wrmsr(uint32_t ecx, uint64_t val)
 {
 	asm volatile ("wrmsr" :: "A" (val), "c" (ecx));
 }
+
+#include <x86/msr-adrs.h>

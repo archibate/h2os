@@ -1,5 +1,6 @@
 #include <k/printk.h>
 #include <k/panic.h>
+#include <k/kbase.h>
 #include <o/region.h>
 #include <o/frames.h>
 #include <mmu/types.h>
@@ -8,15 +9,49 @@
 #include <memory.h>
 #include <assert.h>
 #include <elf32.h>
+#include <k/x86/gdt.h>
+#include <k/asm/iframe.h>
 
+
+static Frames_t fsz = {
+	.fsType = Frames_PhysRegion,
+	.fs_pa0 = KernPoolBegin,
+	.fs_pa1 = KernPoolEnd,
+};
+
+
+extern void _NORETURN move_to_user(const ulong *uc); // intrents.asm
+static void _NORETURN goto_user_entry(void *pc, void *sp)
+{
+	ulong uc[IFrameWords];
+	memset(uc, 0, sizeof(uc));
+	uc[IFrame_PC] = (ulong)pc;
+	uc[IFrame_SP] = (ulong)sp;
+	uc[IFrame_EFLAGS] = 0x202;
+	uc[IFrame_CS] = SEG_UCODE;
+	uc[IFrame_SS] = SEG_UDATA;
+	uc[IFrame_DS] = SEG_UDATA;
+	uc[IFrame_ES] = SEG_UDATA;
+	uc[IFrame_FS] = SEG_UDATA;
+	uc[IFrame_GS] = SEG_UDATA;
+	move_to_user(uc);
+}
+
+void setup_rootcs(void)
+{
+}
 
 static void *loadelf(const char *data, const char *edata);
 void setup_user(void)
 {
-	void *ep;
+	void *pc, *sp = 0;
 	extern const char initImage[], initImageEnd[];
-	if (!(ep = loadelf(initImage, initImageEnd)))
+	if (!(pc = loadelf(initImage, initImageEnd)))
 		panic("init image ELF format wrong");
+	printk("load init image done");
+
+	setup_rootcs();
+	goto_user_entry(pc, sp);
 }
 
 static void map_zero(va_t va0, size_t size, int rw);
@@ -54,15 +89,15 @@ void *loadelf(const char *data, const char *edata)
 			loadprog(data, ph);
 	}
 
-	printk("load init image done");
+	printk("Entry Point at %#p", e->e_entry);
 	return (void*)e->e_entry;
 }
 
 
-void map_zero(va_t va0, size_t size, int rw)
+static void map_zero(va_t va0, size_t size, int rw)
 {
-	Frames_t fsMap   = {ptePerm: (rw ? PtePerm_UserRW : PtePerm_UserRO)};
-	Frames_t fsPgtab = {ptePerm: PtePerm_KernRW};
-	Region_t reg     = {va0: va0, va1: va0 + size};
-	Region_Map(&reg, &fsMap, &fsPgtab);
+	fsz.fs_needZero = 1;
+	fsz.ptePerm = (rw ? PtePerm_UserRW : PtePerm_UserRO);
+	Region_t reg = {va0: va0, va1: va0 + size};
+	Region_Map(&reg, &fsz, &fsz);
 }

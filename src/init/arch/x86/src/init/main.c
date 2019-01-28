@@ -1,5 +1,6 @@
 void init_main(void)
 {
-	asm volatile ("int3");
+	extern void do_syscall();
+	do_syscall();
 	for (;;);
 }

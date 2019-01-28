@@ -26,7 +26,6 @@ void Region_Map(Region_t const *r, Frames_t *fsMap, Frames_t *fsPgtab)
 	pde_t *pd = (pde_t*)mmu_getPgdirPaddr();
 	pte_t *pt = touch_pdi(fsPgtab, pd, PdeIndex(r->va0));
 	va_t va = r->va0;
-	pa_t pa;
 
 	size_t secoff = SectionOffset(va);
 

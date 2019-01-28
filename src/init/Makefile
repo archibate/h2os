@@ -5,7 +5,7 @@ all: init.elf.strip
 
 SRCS+=$(shell find src arch/$(ARCH)/src | grep '\.\(c\|asm\)$$')
 OBJS=$(SRCS:%=%.o)
-LIBS=c
+LIBS=c sys
 
 LDSCRIPT=arch/$(ARCH)/init.ld
 

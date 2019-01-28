@@ -1,3 +1,4 @@
+#include <drv/irqhw.h>
 #include <x86/io.h>
 
 #define IO_PIC0  0x20
@@ -5,7 +6,7 @@
 
 // https://github.com/archibate/jos/blob/master/lab4/partC/kern/picirq.c
 // https://github.com/archibate/OSASK/blob/master/src/haribote/int.c
-void pic_init(int irq0_intr)
+void irqhw_init(int irq0_intr)
 {
 	outb(IO_PIC0+1, 0xfb);
 	outb(IO_PIC1+1, 0xff);
@@ -13,12 +14,12 @@ void pic_init(int irq0_intr)
 	outb(IO_PIC0+0, 0x11);
 	outb(IO_PIC0+1, irq0_intr);
 	outb(IO_PIC0+1, 1<<2);
-	//outb(IO_PIC0+1, 0x3);
+	outb(IO_PIC0+1, 0x03);
 
 	outb(IO_PIC1+0, 0x11);
 	outb(IO_PIC1+1, irq0_intr + 8);
 	outb(IO_PIC1+1,    2);
-	//outb(IO_PIC1+1, 0x01);
+	outb(IO_PIC1+1, 0x01);
 
 	/*
 	outb(IO_PIC0+0, 0x68);

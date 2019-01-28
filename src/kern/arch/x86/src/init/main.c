@@ -8,11 +8,13 @@ void kern_start(void)
 	*(char*)0xb8001 = *(char*)0xb8003 = 0xb;
 
 	CALL(init_mmu);
+	CALL(con_init);
+	CALL(test_cpuid);
 	CALL(init_gdt);
 	CALL(init_idt);
 	CALL(init_tss);
-	CALL(con_init);
-
+	CALL(init_kdrvs);
+	CALL(init_kfers);
 	CALL(setup_user);
 
 	cli();

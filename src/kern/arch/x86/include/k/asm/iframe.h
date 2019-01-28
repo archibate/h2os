@@ -1,19 +1,35 @@
 #pragma once
 
-#include <inttypes.h>
-
-/* N: keep sync with c/kern/x86/isr/intrents.asm */
-struct intr_frame
-{
-  /* PUSHADs: */
-  ulong ifr_di, ifr_si, ifr_bp, ifr_oldsp;
-  ulong ifr_bx, ifr_dx, ifr_cx, ifr_ax;
-  /* segment regs */
-  ulong ifr_gs, ifr_fs, ifr_es, ifr_ds;
-  /* pushed in ents, before introute */
-  ulong ifr_intnr, ifr_errcd; /* Intrrrupt No. & Error Code */
-  /* pushed by hardware when intrrrupt occurred */
-  ulong ifr_pc, ifr_cs, ifr_eflags;
-  /* only intrrruption from user level has: */
-  ulong ifr_sp, ifr_ss;
+/* N: keep sync with isr/intrents.asm */
+enum IFrameIndex {
+/* PUSHADs: */
+	IFrame_EDI = 0,
+	IFrame_ESI,
+	IFrame_EBP,
+	IFrame_OldESP,
+	IFrame_EBX,
+	IFrame_EDX,
+	IFrame_ECX,
+	IFrame_EAX,
+/* segment regs */
+	IFrame_GS,
+	IFrame_FS,
+	IFrame_ES,
+	IFrame_DS,
+/* pushed in ents, before introute */
+/* Intrrrupt No. & Error Code */
+	IFrame_IntrNum,
+	IFrame_ErrorCode,
+/* pushed by hardware when intrrrupt occurred */
+	IFrame_EIP,
+	IFrame_CS,
+	IFrame_EFLAGS,
+/* only intrrrupts from user level has: */
+	IFrame_ESP,
+	IFrame_SS,
+/* the total length: */
+	IFrameWords,
+/* some easy to use shortcuts: */
+	IFrame_PC = IFrame_EIP,
+	IFrame_SP = IFrame_ESP,
 };

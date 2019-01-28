@@ -7,11 +7,8 @@
 #define PgtabBits   10		// Page Table Index Width
 #define PgdirBits   10		// Page Directory Index Width
 
-#define SizeOfBits(n)    (1 << (n))
-#define LomaskOfBits(n)  (SizeOfBits(n) - 1)
-#define HimaskOfBits(n)  (-SizeOfBits(n))
-#define RoundDown(n,x)   (((x) / (n)) * (n))
-#define RoundUp(n,x)     RoundDown(n, (x) + (n) - 1)
+#include <bittools.h>
+#include <roundtools.h>
 
 #define PageSize      SizeOfBits(PageBits)
 #define SectionSize   SizeOfBits(SectionBits)

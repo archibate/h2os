@@ -1,7 +1,12 @@
 bits 32
 section .text
 
+globl move_to_user
 extrn hwintr
+
+move_to_user:
+	mov esp, [esp + 4]
+	jmp intreturn
 
 introute:
 	push ds

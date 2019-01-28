@@ -1,5 +1,6 @@
 bits 32
 section .stub
+	resd 19 ;IFrameWords
 	jmp _start
 
 section .text
