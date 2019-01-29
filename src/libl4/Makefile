@@ -1,13 +1,13 @@
 include tools/general.mak
 
 .PHONY: all
-all: libsys.a
+all: libl4.a
 
 SRCS+=$(shell find a/$(ARCH)/c c | grep '\.\(c\|asm\)$$')
 OBJS=$(SRCS:%=%.o)
 
-CLEAN+=libsys.a $(OBJS)
-libsys.a: $(OBJS)
+CLEAN+=libl4.a $(OBJS)
+libl4.a: $(OBJS)
 	$(EL) ar $@
 	$(AR) cqs $@ $(OBJS)
 

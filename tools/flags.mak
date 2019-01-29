@@ -13,8 +13,14 @@ FUNCTIONS+=no-stack-protector
 DBGFLAGS+=stabs+ gdb
 endif
 
-INCPATH+=h a/$(ARCH)/h $(ROOT)/include
-LIBPATH+=$(ROOT)/src/libc $(ROOT)/src/libsys
+ADIRS=. a/$(ARCH) a/$(ARCH) a/$(ARCH)/$(BITS) a/$(ARCH)/$(BITS)
+
+include tools/modules.mak
+
+LIBPATH+=$(MODULES:%=$(ROOT)/src/%)
+INCPATH+=$(ADIRS:%=%/h) $(ADIRS:%=%/sh) \
+	 $(foreach path,$(LIBPATH),$(ADIRS:%=$(path)/%/sh)) \
+	 $(ROOT)/include
 
 CFLAGS+=-nostdinc
 CFLAGS+=$(OPTIMIZE:%=-O%) $(MODES:%=-m%) \

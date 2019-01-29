@@ -1,9 +1,9 @@
 bits 32
 section .text
 
-globl do_syscall
+global libl4_do_syscall
 
-do_syscall:
+libl4_do_syscall:
 %if 0
 	int 0x80
 	ret
