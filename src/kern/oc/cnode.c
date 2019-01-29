@@ -28,15 +28,11 @@ again:
 	if (!depth)
 		return cap;
 
-	switch (getCapType(cap))
+	switch (cap->objType)
 	{
 	case L4_CNodeObject:
-		root = Cap_CNode(cap);
+		root = (CNode_t*)cap->ptr;
 		goto again;
-#if 0 // {{{
-	case L4_PgdirObject:
-		return pgdirGetEntry(Cap_Pgdir(cap), cptr, depth);
-#endif // }}}
 	default:
 		return CapLookupError(TooDeep);
 	}

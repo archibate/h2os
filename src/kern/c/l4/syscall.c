@@ -1,10 +1,18 @@
-#include <l4/invoke.h>
-#include <l4/cnode.h>
+#include <l4/syscall.h>
+#include <l4/objects.h>
+#include <l4/services.h>
+#include <k/printk.h>
+#include <k/panic.h>
 
-int doSystemCall(cptr_t target, word_t *tag)
-	// does l4Send(), l4Call(), l4Recv(), l4Reply(), l4Poll() seperated necessary?
+int _FASTCALL systemCall(cptr_t cptr, Invo_t *invo)
 {
-	return 0;
-	/*cap_t *targetCap = cget(sender->root, target);
-	return sysInvoke(targetCap, tag);*/
+	cap_t cap;
+	cap.objType = L4_ConsoleObject;
+	cap.object = 0;
+	cap.base = 0;
+	cap.limit = 10;
+
+	int res = sysInvoke(&cap, invo);
+	panic("systemCall(): sysInvoke() returned %d", res);
+	return res;
 }

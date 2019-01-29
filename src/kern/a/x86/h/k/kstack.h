@@ -2,13 +2,16 @@
 
 #include <k/kbase.h>
 #include <k/asm/iframe.h>
+#include <k/asm/seframe.h>
+#include <mmu/page.h>
 
-#define KernStackTop    (KernPhysEnd)
-#define KernTCB         (KernPoolBegin - 0x1000)
-#define KernIFrame      (KernStackTop - IFrameWords * 4)
+#define KernSEStackTop  (KernPhysEnd)
+#define KernIStackTop   (KernPhysEnd - PageSize)
+#define KernIFrame      (KernIStackTop - IFrameWords * 4)
+#define KernSEFrame     (KernSEStackTop - SEFrameWords * 4)
 
 #ifndef _GPCPP_
 #include <inttypes.h>
-#define kTCB     ((struct TCB *)KernTCB)
 #define kIFrame  ((ulong*)KernIFrame)
+#define kSEFrame ((ulong*)KernSEFrame)
 #endif

@@ -4,7 +4,7 @@ section .stub
 
 section .text
 
-globl _start
+global _start
 extrn save_mboot_pointer
 extrn kern_start
 

@@ -15,8 +15,8 @@
 #define setPtePerm(x,a) (((x) &= PtePermMask) |= PtePerm(a))
 #define PtePermMaxBits  3
 
-#define PteAddrMask     (PGMASK)
-#define PteAddr(x)      ((x) & PteAddrMask)
+//#define PteAddrMask     (PGMASK)
+#define PteAddr(x)      ((x) & PageHimask)
 
 #define Pte(x,a)        (PteInitialValue | PteAddr(x) | PtePerm(a))
 

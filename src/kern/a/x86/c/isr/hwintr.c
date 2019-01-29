@@ -6,7 +6,7 @@
 
 void hwexcp(uint excp);
 void hwirq(uint irq);
-void hwsyscall(void);
+void hwsysintr(void);
 
 void hwintr(ulong *iframe)
 {
@@ -20,7 +20,7 @@ void hwintr(ulong *iframe)
 		return;
 	} else if (nr == INTR_SWI0) {
 		assert(iframe == kIFrame);
-		hwsyscall();
+		hwsysintr();
 		return;
 	}
 

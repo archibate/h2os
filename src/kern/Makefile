@@ -1,3 +1,4 @@
+DEFINES+=_KERNEL=1
 include tools/general.mak
 
 .PHONY: all

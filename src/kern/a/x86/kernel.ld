@@ -1,11 +1,9 @@
 #include <k/kbase.h>
 #include <mmu/page.h>
 
-#ifndef _MINGW
 ENTRY(_start)
+#ifndef _MINGW
 OUTPUT_FORMAT("elf32-i386")
-#else
-ENTRY(__start)
 #endif
 
 /* https://github.com/archibate/jos/blob/master/lab4/partB/kern/kernel.ld */

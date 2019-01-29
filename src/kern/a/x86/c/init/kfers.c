@@ -7,5 +7,5 @@ void init_kfers(void)
 	extern void sysenter_entry(void);
 	wrmsr(IA32_SYSENTER_CS,  SEG_KCODE);
 	wrmsr(IA32_SYSENTER_EIP, (ulong)&sysenter_entry);
-	wrmsr(IA32_SYSENTER_ESP, KernStackTop);
+	wrmsr(IA32_SYSENTER_ESP, KernSEStackTop);
 }

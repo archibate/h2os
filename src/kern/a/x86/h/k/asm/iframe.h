@@ -1,6 +1,6 @@
 #pragma once
 
-/* N: keep sync with isr/intrents.asm */
+/* N: keep sync with isr/iframe.asm */
 enum IFrameIndex {
 /* PUSHADs: */
 	IFrame_EDI = 0,
