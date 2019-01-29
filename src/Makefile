@@ -1,4 +1,4 @@
-include $Dmake/general.mak
+include tools/general.mak
 
 .PHONY: kern/kernel.elf.strip
 kern/kernel.elf.strip: libc/libc.a init/init.elf.strip

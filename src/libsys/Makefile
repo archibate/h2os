@@ -1,9 +1,9 @@
-include $Dmake/general.mak
+include tools/general.mak
 
 .PHONY: all
 all: libsys.a
 
-SRCS+=$(shell find arch/$(ARCH)/src src | grep '\.\(c\|asm\)$$')
+SRCS+=$(shell find a/$(ARCH)/c c | grep '\.\(c\|asm\)$$')
 OBJS=$(SRCS:%=%.o)
 
 CLEAN+=libsys.a $(OBJS)

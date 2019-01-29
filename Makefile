@@ -1,13 +1,15 @@
-export D=$(shell pwd)/
-#export MINGW=1
-export ARCH=x86
+.PHONY: default
+default: all
 
 
-ifndef MINGW
+.PHONY: config
+config:
+	scripts/config.sh
+
+include tools/config.mak
+
+
 QEMU=qemu-system-i386
-else
-QEMU=C:\Users\Lenovo\Intel\OSD\QEMU\qemu-system-i386w.exe
-endif
 
 
 .PHONY: all
@@ -28,9 +30,9 @@ h2os.iso: isodir
 
 CLEAN+=isodir
 .PHONY: isodir
-isodir: $Dscripts/grub.cfg
+isodir: scripts/grub.cfg
 	mkdir -p isodir/boot/grub
-	cp $Dgrub.cfg
+	cp scripts/grub.cfg
 
 
 QEMUFLAGS+=-m 256 $(if $(DEBUG),-S -s,)

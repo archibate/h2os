@@ -1,13 +1,13 @@
-include $Dmake/general.mak
+include tools/general.mak
 
 .PHONY: all
 all: init.elf.strip
 
-SRCS+=$(shell find src arch/$(ARCH)/src | grep '\.\(c\|asm\)$$')
+SRCS+=$(shell find c a/$(ARCH)/c | grep '\.\(c\|asm\)$$')
 OBJS=$(SRCS:%=%.o)
 LIBS=c sys
 
-LDSCRIPT=arch/$(ARCH)/init.ld
+LDSCRIPT=a/$(ARCH)/init.ld
 
 CLEAN+=init.elf $(LDSCRIPT).i $(OBJS)
 init.elf: $(LDSCRIPT).i $(OBJS)
