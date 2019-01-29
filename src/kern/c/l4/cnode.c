@@ -4,7 +4,7 @@
 
 #define CapLookupError(x)  ((cap_t*)0)
 
-cap_t *cgetEx(CNode_t const *root, cptr_t cptr, bits_t depth)
+cap_t *CNode_lookup(CNode_t const *root, cptr_t cptr, bits_t depth)
 {
 	cap_t *cap;
 	cptr_t mask;

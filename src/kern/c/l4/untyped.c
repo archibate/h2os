@@ -5,7 +5,7 @@
 
 size_t Untyped_Retype(Untyped_t *unt,
 		word_t type, bits_t sizeBits,
-		word_t num, word_t offset, CNode_t *root)
+		word_t num, word_t offset, cap_t *root)
 {
 	int i;
 	void *ptr;

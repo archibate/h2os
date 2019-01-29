@@ -20,21 +20,21 @@ word_t l4IPCBuffer_getRegister(api_cptr_t ipcbuf, word_t regnr)
 			regnr);
 }
 
-word_t l4CNode_Delete(api_cptr_t cnode, cptr_t dest)
+word_t l4Node_Delete(api_cptr_t node, cptr_t dest)
 {
-	return l4Invoke(cnode, L4_CNode_Delete, 1,
+	return l4Invoke(node, L4_CNode_Delete, 1,
 			dest);
 }
 
-word_t l4CNode_Move(api_cptr_t cnode, cptr_t dest, cptr_t src)
+word_t l4Node_Move(api_cptr_t node, cptr_t dest, cptr_t src)
 {
-	return l4Invoke(cnode, L4_CNode_Move, 2,
+	return l4Invoke(node, L4_CNode_Move, 2,
 			dest, src);
 }
 
-word_t l4CNode_Swap(api_cptr_t cnode, cptr_t dest, cptr_t src)
+word_t l4Node_Swap(api_cptr_t node, cptr_t dest, cptr_t src)
 {
-	return l4Invoke(cnode, L4_CNode_Move, 2,
+	return l4Invoke(node, L4_CNode_Move, 2,
 			dest, src);
 }
 

@@ -137,6 +137,7 @@ const char *err_msgs[] = {
 	"No such capability",
 	"Too many messages",
 	"Capability required",
+	"Lookup in non-node Capability",
 };
 
 char *strerror(int err)

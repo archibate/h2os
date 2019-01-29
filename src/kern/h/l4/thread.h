@@ -5,7 +5,7 @@
 
 typedef struct TCB
 {
-	CNode_t *root;
-	IPCBuffer_t *ipcbuf;
+	CNode_t root;
+	IPCBuffer_t ipcbuf;
 }
 tcb_t;
