@@ -1,10 +1,10 @@
 #pragma once
 
-enum L4_InitialCapAddress
+enum L4_InitCap
 {
-	L4_InitialNullCap = 0,
-	L4_InitialConsoleCap,
-	L4_InitialIOPortCap,
-	L4_InitialDebugCap,
-	L4_InitialCaps,
+	L4_InitCapNull = 0,
+	L4_InitCapConsole,
+	L4_InitCapIOPort,
+	L4_InitCapDebug,
+	L4_InitCaps,
 };

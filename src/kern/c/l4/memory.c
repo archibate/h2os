@@ -1,5 +1,5 @@
 #include <l4/memory.h>
-#include <l4/a/mmappage.h>
+#include <l4/a/mmapwin.h>
 #include <mmu/page.h>
 #include <numtools.h>
 #include <memory.h>
@@ -10,7 +10,7 @@ size_t mwrite(mem_t *mem, word_t addr, byte_t const *data, size_t length)
 	void *page;
 
 	do {
-		page = mmappage(mem, PageDown(addr), 1);
+		page = mmapwin(mem, PageDown(addr), 1);
 		if (!page)
 			break;
 		len = MAX(length, PageSize - PageOffset(addr));
@@ -26,7 +26,7 @@ size_t mread(mem_t *mem, word_t addr, byte_t *data, size_t length)
 	void *page;
 
 	do {
-		page = mmappage(mem, PageDown(addr), 0);
+		page = mmapwin(mem, PageDown(addr), 0);
 		if (!page)
 			break;
 		len = MAX(length, PageSize - PageOffset(addr));

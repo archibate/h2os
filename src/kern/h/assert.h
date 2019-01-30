@@ -10,5 +10,3 @@ void _NORETURN _assert_failed(const char *info, const char *file, const char *fu
 #endif
 
 #define assert(x) assert_info(x, "assert("#x") failed")
-#define static_assert(x) \
-	switch (0) { case 0: case (x): break; }

@@ -2,39 +2,28 @@
 #include <k/printk.h>
 #include <k/panic.h>
 
-#include <l4/objects.h>
+#include <l4/captypes.h>
 #include <l4/inicaps.h>
-#include <l4/offsets.h>
-cap_t mycaps[L4_InitialCaps];
+cap_t mycaps[L4_InitCaps];
 void setup_mycaps(void)
 {
-	mycaps[L4_InitialNullCap] = (cap_t)
+	mycaps[L4_InitCapNull] = (cap_t)
 	{
-		.objType = L4_NullObject,
-		.object = 0,
-		.base = 0,
-		.limit = 0,
+		.c_type = L4_NullCap,
 	};
-	mycaps[L4_InitialConsoleCap] = (cap_t)
+	mycaps[L4_InitCapConsole] = (cap_t)
 	{
-		.objType = L4_ConsoleObject,
-		.object = 0,
-		.base = 0,
-		.limit = 1,
+		.c_type = L4_ConsoleCap,
 	};
-	mycaps[L4_InitialIOPortCap] = (cap_t)
+	mycaps[L4_InitCapIOPort] = (cap_t)
 	{
-		.objType = L4_IOPortObject,
-		.object = 0,
-		.base = 0x0,
-		.limit = 0x1000,
+		.c_type = L4_IOPortCap,
+		.c_base = 0x0,
+		.c_limit = 0x1000,
 	};
-	mycaps[L4_InitialDebugCap] = (cap_t)
+	mycaps[L4_InitCapDebug] = (cap_t)
 	{
-		.objType = L4_DebugObject,
-		.object = 0,
-		.base = 0,
-		.limit = L4_Debug_MaxOffset,
+		.c_type = L4_DebugCap,
 	};
 }
 
