@@ -3,25 +3,24 @@
 #include <l4/invoke.h>
 #include <l4/objects.h>
 #include <l4/services.h>
+#include <l4/offsets.h>
 #include <l4/capability.h>
 #include <ovtools.h>
 #include <assert.h>
-
-
 #include <l4/memory.h>
 #include <drv/console.h>
+#include <asm/clsti.h>
 #include <x86/io.h>
 
 
 int sysInvoke(cap_t *target, Invo_t *invo)
 {
-	printk("base:limit=%#x:%#x", target->base, target->limit);
 	assert(!ovadd(target->base, target->limit));
 
 	if (invo->offset >= target->limit)
 		return -L4_ELimit;
 
-/*	if (!(target->permask & (1 << (invo->service % 32))))
+/*	if (!(target->perm & (1 << (invo->service % 32))))
 		return -L4_EPerm;*/
 
 	switch (invo->service)
@@ -34,19 +33,6 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 
 	switch (target->objType)
 	{
-#if 0
-	case L4_UntypedObject:
-		{
-			switch (invo->service)
-			{
-			case L4_Retype:
-				args = invo->dataSend;
-				return 0;
-			default:
-				return -L4_EService;
-			}
-		}
-#endif
 	case L4_ConsoleObject:
 		{
 			switch (invo->service)
@@ -88,6 +74,29 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 				return -L4_EService;
 			}
 		}
+#ifdef CONFIG_DEBUG_OBJECT
+	case L4_DebugObject:
+		{
+			switch (invo->service)
+			{
+			case L4_Send:
+				switch (invo->offset)
+				{
+				case L4_Debug_Halt:
+					dprintk("System Halted by L4DEBUG");
+					clihlt();
+					return 0;
+				case L4_Debug_Puts:
+					dprintk("(L4DEBUG) %s", invo->dataSend);
+					return 0;
+				default:
+					return -L4_EOffset;
+				};
+			default:
+				return -L4_EService;
+			}
+		}
+#endif
 	default:
 		return -L4_EObject;
 	}

@@ -3,7 +3,7 @@ include tools/general.mak
 .PHONY: all
 all: libl4.a
 
-SRCS+=$(shell find a/$(ARCH)/c c | grep '\.\(c\|asm\)$$')
+SRCS+=$(shell find $(SRCPATH) | grep '\.\(c\|asm\)$$')
 OBJS=$(SRCS:%=%.o)
 
 CLEAN+=libl4.a $(OBJS)

@@ -5,6 +5,6 @@ enum L4_ErrorNumber
 	L4_EPerm,
 	L4_ELimit,
 	L4_ELength,
+	L4_EOffset,
 	L4_EObject,
-	L4_EFault,
 };

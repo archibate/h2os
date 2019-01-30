@@ -37,10 +37,7 @@ static void _NORETURN goto_user_entry(void *pc, void *sp)
 	move_to_user(uc);
 }
 
-void setup_rootcs(void)
-{
-}
-
+void setup_mycaps(void);
 static void *loadelf(const char *data, const char *edata);
 void setup_user(void)
 {
@@ -50,7 +47,7 @@ void setup_user(void)
 		panic("init image ELF format wrong");
 	printk("load init image done");
 
-	setup_rootcs();
+	setup_mycaps();
 	goto_user_entry(pc, sp);
 }
 

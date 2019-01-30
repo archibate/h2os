@@ -3,7 +3,7 @@ include tools/general.mak
 .PHONY: all
 all: init.elf.strip
 
-SRCS+=$(shell find c a/$(ARCH)/c | grep '\.\(c\|asm\)$$')
+SRCS+=$(shell find $(SRCPATH) | grep '\.\(c\|asm\)$$')
 OBJS=$(SRCS:%=%.o)
 LIBS=c l4
 

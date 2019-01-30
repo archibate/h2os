@@ -14,8 +14,14 @@
 #define KL_INFO     "<6>"//ANSI_COL(GREEN)"INFO"__PK_ANSI_RESET": "
 #define KL_DEBUG    "<7>"//ANSI_COL_L(WHITE)"DEBUG"__PK_ANSI_RESET": "
 
-#define DEFAULT_MESSAGE_LOGLEVEL  6
-#define DEFAULT_CONSOLE_LOGLEVEL  6
+#define DEFAULT_MESSAGE_LOGLEVEL  6 // KL_INFO
+#ifdef CONFIG_DEBUG_LOG
+#define DEFAULT_CONSOLE_LOGLEVEL  7 // KL_DEBUG
+#define dprintk(...) printk(KL_DEBUG __VA_ARGS__)
+#else
+#define DEFAULT_CONSOLE_LOGLEVEL  6 // KL_INFO
+#define dprintk(...) /* Nothing */
+#endif
 
 int printk(const char *fmt, ...) _FORMAT(printf, 1, 2);
 int vprintk(const char *fmt, va_list ap);

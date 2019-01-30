@@ -13,11 +13,15 @@ FUNCTIONS+=no-stack-protector
 DBGFLAGS+=stabs+ gdb
 endif
 
-ADIRS=. a/$(ARCH) a/$(ARCH) a/$(ARCH)/$(BITS) a/$(ARCH)/$(BITS)
+ADIRS=. a/$(ARCH)
+ifeq ($(shell if [ -f a/$(ARCH)/$(BITS) ]; then echo 1; fi),1)
+ADIRS+=a/$(ARCH)/$(BITS)
+endif
 
 include tools/modules.mak
 
 LIBPATH+=$(MODULES:%=$(ROOT)/src/%)
+SRCPATH+=$(ADIRS:%=%/c)
 INCPATH+=$(ADIRS:%=%/h) $(ADIRS:%=%/sh) \
 	 $(foreach path,$(LIBPATH),$(ADIRS:%=$(path)/%/sh)) \
 	 $(ROOT)/include
