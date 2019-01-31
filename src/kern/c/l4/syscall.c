@@ -43,7 +43,6 @@ int _FASTCALL systemCall(cptr_t cptr, Invo_t *invo)
 	cap_t *cap = &mycaps[cptr];
 
 	invo->capDest = &mycaps[L4_InitCapDestSlot0];
-	invo->capCount = 1;
 
 	int res = sysInvoke(cap, invo);
 

@@ -6,7 +6,10 @@
 typedef struct Invo
 {
 	word_t service;
-	word_t offset;
+	union {
+		word_t offset;
+		word_t capCount;
+	};
 	word_t length;
 	union {
 		void *dataRecv;
@@ -17,7 +20,6 @@ typedef struct Invo
 		word_t const *wordSend;
 	};
 	cap_t *capDest;
-	word_t capCount;
 }
 Invo_t;
 

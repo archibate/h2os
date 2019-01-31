@@ -185,19 +185,20 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 			case L4_Segment_AllocSlab:
 				{
 					cap_t *dest = invo->capDest;
+					//assert(target != dest);
 					word_t num = invo->capCount;
 					assert(target->c_water < target->c_limit);
 					word_t water = PageUp(target->c_base + target->c_water);
 					word_t end = PageDown(target->c_base + target->c_limit);
 					if (end < water)
 						return num;
-					dprintk("L4_Segment_AllocSlab: dest = %p", dest);
 					while (num > 0) {
 						if (water >= end)
 							break;
 						memset(dest, 0, sizeof(cap_t));
 						dest->c_type = L4_SlabCap;
 						dest->c_objptr = Arch_makeVirtPage(water);
+						dprintk("L4_Segment_AllocSlab: virtPage = %p", dest->c_objptr);
 						assert(dest->c_objptr);
 						water += PageSize;
 						dest++;
@@ -299,6 +300,7 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 				{
 					// T: verify(dest)
 					cap_t *dest = invo->capDest;
+					//assert(target != dest);
 					word_t num = invo->capCount;
 					byte_t objType = target->c_retype;
 					if (!objType)
@@ -309,14 +311,15 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 					assert(objSize < PageSize);
 					assert(PageOffset((word_t)target->c_objptr) == 0);
 					assert(target->c_water % objSize == 0);
-					dprintk("L4_Slab_Allocate: dest = %p", dest);
 					while (num > 0) {
 						if (target->c_water >= PageSize)
 							break;
+						void *objVirtPtr = target->c_objptr + target->c_water;
+						target->c_water += objSize;
 						memset(dest, 0, sizeof(cap_t));
 						dest->c_type = objType;
-						dest->c_objptr = target->c_objptr + target->c_water;
-						target->c_water += objSize;
+						dest->c_objptr = objVirtPtr;
+						dprintk("L4_Slab_Allocate: objVirtPtr = %p", dest->c_objptr);
 						dest++;
 						num--;
 					}

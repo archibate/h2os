@@ -10,7 +10,7 @@ int l4Segment_Split(l4CPtr_t cptr, l4Byte_t point)
 
 int l4Segment_AllocSlab(l4CPtr_t cptr, l4Word_t num)
 {
-	return l4Send(cptr, L4_Segment_AllocSlab, 0, 0, 0); // T: capCount=num (extraCaps)
+	return l4Send(cptr, L4_Segment_AllocSlab, num, 0, 0); // T: extraCaps=num
 }
 
 int l4Slab_Retype(l4CPtr_t cptr, l4Byte_t retype)
@@ -20,5 +20,5 @@ int l4Slab_Retype(l4CPtr_t cptr, l4Byte_t retype)
 
 int l4Slab_Allocate(l4CPtr_t cptr, l4Word_t num)
 {
-	return l4Send(cptr, L4_Slab_Allocate, 0, 0, 0); // T: capCount=num (extraCaps)
+	return l4Send(cptr, L4_Slab_Allocate, num, 0, 0); // T: extraCaps=num
 }
