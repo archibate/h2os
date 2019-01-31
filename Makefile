@@ -26,13 +26,14 @@ vmlinux:
 
 CLEAN+=h2os.iso
 h2os.iso: isodir
-	grub2-mkrescue -o $@ isodir
+	grub-mkrescue -o $@ isodir
 
 CLEAN+=isodir
 .PHONY: isodir
 isodir: scripts/grub.cfg
-	mkdir -p isodir/boot/grub
-	cp scripts/grub.cfg
+	mkdir -p $@/boot/grub
+	cp scripts/grub.cfg $@/boot/grub
+	cp vmlinux $@/boot
 
 
 QEMUFLAGS+=-m 256 $(if $(DEBUG),-S -s,)
@@ -44,7 +45,7 @@ run: vmlinux
 
 .PHONY: runiso
 runiso: h2os.iso
-	$(QEMU) -cdrom $(QEMUPATHPREFIX)$< $(QEMUFLAGS)
+	$(QEMU) -cdrom $(QEMUPATHPREFIX)$< -boot d $(QEMUFLAGS)
 
 
 .PHONY: clean

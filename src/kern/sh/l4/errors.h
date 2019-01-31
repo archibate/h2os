@@ -9,4 +9,5 @@ enum L4_ErrorNumber
 	L4_ECapType,
 	L4_EObjType,
 	L4_ERetype,
+	L4_EWater,
 };

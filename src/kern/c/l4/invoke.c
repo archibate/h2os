@@ -7,7 +7,7 @@
 #include <ovtools.h>
 #include <lohitools.h>
 #include <assert.h>
-#include <l4/memory.h>
+#include <l4/a/mkvpage.h>
 #include <drv/console.h>
 #include <conio.h>
 #include <asm/clsti.h>
@@ -63,19 +63,6 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 				return -L4_EService;
 			}
 		}
-#if 0
-	case L4_SegmentCap:
-		{
-			if (res < 0)
-				return res;
-			mem_t *mem = (mem_t*)target->ptr;
-			switch (invo->service)
-			{
-			default:
-				return -L4_EService;
-			}
-		}
-#endif
 	case L4_IOPortCap:
 		{
 			assertSegmentValid(&target->seg);
@@ -177,6 +164,53 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 			};
 		}
 #endif // }}}
+	case L4_SegmentCap:
+		{
+			switch (invo->service)
+			{
+			case L4_Segment_Split:
+				{
+					word_t point = invo->offset;
+					if (point <= target->c_water)
+						return -L4_EWater;
+					// T: verify(dest)
+					cap_t *dest = invo->capDest;
+					assert(target->c_water <= target->c_limit);
+					target->c_limit = point;
+					memset(dest, 0, sizeof(cap_t));
+					dest->c_base = target->c_base + target->c_limit;
+					dest->c_limit = target->c_limit - point;
+					return 0;
+				}
+			case L4_Segment_AllocSlab:
+				{
+					cap_t *dest = invo->capDest;
+					word_t num = invo->capCount;
+					assert(target->c_water < target->c_limit);
+					word_t water = PageUp(target->c_base + target->c_water);
+					word_t end = PageDown(target->c_base + target->c_limit);
+					if (end < water)
+						return num;
+					dprintk("L4_Segment_AllocSlab: dest = %p", dest);
+					while (num > 0) {
+						if (water >= end)
+							break;
+						memset(dest, 0, sizeof(cap_t));
+						dest->c_type = L4_SlabCap;
+						dest->c_objptr = Arch_makeVirtPage(water);
+						assert(dest->c_objptr);
+						water += PageSize;
+						dest++;
+						num--;
+					}
+					assert(!num);
+					target->c_water = water - target->c_base;
+					return num;
+				}
+			default:
+				return -L4_EService;
+			}
+		}
 	case L4_SlabCap:
 		{
 			//assertSegmentValid(&target->seg);
@@ -275,7 +309,7 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 					assert(objSize < PageSize);
 					assert(PageOffset((word_t)target->c_objptr) == 0);
 					assert(target->c_water % objSize == 0);
-					dprintk("L4_Allocate: dest = %p", dest);
+					dprintk("L4_Slab_Allocate: dest = %p", dest);
 					while (num > 0) {
 						if (target->c_water >= PageSize)
 							break;

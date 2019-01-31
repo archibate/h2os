@@ -12,6 +12,7 @@ const char *__ntNameTableOfEnum_L4_ErrorNumber[] =
 	"L4_ECapType",
 	"L4_EObjType",
 	"L4_ERetype",
+	"L4_EWater",
 };
 
 
@@ -21,7 +22,6 @@ const char *__ntNameTableOfEnum_L4_InitCap[] =
 	"L4_InitCapConsole",
 	"L4_InitCapIOPort",
 	"L4_InitCapDebug",
-	"L4_InitCapTestSlab0",
 	"L4_InitCapSigma0",
 	"L4_InitCapDestSlot0",
 	"L4_InitCaps",
@@ -44,6 +44,8 @@ const char *__ntNameTableOfEnum_L4_ServiceType[] =
 {
 	"L4_Write",
 	"L4_Read",
+	"L4_Segment_Split",
+	"L4_Segment_AllocSlab",
 	"L4_Slab_Retype",
 	"L4_Slab_Allocate",
 	"L4_Debug_Halt",

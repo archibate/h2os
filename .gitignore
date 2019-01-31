@@ -62,7 +62,6 @@ dkms.conf
 *.cmake
 CMakeFiles/
 CMakeCache.txt
-build
 
 # Mac OS X Store Files
 .DS_Store

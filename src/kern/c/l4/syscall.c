@@ -26,13 +26,6 @@ void setup_mycaps(void)
 	{
 		.c_type = L4_DebugCap,
 	};
-	mycaps[L4_InitCapTestSlab0] = (cap_t)
-	{
-		.c_type = L4_SlabCap,
-		.c_retype = 0,
-		.c_objptr = (void*)KernSigma0Begin, // KernVirtBegin,
-		.c_water = 0,
-	};
 	mycaps[L4_InitCapSigma0] = (cap_t)
 	{
 		.c_type = L4_SegmentCap,

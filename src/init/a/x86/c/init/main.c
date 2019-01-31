@@ -8,11 +8,9 @@
 void init_main(void)
 {
 	l4Puts(L4_InitCapConsole, 0, "Hello, Console!\n");
-	l4Slab_Retype(L4_InitCapTestSlab0, L4_TestObjCap);
-	l4Slab_Allocate(L4_InitCapTestSlab0, 1);
-	l4Slab_Allocate(L4_InitCapTestSlab0, 1);
-	l4Slab_Allocate(L4_InitCapTestSlab0, 1);
-	l4Puts(L4_InitCapDestSlot0, 0, "Hello, CapDestSlot0!");
-	l4Debug_Puts("Hello, Debugger");
+	l4Segment_AllocSlab(L4_InitCapSigma0, 1);
+	l4Slab_Retype(L4_InitCapDestSlot0, L4_TestObjCap);
+	l4Slab_Allocate(L4_InitCapDestSlot0, 1);
+	l4Puts(L4_InitCapDestSlot0, 0, "Hello, TestObject!");
 	l4Debug_Halt();
 }
