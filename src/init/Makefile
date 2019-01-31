@@ -5,7 +5,7 @@ all: init.elf.strip
 
 SRCS+=$(shell find $(SRCPATH) | grep '\.\(c\|asm\)$$')
 OBJS=$(SRCS:%=%.o)
-LIBS=c l4
+LIBS=l4 c
 
 LDSCRIPT=a/$(ARCH)/init.ld
 

@@ -136,4 +136,3 @@
 #define ENOCAP	134	// No such capability
 #define EMMSG	135	// Too many messages
 #define ENOTCAP	136	// Capability required
-#define EROOTCAP	137	// Lookup in non-node Capability

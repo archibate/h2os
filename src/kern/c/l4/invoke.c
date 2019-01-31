@@ -7,18 +7,22 @@
 #include <ovtools.h>
 #include <lohitools.h>
 #include <assert.h>
-#include <l4/a/fpgmapwin.h>
+#include <l4/a/objmap.h>
 #include <l4/memory.h>
 #include <drv/console.h>
+#include <conio.h>
 #include <asm/clsti.h>
 #include <x86/io.h>
 #include <bittools.h>
+#include <roundtools.h>
+#include <mmu/page.h>
 #include <memory.h>
 
+#define assertSegmentValid(seg) assert(!ovadd((seg)->base, (seg)->limit))
 
 int verifySegment(segment_t const *seg, word_t offset, word_t length)
 {
-	assert(!ovadd(seg->base, seg->limit));
+	assertSegmentValid(seg);
 
 	if (offset >= seg->limit)
 		return -L4_ELimit;
@@ -30,9 +34,10 @@ int verifySegment(segment_t const *seg, word_t offset, word_t length)
 	return 0;
 }
 
-
+static size_t sysObjSizeOf(byte_t objType);
 int sysInvoke(cap_t *target, Invo_t *invo)
 {
+	//dprintk("sysInvoke: target = %p", target);
 	switch (target->c_type)
 	{
 	case L4_ConsoleCap:
@@ -46,19 +51,27 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 				return -L4_EService;
 			}
 		}
+	case L4_TestObjCap:
+		{
+			switch (invo->service)
+			{
+			case L4_Write:
+				cprintf("<TestObj at %#p>: [", target->c_objpptr);
+				con_write(invo->dataSend, invo->length);
+				cputs("]\n");
+				return 0;
+			default:
+				return -L4_EService;
+			}
+		}
 #if 0
 	case L4_SegmentCap:
 		{
-			int res = verifySegment(&target->seg, invo->offset, invo->length);
 			if (res < 0)
 				return res;
 			mem_t *mem = (mem_t*)target->ptr;
 			switch (invo->service)
 			{
-			case L4_Write:
-				return mwrite(mem, target->c_base + invo->offset, invo->dataSend, invo->length);
-			case L4_Read:
-				return mread(mem, target->c_base + invo->offset, invo->dataRecv, invo->length);
 			default:
 				return -L4_EService;
 			}
@@ -66,10 +79,19 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 #endif
 	case L4_IOPortCap:
 		{
-			int res = verifySegment(&target->seg, invo->offset, 0);
-			if (res < 0)
-				return res;
-			int i;
+			assertSegmentValid(&target->seg);
+
+			switch (invo->service)
+			{
+			case L4_Write:
+			case L4_Read:
+				{
+					int res = verifySegment(&target->seg, invo->offset, 0);
+					if (res)
+						return res;
+				}
+			}
+			word_t i;
 			switch (invo->service)
 			{
 			case L4_Write:
@@ -93,36 +115,170 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 				dprintk("System Halted by L4DEBUG");
 				clihlt();
 				return 0;
-			case L4_Debug_Puts:
-				dprintk("(L4DEBUG) %s", invo->dataSend);
+			case L4_Write:
+				dprintk("(L4DEBUG) %*s", invo->length, invo->dataSend);
 				return 0;
 			default:
 				return -L4_EService;
 			}
 		}
 #endif
-	case L4_FPageCap:
+#if 0
+	case L4_PageCap:
 		{
 			switch (invo->service)
 			{
-			case L4_Untyped_Retype:
+#if 0 // {{{ //～＼（≧▽≦）／～啦啦啦
+			case L4_Retype:
 				{
-					size_t sysObjSizeBitsOf(word_t objType);
-					void sysRetype(cap_t *dest, void *p, word_t objType, size_t objSize);
+					size_t sysRetypeSizeOf(word_t objType);
+					void sysRetypeInit(void *p, word_t objType, size_t objSize);
 					word_t num = invo->wordSend[0];
 					word_t objType = invo->wordSend[1];
-					bits_t objSizeBits = invo->wordSend[2];
-					objSizeBits = sysObjSizeBitsOf(objType, objSizeBits);
-					if (!objSizeBits)
+					word_t objSize = invo->wordSend[2];
+					if (objType != L4_SegmentCap)
+						objSize = sysRetypeSizeOf(objType);
+					if (!objSize)
 						return num;
+					// assert(gcd(objSize, PageSize) == 0);
 					while (num-- > 0) {
-						if (target->c_labUsed >= SizeOfBits(target->c_sizeBits))
-							break;
-						void *p = fpgmapwin(&target->fpage, target->c_labUsed, 1);
-						cap_t *dest = xxxx;
-						sysRetype(dest, p, objType, objSize);
-						target->c_labUsed += objSize;
+						word_t objPhys;
+						if (objType == L4_SegmentCap) {
+							if (target->c_water >= target->c_limit)
+								break;
+							objPhys = target->c_base + target->c_water;
+						} else {
+							objPhys = target->c_base + target->c_water;
+							objPhys = RoundUp(objSize, objPhys);
+							if (objPhys - target->c_base >= target->c_limit)
+								break;
+						}
+						dest->c_physptr = objPhys;
+						dest->c_type = objType;
+						if (objType != L4_SegmentCap) {
+							void *p = phymmap(objPhys, objSize, 1);
+							sysRetypeInit(p, objType, objSize);
+							phyunmap(p);
+						}
+						target->c_water += objSize;
 					}
+					return num;
+				}
+#endif // }}}
+			case L4_Retype:
+				{
+					if (target->c_pgRetype)
+						return -L4_ERetype;
+					byte_t retype = invo->wordSend[0]; 
+					target->c_pgRetype = retype;
+					return 0;
+				}
+			default:
+				return -L4_EService;
+			};
+		}
+#endif
+	case L4_SegmentCap:
+		{
+			assertSegmentValid(&target->seg);
+
+			switch (invo->service)
+			{
+#if 0 // {{{
+			case L4_Retype:
+				{
+					size_t sysRetypeSizeOf(word_t objType);
+					void sysRetypeInit(void *p, word_t objType, size_t objSize);
+					word_t num = invo->wordSend[0];
+					word_t objType = invo->wordSend[1];
+					word_t objSize = invo->wordSend[2];
+					if (objType != L4_SegmentCap)
+						objSize = sysRetypeSizeOf(objType);
+					if (!objSize)
+						return num;
+					// assert(gcd(objSize, PageSize) == 0);
+					while (num-- > 0) {
+						word_t objPhys;
+						if (objType == L4_SegmentCap) {
+							if (target->c_water >= target->c_limit)
+								break;
+							objPhys = target->c_base + target->c_water;
+						} else {
+							objPhys = target->c_base + target->c_water;
+							objPhys = RoundUp(objSize, objPhys);
+							if (objPhys - target->c_base >= target->c_limit)
+								break;
+						}
+						dest->c_physptr = objPhys;
+						dest->c_type = objType;
+						if (objType != L4_SegmentCap) {
+							void *p = phymmap(objPhys, objSize, 1);
+							sysRetypeInit(p, objType, objSize);
+							phyunmap(p);
+						}
+						target->c_water += objSize;
+					}
+					return num;
+				}
+#endif // }}}
+#if 0
+			case L4_Map:
+				{
+					cap_t *dest = xxx;
+					word_t i;
+					for (i = 0; i < target->c_limit; i++) {
+						word_t pfn = target->c_base + i;
+						dest->c_pgPfn = pfn;
+						dest->c_type = L4_PageCap;
+						dest->c_pgRetype = 0;
+						dest++;
+					}
+					return 0;
+				}
+#endif
+			case L4_Split:
+				{
+					word_t point = invo->offset;
+					if (point <= target->c_water)
+						return -L4_EWater;
+					// T: verify(dest)
+					cap_t *dest = invo->capDest;
+					assert(target->c_water <= target->c_limit);
+					target->c_limit = point;
+					memset(dest, 0, sizeof(cap_t));
+					dest->c_base = target->c_base + target->c_limit;
+					dest->c_limit = target->c_limit - point;
+					return 0;
+				}
+			case L4_Allocate:
+				{
+					word_t num = invo->wordSend[0]; 
+					byte_t objType = invo->offset;
+					size_t objSize = sysObjSizeOf(objType);
+					if (!objSize)
+						return num;
+					// T: verify(dest)
+					cap_t *dest = invo->capDest;
+					word_t capCount = invo->capCount;
+					target->c_water = RoundUp(objSize,
+							target->c_base + target->c_water) - target->c_base;
+					dprintk("L4_Allocate: dest = %p", dest);
+					while (num > 0) {
+						if (target->c_water >= target->c_limit)
+							break;
+						if (capCount-- <= 0)
+							break;
+						memset(dest, 0, sizeof(cap_t));
+						dest->c_type = objType;
+						word_t objPhys = target->c_base + target->c_water;
+						word_t objVirt = addObjPhysMap(objPhys);
+						dest->c_objptr = (void*)objVirt;
+
+						target->c_water += objSize;
+						dest++;
+						num--;
+					}
+					assert(!num);
 					return num;
 				}
 			default:
@@ -130,25 +286,18 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 			};
 		}
 	default:
-		return -L4_ECap;
+		dprintk("L4_ECapType: %d (%#x)", target->c_type, target->c_type);
+		return -L4_ECapType;
 	}
 }
 
-bits_t sysObjSizeBitsOf(word_t objType, word_t objSizeBits)
+size_t sysObjSizeOf(byte_t objType)
 {
 	switch (objType)
 	{
-	case L4_UntypedCap:
-		return objSizeBits;
+	case L4_TestObjCap:
+		return 16;
 	default:
 		return 0;
 	}
-}
-
-void sysRetype(cap_t *dest, void *p, word_t objType, size_t objSize)
-{
-	dest->c_ptr = p;
-	dest->c_type = objType;
-	if (objType != L4_UntypedCap)
-		memset(p, 0, objSize);
 }

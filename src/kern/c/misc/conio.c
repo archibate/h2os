@@ -1,6 +1,6 @@
 #include <conio.h>
-#include <drv/console.h>
 #include <stdio.h>
+#include <drv/console.h>
 
 int cputs(const char *s)
 {

@@ -16,6 +16,8 @@ typedef struct Invo
 		word_t *wordRecv;
 		word_t const *wordSend;
 	};
+	cap_t *capDest;
+	word_t capCount;
 }
 Invo_t;
 
