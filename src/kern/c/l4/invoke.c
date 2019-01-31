@@ -7,7 +7,6 @@
 #include <ovtools.h>
 #include <lohitools.h>
 #include <assert.h>
-#include <l4/a/objmap.h>
 #include <l4/memory.h>
 #include <drv/console.h>
 #include <conio.h>
@@ -56,7 +55,7 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 			switch (invo->service)
 			{
 			case L4_Write:
-				cprintf("<TestObj at %#p>: [", target->c_objpptr);
+				cprintf("<TestObj at %#p>: [", target->c_objptr);
 				con_write(invo->dataSend, invo->length);
 				cputs("]\n");
 				return 0;
@@ -123,12 +122,12 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 			}
 		}
 #endif
-#if 0
+#if 0 // {{{
 	case L4_PageCap:
 		{
 			switch (invo->service)
 			{
-#if 0 // {{{ //～＼（≧▽≦）／～啦啦啦
+#if 0 //～＼（≧▽≦）／～啦啦啦
 			case L4_Retype:
 				{
 					size_t sysRetypeSizeOf(word_t objType);
@@ -164,7 +163,7 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 					}
 					return num;
 				}
-#endif // }}}
+#endif
 			case L4_Retype:
 				{
 					if (target->c_pgRetype)
@@ -177,10 +176,10 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 				return -L4_EService;
 			};
 		}
-#endif
-	case L4_SegmentCap:
+#endif // }}}
+	case L4_SlabCap:
 		{
-			assertSegmentValid(&target->seg);
+			//assertSegmentValid(&target->seg);
 
 			switch (invo->service)
 			{
@@ -220,7 +219,7 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 					}
 					return num;
 				}
-#endif // }}}
+#endif
 #if 0
 			case L4_Map:
 				{
@@ -235,7 +234,6 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 					}
 					return 0;
 				}
-#endif
 			case L4_Split:
 				{
 					word_t point = invo->offset;
@@ -250,30 +248,40 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 					dest->c_limit = target->c_limit - point;
 					return 0;
 				}
-			case L4_Allocate:
+#endif // }}}
+			case L4_Slab_Retype:
 				{
-					word_t num = invo->wordSend[0]; 
+					if (target->c_retype)
+						return -L4_ERetype;
 					byte_t objType = invo->offset;
 					size_t objSize = sysObjSizeOf(objType);
 					if (!objSize)
-						return num;
+						return -L4_EObjType;
+					assert(objSize < PageSize);
+					target->c_retype = objType;
+					return 0;
+				}
+			case L4_Slab_Allocate:
+				{
 					// T: verify(dest)
 					cap_t *dest = invo->capDest;
-					word_t capCount = invo->capCount;
-					target->c_water = RoundUp(objSize,
-							target->c_base + target->c_water) - target->c_base;
+					word_t num = invo->capCount;
+					byte_t objType = target->c_retype;
+					if (!objType)
+						return -L4_ERetype;
+					size_t objSize = sysObjSizeOf(objType);
+					if (!objSize)
+						return num;
+					assert(objSize < PageSize);
+					assert(PageOffset((word_t)target->c_objptr) == 0);
+					assert(target->c_water % objSize == 0);
 					dprintk("L4_Allocate: dest = %p", dest);
 					while (num > 0) {
-						if (target->c_water >= target->c_limit)
-							break;
-						if (capCount-- <= 0)
+						if (target->c_water >= PageSize)
 							break;
 						memset(dest, 0, sizeof(cap_t));
 						dest->c_type = objType;
-						word_t objPhys = target->c_base + target->c_water;
-						word_t objVirt = addObjPhysMap(objPhys);
-						dest->c_objptr = (void*)objVirt;
-
+						dest->c_objptr = target->c_objptr + target->c_water;
 						target->c_water += objSize;
 						dest++;
 						num--;

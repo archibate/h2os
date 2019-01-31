@@ -3,13 +3,12 @@
 #include <l4/services.h>
 #include <stddef.h>
 
-int l4Split(l4CPtr_t cptr, l4Word_t point)
+int l4Slab_Retype(l4CPtr_t cptr, l4Byte_t retype)
 {
-	return l4Send(cptr, L4_Split, point, 0, 0);
+	return l4Send(cptr, L4_Slab_Retype, retype, 0, 0);
 }
 
-int l4Allocate(l4CPtr_t cptr, l4Word_t num, l4Word_t retype)
+int l4Slab_Allocate(l4CPtr_t cptr, l4Word_t num)
 {
-	l4Word_t data[] = {num};
-	return l4Send(cptr, L4_Allocate, retype, data, array_sizeof(data));
+	return l4Send(cptr, L4_Slab_Allocate, 0, 0, 0); // T: capCount=num (extraCaps)
 }

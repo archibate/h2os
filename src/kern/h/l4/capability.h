@@ -6,13 +6,10 @@
 typedef struct capability
 {
 	byte_t c_type;
-	union {
-		struct {
-			segment_t seg;
-			word_t c_water;
-		};
-		void *c_objptr;
-	}
+	byte_t c_retype;
+	half_t c_water;
+	segment_t seg;
+	void *c_objptr;
 }
 cap_t;
 #define c_base		seg.base

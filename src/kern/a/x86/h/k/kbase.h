@@ -9,5 +9,7 @@
 #define KernPoolBegin	0x404000
 #define KernPoolEnd	0x500000
 #define KernSigma0Begin 0x500000
-#define KernSigma0End   0xff4000
-#define KernPhysEnd	0x1000000
+#define KernSigma0End   0xf00000
+#define KernPhysEnd	0xf00000
+#define KernVirtBegin   0xf00000
+#define KernVirtEnd     0x1000000
