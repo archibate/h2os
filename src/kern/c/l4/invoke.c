@@ -39,7 +39,7 @@ int verifySegment(segment_t const *seg, word_t offset, word_t length)
 static size_t sysObjSizeOf(byte_t objType);
 int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 {
-#define L4_ExtraFragSize ((L4_ShortMsgWords - L4_RWFragArg_DataBegin) * sizeof(word_t))
+#define L4_RWFragSize ((L4_ShortMsgWords - L4_RWFragArg_DataBegin) * sizeof(word_t))
 #define L4_ShortMsgBytes (L4_ShortMsgWords * sizeof(word_t))
 #define getword(nr) (((nr) < L4_ShortMsgWords) ? ((word_t*)shortMsg)[(nr)] : ((word_t*)extraMsg)[(nr) - L4_ShortMsgWords])
 #define getbyte8(i) (((i) < L4_ShortMsgBytes) ? ((byte_t*)shortMsg)[(i)] : ((byte_t*)extraMsg)[(i) - L4_ShortMsgBytes])
@@ -80,9 +80,9 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				//dprintk("L4_BufferWrite [%s] at %d", shortMsg + L4_RWFragArg_DataBegin, target->c_water);
 				memcpy(target->c_objptr + target->c_water,
 						shortMsg + L4_RWFragArg_DataBegin,
-						L4_ExtraFragSize);
-				//dprintk("extraMsg=[%s]", target->c_objptr);
-				target->c_water += L4_ExtraFragSize;
+						L4_RWFragSize);
+				//dprintk("buffercontent=[%s]", target->c_objptr);
+				target->c_water += L4_RWFragSize;
 				return 0;
 			default:
 				return -L4_EService;
@@ -210,6 +210,19 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			};
 		}
 #endif // }}}
+#if 0
+	case L4_CSpaceCap:
+		{
+			switch (service)
+			{
+			case L4_CSpace_SetDestSlot:
+				((cap_t*)target->c_objptr)->c_water = getword(L4_CSpace_SetDestSlot_Arg_SlotCPtr);
+				return 0;
+			default:
+				return -L4_EService;
+			}
+		}
+#endif
 	case L4_TCBCap:
 		{
 			switch (service)
@@ -245,6 +258,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 	case L4_SegmentCap:
 		{
 			assertSegmentValid(&target->seg);
+			assert(target->c_water <= target->c_limit);
 
 			switch (service)
 			{
@@ -255,7 +269,6 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 						return -L4_EWater;
 					// T: verify(dest)
 					cap_t *dest = capDest;
-					assert(target->c_water <= target->c_limit);
 					target->c_limit = point;
 					memset(dest, 0, sizeof(cap_t));
 					dest->c_base = target->c_base + target->c_limit;
@@ -267,7 +280,6 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					cap_t *dest = capDest;
 					//assert(target != dest);
 					word_t num = getword(L4_Segment_AllocSlab_Arg_Count);
-					assert(target->c_water < target->c_limit);
 					word_t water = PageUp(target->c_base + target->c_water);
 					word_t end = PageDown(target->c_base + target->c_limit);
 					if (end < water)

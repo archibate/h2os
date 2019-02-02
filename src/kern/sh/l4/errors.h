@@ -7,6 +7,7 @@ enum L4_ErrorNumber
 	L4_ELength,
 	L4_EOffset,
 	L4_ECapType,
+	L4_ECapLookup,
 	L4_EObjType,
 	L4_ERetype,
 	L4_EWater,

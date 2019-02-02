@@ -8,5 +8,6 @@ typedef struct TCB
 {
 	word_t extraBuf[L4_MaxExtraWords];
 	word_t context[L4_ContextWords];
+	cap_t cspace;
 }
 tcb_t;

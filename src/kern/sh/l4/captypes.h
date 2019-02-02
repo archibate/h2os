@@ -10,6 +10,7 @@ enum L4_CapType
 	L4_SlabCap,
 	L4_TCBCap,
 	L4_BufferCap,
+	L4_CSpaceCap,
 	L4_SegmentCap,
 	L4_TestObjCap,
 	L4_CapTypesNR,

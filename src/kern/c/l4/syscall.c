@@ -3,42 +3,50 @@
 #include <l4/invoke.h>
 #include <k/printk.h>
 #include <k/panic.h>
+#include <assert.h>
 
 #include <l4/consts.h>
-
+#include <l4/errors.h>
 #include <l4/thread.h>
 tcb_t tcb0, *currTcb = &tcb0;
 #include <k/kbase.h>
 #include <l4/captypes.h>
 #include <l4/inicaps.h>
-cap_t mycaps[L4_InitCaps];
 void setup_mycaps(void)
 {
-	mycaps[L4_InitCapNull] = (cap_t)
+	static cap_t cspace[L4_InitCaps];
+	tcb0.cspace = (cap_t)
+	{
+		.c_type = L4_CSpaceCap,
+		.c_objptr = cspace,
+		.c_limit = L4_InitCaps,
+		.c_water = L4_InitCapDestSlot0,
+	};
+	cspace[L4_InitCapNull] = (cap_t)
 	{
 		.c_type = L4_NullCap,
 	};
-	mycaps[L4_InitCapConsole] = (cap_t)
+	cspace[L4_InitCapConsole] = (cap_t)
 	{
 		.c_type = L4_ConsoleCap,
 	};
-	mycaps[L4_InitCapIOPort] = (cap_t)
+	cspace[L4_InitCapIOPort] = (cap_t)
 	{
 		.c_type = L4_IOPortCap,
 		.c_base = 0x0,
 		.c_limit = 0x1000,
 	};
-	mycaps[L4_InitCapDebug] = (cap_t)
+	cspace[L4_InitCapDebug] = (cap_t)
 	{
 		.c_type = L4_DebugCap,
 	};
-	mycaps[L4_InitCapTCB] = (cap_t)
+	cspace[L4_InitCapTCB] = (cap_t)
 	{
 		.c_type = L4_TCBCap,
 		.c_objptr = &tcb0,
 		.c_water = 0,
 	};
-	mycaps[L4_InitCapExtra] = (cap_t)
+	cspace[L4_InitCapExtra] = (cap_t)
 	{
 		.c_type = L4_BufferCap,
 		.c_objptr = &tcb0.extraBuf,
@@ -46,23 +54,42 @@ void setup_mycaps(void)
 		.c_limit = L4_MaxExtraWords,
 		.c_water = 0,
 	};
-	mycaps[L4_InitCapSigma0] = (cap_t)
+	cspace[L4_InitCapSigma0] = (cap_t)
 	{
 		.c_type = L4_SegmentCap,
 		.c_base = KernSigma0Begin,
 		.c_limit = KernSigma0End - KernSigma0Begin,
 		.c_water = 0,
 	};
-	mycaps[L4_InitCapDestSlot0] = (cap_t)
+	cspace[L4_InitCapDestSlot0] = (cap_t)
 	{
 		.c_type = L4_NullCap,
 	};
 }
 
+cap_t *csLookup(cap_t *cs, cptr_t cptr)
+{
+	if (cptr > cs->c_limit)
+		return 0;
+	return &((cap_t*)cs->c_objptr)[cptr];
+}
+
+cap_t *csGetDestSlot(cap_t *cs)
+{
+	assert(cs->c_water < cs->c_limit);
+	return &((cap_t*)cs->c_objptr)[cs->c_water];
+}
+
 int _FASTCALL systemCall(cptr_t cptr, word_t *shortMsg)
 {
-	cap_t *cap = &mycaps[cptr];
-	cap_t *capDest = &mycaps[L4_InitCapDestSlot0];
+	assert(currTcb->cspace.c_type == L4_CSpaceCap);
+	cap_t *cap = csLookup(&currTcb->cspace, cptr);
+	cap_t *capDest = csGetDestSlot(&currTcb->cspace);
+	if (!cap) {
+		panic("syscall: fail to lookup cap %#x", cptr);
+		return -L4_ECapLookup;
+	}
+	assert(capDest);
 
 	extern const char *__ntNameTableOfEnum_L4_CapType[];
 	extern const char *__ntNameTableOfEnum_L4_InitCapPtr[];
