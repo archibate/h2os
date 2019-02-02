@@ -36,6 +36,10 @@ int verifySegment(segment_t const *seg, word_t offset, word_t length)
 	return 0;
 }
 
+#define prefombr(obj, p) p
+#define pnewslab(p) p
+#define pslabnew(p) p
+
 static size_t sysObjSizeOf(byte_t objType);
 int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 {
@@ -215,7 +219,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			switch (service)
 			{
 			case L4_CSpace_SetDestSlot:
-				((cap_t*)target->c_objptr)->c_water = getword(L4_CSpace_SetDestSlot_Arg_SlotCPtr);
+				target->c_water = getword(L4_CSpace_SetDestSlot_Arg_SlotCPtr);
 				return 0;
 			default:
 				return -L4_EService;
@@ -226,21 +230,10 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			tcb_t *tcb = target->c_objptr;
 			switch (service)
 			{
-#if 0
-			case L4_TCB_Configure:
-				{
-					cptr_t cptr = getword(L4_TCB_Configure_ExtraCPtr);
-					cap_t *cap = cget(cptr);
-					if (!cap || cap->c_type != L4_ExtraCap)
-						return -L4_ECapType;
-					tcb->extra = cap->c_objptr;
-					return 0;
-				}
-#endif
 			case L4_TCB_GetExtraBuffer:
 				memset(capDest, 0, sizeof(cap_t));
 				capDest->c_type = L4_BufferCap;
-				capDest->c_objptr = &tcb->extraBuf;
+				capDest->c_objptr = prefombr(tcb, &tcb->extraBuf);
 				capDest->c_limit = sizeof(tcb->extraBuf);
 				return 0;
 			case L4_TCB_SetContext:
@@ -248,6 +241,9 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					word_t value = getword(L4_TCB_SetContext_Arg_ContextBegin + i);
 					tcb->context[i] = value;
 				}
+				return 0;
+			case L4_TCB_SetPriority:
+				tcb->priority = getword(L4_TCB_SetPriority_Arg_Priority);
 				return 0;
 			default:
 				return -L4_EService;
@@ -287,7 +283,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 							break;
 						memset(dest, 0, sizeof(cap_t));
 						dest->c_type = L4_SlabCap;
-						dest->c_objptr = Arch_makeVirtPage(water);
+						dest->c_objptr = pnewslab(Arch_makeVirtPage(water));
 						dprintk("L4_Segment_AllocSlab: virtPage = %p", dest->c_objptr);
 						assert(dest->c_objptr);
 						water += PageSize;
@@ -406,7 +402,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 						target->c_water += objSize;
 						memset(dest, 0, sizeof(cap_t));
 						dest->c_type = objType;
-						dest->c_objptr = objVirtPtr;
+						dest->c_objptr = pslabnew(objVirtPtr);
 						dprintk("L4_Slab_Allocate: objVirtPtr = %p", dest->c_objptr);
 						dest++;
 						num--;

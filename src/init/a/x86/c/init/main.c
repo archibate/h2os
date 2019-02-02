@@ -17,7 +17,7 @@ void init_main(void)
 	l4Slab_Allocate(Libl4_CapSlab0, 1);
 	l4ThreadContext_t context;
 	context[L4_Context_EDI] = 0xcafebabe;
-	l4TCB_SetContext(L4_InitCapDestSlot0, &context);
+	l4TCB_SetContext(Libl4_CapTCB0, &context);
 	l4Debug_Puts("Hello, L4Debug!");
 	l4Debug_Halt();
 }

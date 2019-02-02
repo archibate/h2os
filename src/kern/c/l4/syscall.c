@@ -14,12 +14,12 @@ tcb_t tcb0, *currTcb = &tcb0;
 #include <l4/inicaps.h>
 void setup_mycaps(void)
 {
-	static cap_t cspace[L4_InitCaps];
+	static cap_t cspace[L4_InitCapMax];
 	tcb0.cspace = (cap_t)
 	{
 		.c_type = L4_CSpaceCap,
 		.c_objptr = cspace,
-		.c_limit = L4_InitCaps,
+		.c_limit = L4_InitCapMax,
 		.c_water = L4_InitCapDestSlot0,
 	};
 	cspace[L4_InitCapCSpace] = (cap_t)
@@ -87,21 +87,25 @@ cap_t *csGetDestSlot(cap_t *cs)
 
 cap_t *uncref(cap_t *cap)
 {
+	if (!cap)
+		return cap;
 	if (cap->c_type == L4_CRefCap)
 		cap = cap->c_objptr;
+	assert(cap->c_type != L4_CRefCap);
 	return cap;
 }
 
 int _FASTCALL systemCall(cptr_t cptr, word_t *shortMsg)
 {
-	assert(currTcb->cspace.c_type == L4_CSpaceCap);
-	cap_t *cap = uncref(csLookup(&currTcb->cspace, cptr));
-	cap_t *capDest = uncref(csGetDestSlot(&currTcb->cspace));
+	cap_t *cspace = uncref(&currTcb->cspace);
+	assert(cspace->c_type == L4_CSpaceCap);
+	cap_t *cap = uncref(csLookup(cspace, cptr));
+	cap_t *capDest = uncref(csGetDestSlot(cspace));
+	assert(capDest);
 	if (!cap) {
 		panic("syscall: fail to lookup cap %#x", cptr);
 		return -L4_ECapLookup;
 	}
-	assert(capDest);
 
 	extern const char *__ntNameTableOfEnum_L4_CapType[];
 	//extern const char *__ntNameTableOfEnum_L4_InitCapPtr[];
@@ -111,7 +115,7 @@ int _FASTCALL systemCall(cptr_t cptr, word_t *shortMsg)
 			3+__ntNameTableOfEnum_L4_CapType[cap->c_type], cap->c_retype,
 			cap->c_objptr, cap->c_base, cap->c_limit, cap->c_water,
 			3+__ntNameTableOfEnum_L4_ServiceNumber[shortMsg[0]],
-			shortMsg[1], shortMsg+2, shortMsg[2]&0xff?currTcb->extraBuf:(void*)"");
+			shortMsg[1],shortMsg+2,shortMsg[2]&0xff?currTcb->extraBuf:(void*)"");
 	int res = sysInvoke(cap, capDest, shortMsg, currTcb->extraBuf);
 
 	extern const char *__ntNameTableOfEnum_L4_ErrorNumber[];
