@@ -13,13 +13,12 @@ sysenter_entry:
 	mov edx, ss
 	mov ds, edx
 	mov es, edx
-	; N: keep sync with libl4/invoke.h & l4/syscall.c
-	mov [invo_service], eax
-	mov [invo_offset], esi
-	mov [invo_length], edi
-	mov [invo_dataptr], ebp
-	mov edx, invo
-	mov ecx, ebx
+	mov [ShortMsg_EBX], ebx
+	mov [ShortMsg_EDI], edi
+	mov [ShortMsg_ESI], esi
+	mov [ShortMsg_EBP], ebp
+	mov ecx, eax
+	mov edx, ShortMsg
 	call systemCall
 	pop es
 	pop ds
@@ -28,13 +27,13 @@ sysenter_entry:
 	sysexit
 
 section .bss
-invo:
-	; N: keep sync with l4/invoke.h
-invo_service:
+ShortMsg:
+	; N: keep sync with l4/asm/shortmsg.h
+ShortMsg_EBX:
 	resd 1
-invo_offset:
+ShortMsg_EDI:
 	resd 1
-invo_length:
+ShortMsg_ESI:
 	resd 1
-invo_dataptr:
+ShortMsg_EBP:
 	resd 1

@@ -3,7 +3,7 @@ include tools/general.mak
 .PHONY: all
 all: libc.a
 
-SRCS+=$(shell find c | grep '\.c$$')
+SRCS+=$(shell find $(SRCPATH) -regex '.*\.\(c\|asm\)')
 OBJS=$(SRCS:%=%.o)
 
 CLEAN+=libc.a $(OBJS)

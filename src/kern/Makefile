@@ -1,10 +1,10 @@
-DEFINES+=_KERNEL=1 CONFIG_DEBUG_LOG=1 CONFIG_DEBUG_OBJECT=1
+DEFINES+=_KERNEL=1 CONFIG_DEBUG_LOG=1 CONFIG_DEBUG_OBJECT=1 CONFIG_CONSOLE_CLEAR=1
 include tools/general.mak
 
 .PHONY: all
 all: kernel.elf.strip
 
-SRCS+=$(shell find $(SRCPATH) | grep '\.\(c\|asm\)$$') sc/nametab.c
+SRCS+=$(shell find $(SRCPATH) -regex '.*\.\(c\|asm\)') sc/nametab.c
 OBJS=$(SRCS:%=%.o)
 LIBS=c
 

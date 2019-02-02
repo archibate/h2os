@@ -8,7 +8,7 @@ FUNCTIONS+=no-common no-exceptions no-non-call-exceptions freestanding no-builti
 ifndef MINGW
 WARNINGS+=error all no-unused-function error=implicit-function-declaration no-main \
           no-format no-error=unused-variable no-error=unused-but-set-variable \
-          error=incompatible-pointer-types error=int-conversion
+          error=incompatible-pointer-types error=int-conversion no-enum-compare
 FUNCTIONS+=no-stack-protector
 DBGFLAGS+=stabs+ gdb
 endif

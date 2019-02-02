@@ -1,14 +1,17 @@
+#include <k/panic.h>
 #include <k/printk.h>
 #include <l4/errors.h>
 #include <l4/invoke.h>
 #include <l4/captypes.h>
 #include <l4/services.h>
+#include <l4/arguments.h>
 #include <l4/capability.h>
+#include <l4/asm/shortmsg.h>
 #include <ovtools.h>
 #include <lohitools.h>
 #include <assert.h>
 #include <l4/a/mkvpage.h>
-#include <drv/console.h>
+#include <l4/thread.h>
 #include <conio.h>
 #include <asm/clsti.h>
 #include <x86/io.h>
@@ -34,59 +37,97 @@ int verifySegment(segment_t const *seg, word_t offset, word_t length)
 }
 
 static size_t sysObjSizeOf(byte_t objType);
-int sysInvoke(cap_t *target, Invo_t *invo)
+int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 {
-	//dprintk("sysInvoke: target = %p", target);
+#define L4_ExtraFragSize ((L4_ShortMsgWords - L4_RWFragArg_DataBegin) * sizeof(word_t))
+#define L4_ShortMsgBytes (L4_ShortMsgWords * sizeof(word_t))
+#define getword(nr) (((nr) < L4_ShortMsgWords) ? ((word_t*)shortMsg)[(nr)] : ((word_t*)extraMsg)[(nr) - L4_ShortMsgWords])
+#define getbyte8(i) (((i) < L4_ShortMsgBytes) ? ((byte_t*)shortMsg)[(i)] : ((byte_t*)extraMsg)[(i) - L4_ShortMsgBytes])
+#define getbyte(nr, i) getbyte8((nr) * sizeof(word_t) + (i))
+
+	word_t service = getword(L4_Arg_Service);
+
+	//dprintk("target=%p, ctype=%d, service=%d", target, target->c_type, service);
+	//dprintk("shortMsg+1=[%8s]", shortMsg + 1);
+
+	int i;
+
 	switch (target->c_type)
 	{
 	case L4_ConsoleCap:
 		{
-			switch (invo->service)
+			switch (service)
 			{
 			case L4_Write:
-				con_write(invo->dataSend, invo->length);
+				for (i = 0; i < getword(L4_RWArg_Length); i++) {
+					char ch = getbyte(L4_RWArg_DataBegin, i);
+					cputchar(ch);
+				}
 				return 0;
 			default:
 				return -L4_EService;
 			}
 		}
+	case L4_ExtraCap:
+		{
+			switch (service)
+			{
+			case L4_RewindWriteFrag:
+				//dprintk("L4_ExtraRewind");
+			case L4_WriteFrag:
+				if (service == L4_RewindWriteFrag)
+					target->c_water = 0;
+				//dprintk("L4_ExtraWrite [%s] at %d", shortMsg + L4_RWFragArg_DataBegin, target->c_water);
+				memcpy(target->c_objptr + target->c_water,
+						shortMsg + L4_RWFragArg_DataBegin,
+						L4_ExtraFragSize);
+				//dprintk("extraMsg=[%s]", target->c_objptr);
+				target->c_water += L4_ExtraFragSize;
+				return 0;
+			default:
+				return -L4_EService;
+			}
+		}
+#if 0 // {{{
 	case L4_TestObjCap:
 		{
-			switch (invo->service)
+			switch (service)
 			{
 			case L4_Write:
 				cprintf("<TestObj at %#p>: [", target->c_objptr);
-				con_write(invo->dataSend, invo->length);
+				for (i = 0; i < getword(L4_RWArg_Length); i++) {
+					char ch = getbyte(L4_RWArg_DataBegin, i);
+					cputchar(ch);
+				}
 				cputs("]\n");
 				return 0;
 			default:
 				return -L4_EService;
 			}
 		}
+#endif // }}}
 	case L4_IOPortCap:
 		{
 			assertSegmentValid(&target->seg);
 
-			switch (invo->service)
+			switch (service)
 			{
-			case L4_Write:
-			case L4_Read:
+			case L4_PWrite:
+			case L4_PRead:
 				{
-					int res = verifySegment(&target->seg, invo->offset, 0);
+					int res = verifySegment(&target->seg, getword(L4_RWArg_Length), 0);
 					if (res)
 						return res;
 				}
 			}
-			word_t i;
-			switch (invo->service)
+			switch (service)
 			{
-			case L4_Write:
-				for (i = 0; i < invo->length; i++)
-					outb(target->c_base + invo->offset, invo->byteSend[i]);
-				return 0;
-			case L4_Read:
-				for (i = 0; i < invo->length; i++)
-					invo->byteRecv[i] = inb(target->c_base + invo->offset);
+			case L4_PWrite:
+				for (i = 0; i < getword(L4_PRWArg_Length); i++) {
+					byte_t data = getbyte(L4_PRWArg_DataBegin, i);
+					word_t port = target->c_base + getword(L4_PRWArg_Offset);
+					outb(port, data);
+				}
 				return 0;
 			default:
 				return -L4_EService;
@@ -95,14 +136,19 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 #ifdef CONFIG_DEBUG_OBJECT
 	case L4_DebugCap:
 		{
-			switch (invo->service)
+			switch (service)
 			{
 			case L4_Debug_Halt:
-				dprintk("System Halted by L4DEBUG");
+				printk("System Halted by L4DEBUG");
 				clihlt();
 				return 0;
 			case L4_Write:
-				dprintk("(L4DEBUG) %*s", invo->length, invo->dataSend);
+				cputs("(L4DEBUG) ");
+				for (i = 0; i < getword(L4_RWArg_Length); i++) {
+					char ch = getbyte(L4_RWArg_DataBegin, i);
+					cputchar(ch);
+				}
+				cputs("\n");
 				return 0;
 			default:
 				return -L4_EService;
@@ -112,7 +158,7 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 #if 0 // {{{
 	case L4_PageCap:
 		{
-			switch (invo->service)
+			switch (service)
 			{
 #if 0 //～＼（≧▽≦）／～啦啦啦
 			case L4_Retype:
@@ -164,17 +210,36 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 			};
 		}
 #endif // }}}
+	case L4_TCBCap:
+		{
+			switch (service)
+			{
+			case L4_TCB_SetContext:
+				{
+					tcb_t *tcb = target->c_objptr;
+					for (i = 0; i < L4_ContextWords; i++) {
+						word_t value = getword(L4_TCB_SetContext_Arg_ContextBegin + i);
+						tcb->context[i] = value;
+					}
+					return 0;
+				}
+			default:
+				return -L4_EService;
+			}
+		}
 	case L4_SegmentCap:
 		{
-			switch (invo->service)
+			assertSegmentValid(&target->seg);
+
+			switch (service)
 			{
 			case L4_Segment_Split:
 				{
-					word_t point = invo->offset;
+					word_t point = getword(L4_Segment_Split_Arg_Point);
 					if (point <= target->c_water)
 						return -L4_EWater;
 					// T: verify(dest)
-					cap_t *dest = invo->capDest;
+					cap_t *dest = capDest;
 					assert(target->c_water <= target->c_limit);
 					target->c_limit = point;
 					memset(dest, 0, sizeof(cap_t));
@@ -184,9 +249,9 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 				}
 			case L4_Segment_AllocSlab:
 				{
-					cap_t *dest = invo->capDest;
+					cap_t *dest = capDest;
 					//assert(target != dest);
-					word_t num = invo->capCount;
+					word_t num = getword(L4_Segment_AllocSlab_Arg_Count);
 					assert(target->c_water < target->c_limit);
 					word_t water = PageUp(target->c_base + target->c_water);
 					word_t end = PageDown(target->c_base + target->c_limit);
@@ -214,9 +279,7 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 		}
 	case L4_SlabCap:
 		{
-			//assertSegmentValid(&target->seg);
-
-			switch (invo->service)
+			switch (service)
 			{
 #if 0 // {{{
 			case L4_Retype:
@@ -288,7 +351,7 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 				{
 					if (target->c_retype)
 						return -L4_ERetype;
-					byte_t objType = invo->offset;
+					byte_t objType = getword(L4_Slab_Retype_Arg_ObjType);
 					size_t objSize = sysObjSizeOf(objType);
 					if (!objSize)
 						return -L4_EObjType;
@@ -298,13 +361,13 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 				}
 			case L4_Slab_Allocate:
 				{
-					// T: verify(dest)
-					cap_t *dest = invo->capDest;
-					//assert(target != dest);
-					word_t num = invo->capCount;
-					byte_t objType = target->c_retype;
-					if (!objType)
+					if (!target->c_retype)
 						return -L4_ERetype;
+					// T: verify(dest)
+					cap_t *dest = capDest;
+					//assert(target != dest);
+					word_t num = getword(L4_Slab_Allocate_Arg_Count);
+					byte_t objType = target->c_retype;
 					size_t objSize = sysObjSizeOf(objType);
 					if (!objSize)
 						return num;
@@ -331,7 +394,7 @@ int sysInvoke(cap_t *target, Invo_t *invo)
 			};
 		}
 	default:
-		dprintk("L4_ECapType: %d (%#x)", target->c_type, target->c_type);
+		panic("L4_ECapType: %d (%#x)", target->c_type, target->c_type);
 		return -L4_ECapType;
 	}
 }
@@ -340,8 +403,8 @@ size_t sysObjSizeOf(byte_t objType)
 {
 	switch (objType)
 	{
-	case L4_TestObjCap:
-		return 16;
+	case L4_TCBCap:
+		return sizeof(tcb_t);
 	default:
 		return 0;
 	}

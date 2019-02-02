@@ -58,6 +58,9 @@ void con_init(void)
 	cx = cy = 0;
 	oldcx = oldcy = 0;
 	con_enter();
+#ifdef CONFIG_CONSOLE_CLEAR
+	con_clear();
+#endif
 }
 
 void con_setcur(int x, int y)

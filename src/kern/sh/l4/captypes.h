@@ -8,6 +8,8 @@ enum L4_CapType
 	L4_IOPortCap,
 	L4_DebugCap,
 	L4_SlabCap,
+	L4_TCBCap,
+	L4_ExtraCap,
 	L4_SegmentCap,
 	L4_TestObjCap,
 	L4_CapTypesNR,

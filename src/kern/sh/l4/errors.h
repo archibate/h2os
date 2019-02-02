@@ -10,4 +10,5 @@ enum L4_ErrorNumber
 	L4_EObjType,
 	L4_ERetype,
 	L4_EWater,
+	L4_ErrorMax,
 };

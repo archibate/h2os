@@ -3,7 +3,7 @@
 /* N: keep sync with isr/iframe.asm */
 enum IFrameIndex {
 /* PUSHADs: */
-	IFrame_EDI = 0,
+	IFrame_EDI,
 	IFrame_ESI,
 	IFrame_EBP,
 	IFrame_OldESP,
@@ -29,7 +29,7 @@ enum IFrameIndex {
 	IFrame_SS,
 /* the total length: */
 	IFrameWords,
-/* some easy to use shortcuts: */
+/* some arch-independent shortcuts: */
 	IFrame_PC = IFrame_EIP,
 	IFrame_SP = IFrame_ESP,
 };

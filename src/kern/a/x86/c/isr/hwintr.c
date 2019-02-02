@@ -7,7 +7,7 @@
 
 void hwirq(uint irq);
 void hwsysintr(void);
-void hwpgfault(ulong vaddr, uint errcd);
+//void hwpgfault(ulong vaddr, uint errcd);
 
 void hwintr(ulong *iframe)
 {
@@ -22,16 +22,13 @@ void hwintr(ulong *iframe)
 		return;
 	} else switch (nr) {
 	case ExceptionPageFault:
-		hwpgfault(getcr3(), iframe[IFrame_ErrorCode]);
+		panic("#PF from %#04x:%p at %#p (%d)",
+				iframe[IFrame_CS], iframe[IFrame_EIP],
+				getcr3(), iframe[IFrame_ErrorCode]);
 		return;
 	}
 
 	panic("Undefined Interrupt Number %d (%#x)", nr, nr);
-}
-
-void hwpgfault(ulong vaddr, uint errcd)
-{
-	panic("Undefined Page Fault at vaddr=%#p, errcd=%#x", vaddr, errcd);
 }
 
 void hwirq(uint irq)

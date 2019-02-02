@@ -3,7 +3,7 @@ include tools/general.mak
 .PHONY: all
 all: init.elf.strip
 
-SRCS+=$(shell find $(SRCPATH) | grep '\.\(c\|asm\)$$')
+SRCS+=$(shell find $(SRCPATH) -regex '.*\.\(c\|asm\)')
 OBJS=$(SRCS:%=%.o)
 LIBS=l4 c
 

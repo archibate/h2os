@@ -2,6 +2,12 @@
 #include <k/printk.h>
 #include <stddef.h>
 
+#ifdef CONFIG_LOG_CPUID
+#define tprintk(...) printk(...)
+#else
+#define tprintk(...) /* Nothing */
+#endif
+
 #define _$EXPAND(x) x
 #define _CPUID_FEATURE(reg, nr, name) {_$EXPAND(CPUID_##reg), nr, #name}
 
@@ -42,22 +48,22 @@ void test_cpuid(void)
 
 	r[4] = 0;
 	cpuid(r, 0, 0);
-	printk("CPUID: Vendor: %s", r+1);
+	tprintk("CPUID: Vendor: %s", r+1);
 
 	brand[48] = 0;
 	for (i = 0; i < 3; i++)
 		cpuid(brand + i*16, 0x80000002 + i, 0);
-	printk("CPUID: Brand: %s", r+1);
+	tprintk("CPUID: Brand: %s", r+1);
 
-	printk("CPUID: Features:");
+	tprintk("CPUID: Features:");
 	cpuid(r, 1, 0);
 	for (i = 0; i < array_sizeof(cpuid1_table); i++)
 	{
 		CPUID_Entry_t *ent = &cpuid1_table[i];
 		ena = r[ent->reg] & (1 << ent->nr);
 		if (ena)
-			printk("[*] %s", ent->name);
+			tprintk("[*] %s", ent->name);
 		else
-			printk("[ ] %s", ent->name);
+			tprintk("[ ] %s", ent->name);
 	}
 }

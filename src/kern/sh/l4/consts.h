@@ -1,3 +1,3 @@
 #pragma once
 
-#define L4_MaxInvoBytes   256
+#define L4_MaxExtraWords 64

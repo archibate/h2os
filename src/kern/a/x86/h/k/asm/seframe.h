@@ -8,7 +8,7 @@ enum SEFrameIndex {
 	SEFrame_EIP,
 	SEFrame_ESP,
 	SEFrameWords,
-/* some easy to use shortcuts: */
+/* some arch-independent shortcuts: */
 	SEFrame_PC = SEFrame_EIP,
 	SEFrame_SP = SEFrame_ESP,
 };

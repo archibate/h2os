@@ -2,7 +2,7 @@
 #include <libl4/io.h>
 #include <string.h>
 
-int l4Puts(l4CPtr_t cptr, l4Word_t offset, const char *s)
+int l4Puts(l4CPtr_t cptr, const char *s)
 {
-	return l4Write(cptr, offset, s, strlen(s));
+	return l4Write(cptr, s, strlen(s));
 }

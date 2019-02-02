@@ -12,6 +12,12 @@
 #include <k/x86/gdt.h>
 #include <k/asm/iframe.h>
 
+#ifdef CONFIG_LOG_INITIMAGE
+#define tprintk(...) printk(...)
+#else
+#define tprintk(...) /* Nothing */
+#endif
+
 
 static Frames_t fsz = {
 	.fsType = Frames_PhysRegion,
@@ -45,7 +51,7 @@ void setup_user(void)
 	extern const char initImage[], initImageEnd[];
 	if (!(pc = loadelf(initImage, initImageEnd)))
 		panic("init image ELF format wrong");
-	printk("load init image done");
+	tprintk("load init image done");
 
 	setup_mycaps();
 	goto_user_entry(pc, sp);
@@ -57,7 +63,7 @@ static void loadprog(const char *data, struct Proghdr *ph)
 	assert(ph->p_align >= PageSize);
 	assert(PageOffset(ph->p_pa) == 0);
 	map_zero(ph->p_pa, PageUp(ph->p_memsz), ph->p_flags & PF_W);
-	printk("%#p %#p %#p %#p %#p %c%c%c %#x",
+	tprintk("%#p %#p %#p %#p %#p %c%c%c %#x",
 		ph->p_offset, ph->p_pa, ph->p_va,
 		ph->p_filesz, ph->p_memsz,
 		ph->p_flags & PF_R ? 'R' : '-',
@@ -80,13 +86,13 @@ void *loadelf(const char *data, const char *edata)
 	ph = (struct Proghdr *) (data + e->e_phoff);
 	eph = ph + e->e_phnum;
 
-	printk("Offset     PhysAddr   VirtAddr   Filesz     Memsz      Flg Align");
+	tprintk("Offset     PhysAddr   VirtAddr   Filesz     Memsz      Flg Align");
 	for (; ph < eph; ph++) {
 		if (ph->p_type == PT_LOAD)
 			loadprog(data, ph);
 	}
 
-	printk("Entry Point at %#p", e->e_entry);
+	tprintk("Entry Point at %#p", e->e_entry);
 	return (void*)e->e_entry;
 }
 
