@@ -13,7 +13,7 @@ void init_main(void)
 	l4Slab_Retype(L4_InitCapDestSlot0, L4_TCBCap);
 	l4Slab_Allocate(L4_InitCapDestSlot0, 1);
 	l4ThreadContext_t context;
-	context[L4_Context_EAX] = 0xcafebabe;
+	context[L4_Context_EDI] = 0xcafebabe;
 	l4TCB_SetContext(L4_InitCapDestSlot0, &context);
 	l4Debug_Puts("Hello, L4Debug!");
 	l4Debug_Halt();

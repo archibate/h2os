@@ -68,16 +68,16 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				return -L4_EService;
 			}
 		}
-	case L4_ExtraCap:
+	case L4_BufferCap:
 		{
 			switch (service)
 			{
 			case L4_RewindWriteFrag:
-				//dprintk("L4_ExtraRewind");
+				//dprintk("L4_BufferRewind");
 			case L4_WriteFrag:
 				if (service == L4_RewindWriteFrag)
 					target->c_water = 0;
-				//dprintk("L4_ExtraWrite [%s] at %d", shortMsg + L4_RWFragArg_DataBegin, target->c_water);
+				//dprintk("L4_BufferWrite [%s] at %d", shortMsg + L4_RWFragArg_DataBegin, target->c_water);
 				memcpy(target->c_objptr + target->c_water,
 						shortMsg + L4_RWFragArg_DataBegin,
 						L4_ExtraFragSize);
@@ -214,6 +214,21 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 		{
 			switch (service)
 			{
+#if 0
+			case L4_TCB_Configure:
+				{
+					tcb_t *tcb = target->c_objptr;
+					cptr_t cptr = getword(L4_TCB_Configure_ExtraCPtr);
+					cap_t *cap = cget(cptr);
+					if (!cap || cap->c_type != L4_ExtraCap)
+						return -L4_ECapType;
+					tcb->extra = cap->c_objptr;
+					return 0;
+				}
+			case L4_TCB_GetExtra:
+				{
+				}
+#endif
 			case L4_TCB_SetContext:
 				{
 					tcb_t *tcb = target->c_objptr;

@@ -1,13 +1,14 @@
 #include <libl4/message.h>
-#include <libl4/extra.h>
 #include <libl4/syscall.h>
 #include <l4/asm/shortmsg.h>
 #include <numtools.h>
 #include <memory.h>
 
-#define L4_ShortMsgBytes  (L4_ShortMsgWords * sizeof(l4Word_t))
+extern int l4ExtraRewind(void);
+extern int l4ExtraWrite(const void *buf, size_t len);
 
 static size_t msg_bytes;
+#define L4_ShortMsgBytes  (L4_ShortMsgWords * sizeof(l4Word_t))
 static l4Byte_t msg_shrt[L4_ShortMsgBytes];
 
 void l4MsgInit(void)
@@ -39,4 +40,22 @@ size_t l4MsgWrite(const void *buf, size_t size)
 		size = ret;
 	}
 	return size;
+}
+
+#include <libl4/buffer.h>
+#include <libl4/captrs.h>
+
+static int need_rewind = 1;
+
+int l4ExtraRewind(void)
+{
+	need_rewind = 1;
+	return 0;
+}
+
+int l4ExtraWrite(const void *buf, size_t len)
+{
+	l4Buffer_WriteFrags(Libl4_CapExtra, buf, len, need_rewind);
+	need_rewind = 0;
+	return 0;
 }

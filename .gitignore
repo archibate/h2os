@@ -58,10 +58,14 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# CMake generate Results
+# CMake Generated Results
 *.cmake
 CMakeFiles/
 CMakeCache.txt
+
+# Automaticaly Generated Results
+*.gen.c
+*.gen.h
 
 # Mac OS X Store Files
 .DS_Store

@@ -4,7 +4,7 @@ include tools/general.mak
 .PHONY: all
 all: kernel.elf.strip
 
-SRCS+=$(shell find $(SRCPATH) -regex '.*\.\(c\|asm\)') sc/nametab.c
+SRCS+=$(shell find $(SRCPATH) -regex '.*\.\(c\|asm\)') sc/nametab.gen.c
 OBJS=$(SRCS:%=%.o)
 LIBS=c
 
@@ -15,7 +15,7 @@ kernel.elf: $(LDSCRIPT).i $(OBJS)
 	$(EL) ld $@
 	$(CC) $(CFLAGS) $(LDFLAGS) -T $(LDSCRIPT).i -o $@ $(OBJS) $(LIBS:%=-l%)
 
-sc/nametab.c: $(wildcard sh/l4/*.h)
+sc/nametab.gen.c: $(wildcard sh/l4/*.h)
 	tools/nametab.sh > $@
 
 c/init/initimg.asm.o: ../init/init.elf.strip

@@ -5,8 +5,9 @@
 #include <k/panic.h>
 
 #include <l4/consts.h>
-static word_t extraMsgBuf[L4_MaxExtraWords];
 
+#include <l4/thread.h>
+tcb_t tcb0, *currTcb = &tcb0;
 #include <k/kbase.h>
 #include <l4/captypes.h>
 #include <l4/inicaps.h>
@@ -31,11 +32,17 @@ void setup_mycaps(void)
 	{
 		.c_type = L4_DebugCap,
 	};
+	mycaps[L4_InitCapTCB] = (cap_t)
+	{
+		.c_type = L4_TCBCap,
+		.c_objptr = &tcb0,
+		.c_water = 0,
+	};
 	mycaps[L4_InitCapExtra] = (cap_t)
 	{
-		.c_type = L4_ExtraCap,
-		.c_objptr = extraMsgBuf,
-		//.c_base = extraMsgBuf,
+		.c_type = L4_BufferCap,
+		.c_objptr = &tcb0.extraBuf,
+		//.c_base = &tcb0.extraBuf,
 		.c_limit = L4_MaxExtraWords,
 		.c_water = 0,
 	};
@@ -60,13 +67,13 @@ int _FASTCALL systemCall(cptr_t cptr, word_t *shortMsg)
 	extern const char *__ntNameTableOfEnum_L4_CapType[];
 	extern const char *__ntNameTableOfEnum_L4_InitCapPtr[];
 	extern const char *__ntNameTableOfEnum_L4_ServiceNumber[];
-	if (cptr != L4_InitCapExtra) dprintk("%s<%s$%x@%x[%x:%x%%%x]>: %s(%d)[%.8s%.8s]",
+	if (cptr != L4_InitCapExtra) dprintk("%s<%s$%x@%x[%x:%x%%%x]>: %s(%x)[%.8s%.8s]",
 			10+__ntNameTableOfEnum_L4_InitCapPtr[cptr],
 			3+__ntNameTableOfEnum_L4_CapType[cap->c_type], cap->c_retype,
 			cap->c_objptr, cap->c_base, cap->c_limit, cap->c_water,
 			3+__ntNameTableOfEnum_L4_ServiceNumber[shortMsg[0]],
-			shortMsg[1], shortMsg+2, shortMsg[2]&0xff?extraMsgBuf:(void*)"");
-	int res = sysInvoke(cap, capDest, shortMsg, extraMsgBuf);
+			shortMsg[1], shortMsg+2, shortMsg[2]&0xff?currTcb->extraBuf:(void*)"");
+	int res = sysInvoke(cap, capDest, shortMsg, currTcb->extraBuf);
 
 	extern const char *__ntNameTableOfEnum_L4_ErrorNumber[];
 	if (res < 0) panic("sysInvoke returned %d (%s)",
