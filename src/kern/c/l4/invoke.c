@@ -210,7 +210,6 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			};
 		}
 #endif // }}}
-#if 0
 	case L4_CSpaceCap:
 		{
 			switch (service)
@@ -222,15 +221,14 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				return -L4_EService;
 			}
 		}
-#endif
 	case L4_TCBCap:
 		{
+			tcb_t *tcb = target->c_objptr;
 			switch (service)
 			{
 #if 0
 			case L4_TCB_Configure:
 				{
-					tcb_t *tcb = target->c_objptr;
 					cptr_t cptr = getword(L4_TCB_Configure_ExtraCPtr);
 					cap_t *cap = cget(cptr);
 					if (!cap || cap->c_type != L4_ExtraCap)
@@ -238,19 +236,19 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					tcb->extra = cap->c_objptr;
 					return 0;
 				}
-			case L4_TCB_GetExtra:
-				{
-				}
 #endif
+			case L4_TCB_GetExtraBuffer:
+				memset(capDest, 0, sizeof(cap_t));
+				capDest->c_type = L4_BufferCap;
+				capDest->c_objptr = &tcb->extraBuf;
+				capDest->c_limit = sizeof(tcb->extraBuf);
+				return 0;
 			case L4_TCB_SetContext:
-				{
-					tcb_t *tcb = target->c_objptr;
-					for (i = 0; i < L4_ContextWords; i++) {
-						word_t value = getword(L4_TCB_SetContext_Arg_ContextBegin + i);
-						tcb->context[i] = value;
-					}
-					return 0;
+				for (i = 0; i < L4_ContextWords; i++) {
+					word_t value = getword(L4_TCB_SetContext_Arg_ContextBegin + i);
+					tcb->context[i] = value;
 				}
+				return 0;
 			default:
 				return -L4_EService;
 			}

@@ -22,6 +22,11 @@ void setup_mycaps(void)
 		.c_limit = L4_InitCaps,
 		.c_water = L4_InitCapDestSlot0,
 	};
+	cspace[L4_InitCapCSpace] = (cap_t)
+	{
+		.c_type = L4_CRefCap,
+		.c_objptr = &tcb0.cspace,
+	};
 	cspace[L4_InitCapNull] = (cap_t)
 	{
 		.c_type = L4_NullCap,
@@ -80,11 +85,18 @@ cap_t *csGetDestSlot(cap_t *cs)
 	return &((cap_t*)cs->c_objptr)[cs->c_water];
 }
 
+cap_t *uncref(cap_t *cap)
+{
+	if (cap->c_type == L4_CRefCap)
+		cap = cap->c_objptr;
+	return cap;
+}
+
 int _FASTCALL systemCall(cptr_t cptr, word_t *shortMsg)
 {
 	assert(currTcb->cspace.c_type == L4_CSpaceCap);
-	cap_t *cap = csLookup(&currTcb->cspace, cptr);
-	cap_t *capDest = csGetDestSlot(&currTcb->cspace);
+	cap_t *cap = uncref(csLookup(&currTcb->cspace, cptr));
+	cap_t *capDest = uncref(csGetDestSlot(&currTcb->cspace));
 	if (!cap) {
 		panic("syscall: fail to lookup cap %#x", cptr);
 		return -L4_ECapLookup;
@@ -92,10 +104,10 @@ int _FASTCALL systemCall(cptr_t cptr, word_t *shortMsg)
 	assert(capDest);
 
 	extern const char *__ntNameTableOfEnum_L4_CapType[];
-	extern const char *__ntNameTableOfEnum_L4_InitCapPtr[];
+	//extern const char *__ntNameTableOfEnum_L4_InitCapPtr[];
 	extern const char *__ntNameTableOfEnum_L4_ServiceNumber[];
-	if (cptr != L4_InitCapExtra) dprintk("%s<%s$%x@%x[%x:%x%%%x]>: %s(%x)[%.8s%.8s]",
-			10+__ntNameTableOfEnum_L4_InitCapPtr[cptr],
+	if (cptr != L4_InitCapExtra) dprintk("&%x<%s$%x@%x[%x:%x%%%x]>: %s(%x)[%.8s%.8s]",
+			cptr,//10+__ntNameTableOfEnum_L4_InitCapPtr[cptr],
 			3+__ntNameTableOfEnum_L4_CapType[cap->c_type], cap->c_retype,
 			cap->c_objptr, cap->c_base, cap->c_limit, cap->c_water,
 			3+__ntNameTableOfEnum_L4_ServiceNumber[shortMsg[0]],

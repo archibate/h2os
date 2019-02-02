@@ -15,6 +15,8 @@ enum L4_ServiceNumber
 	L4_Slab_Allocate,
 	L4_TCB_SetContext,
 	L4_TCB_SetPriority,
+	L4_TCB_GetExtraBuffer,
+	L4_CSpace_SetDestSlot,
 	L4_Debug_Halt,
 	L4_Debug_Puts,
 };
