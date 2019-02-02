@@ -17,6 +17,7 @@
 #include <x86/io.h>
 #include <bittools.h>
 #include <roundtools.h>
+#include <numtools.h>
 #include <mmu/page.h>
 #include <memory.h>
 
@@ -45,8 +46,13 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 {
 #define L4_RWFragSize ((L4_ShortMsgWords - L4_RWFragArg_DataBegin) * sizeof(word_t))
 #define L4_ShortMsgBytes (L4_ShortMsgWords * sizeof(word_t))
-#define getword(nr) (((nr) < L4_ShortMsgWords) ? ((word_t*)shortMsg)[(nr)] : ((word_t*)extraMsg)[(nr) - L4_ShortMsgWords])
-#define getbyte8(i) (((i) < L4_ShortMsgBytes) ? ((byte_t*)shortMsg)[(i)] : ((byte_t*)extraMsg)[(i) - L4_ShortMsgBytes])
+#define L4_MaxExtraBytes (L4_MaxExtraWords * sizeof(word_t))
+#define getword(nr) (*(((nr) < L4_ShortMsgWords) ? \
+			&(((word_t*)shortMsg)[(nr)]) : \
+			&(((word_t*)extraMsg)[(nr) - L4_ShortMsgWords])))
+#define getbyte8(i) (*(((i) < L4_ShortMsgBytes) ? \
+			&(((byte_t*)shortMsg)[(i)]) : \
+			&(((byte_t*)extraMsg)[(i) - L4_ShortMsgBytes])))
 #define getbyte(nr, i) getbyte8((nr) * sizeof(word_t) + (i))
 
 	word_t service = getword(L4_Arg_Service);
@@ -54,7 +60,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 	//dprintk("target=%p, ctype=%d, service=%d", target, target->c_type, service);
 	//dprintk("shortMsg+1=[%8s]", shortMsg + 1);
 
-	int i;
+	word_t i, length = MIN(getword(L4_RWArg_Length), L4_ShortMsgBytes + L4_MaxExtraBytes);
 
 	switch (target->c_type)
 	{
@@ -63,7 +69,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			switch (service)
 			{
 			case L4_Write:
-				for (i = 0; i < getword(L4_RWArg_Length); i++) {
+				for (i = 0; i < length; i++) {
 					char ch = getbyte(L4_RWArg_DataBegin, i);
 					cputchar(ch);
 				}
@@ -77,15 +83,20 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			switch (service)
 			{
 			case L4_RewindWriteFrag:
-				//dprintk("L4_BufferRewind");
+			case L4_RewindReadFrag:
+				target->c_water = 0;
 			case L4_WriteFrag:
-				if (service == L4_RewindWriteFrag)
-					target->c_water = 0;
-				//dprintk("L4_BufferWrite [%s] at %d", shortMsg + L4_RWFragArg_DataBegin, target->c_water);
-				memcpy(target->c_objptr + target->c_water,
-						shortMsg + L4_RWFragArg_DataBegin,
-						L4_RWFragSize);
-				//dprintk("buffercontent=[%s]", target->c_objptr);
+			case L4_ReadFrag:
+				if (target->c_water + L4_RWFragSize > target->c_limit)
+					return -L4_ELength;
+				if (service == L4_ReadFrag || service == L4_RewindReadFrag)
+					memcpy(shortMsg + L4_RWFragArg_DataBegin,
+							target->c_objptr + target->c_water,
+							L4_RWFragSize);
+				else
+					memcpy(target->c_objptr + target->c_water,
+							shortMsg + L4_RWFragArg_DataBegin,
+							L4_RWFragSize);
 				target->c_water += L4_RWFragSize;
 				return 0;
 			default:
@@ -119,7 +130,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			case L4_PWrite:
 			case L4_PRead:
 				{
-					int res = verifySegment(&target->seg, getword(L4_RWArg_Length), 0);
+					int res = verifySegment(&target->seg, length, 0);
 					if (res)
 						return res;
 				}
@@ -127,10 +138,17 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			switch (service)
 			{
 			case L4_PWrite:
-				for (i = 0; i < getword(L4_PRWArg_Length); i++) {
+				for (i = 0; i < length; i++) {
 					byte_t data = getbyte(L4_PRWArg_DataBegin, i);
 					word_t port = target->c_base + getword(L4_PRWArg_Offset);
 					outb(port, data);
+				}
+				return 0;
+			case L4_PRead:
+				for (i = 0; i < length; i++) {
+					word_t port = target->c_base + getword(L4_PRWArg_Offset);
+					byte_t data = inb(port);
+					getbyte(L4_PRWArg_DataBegin, i) = data;
 				}
 				return 0;
 			default:
@@ -148,9 +166,15 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				return 0;
 			case L4_Write:
 				cputs("(L4DEBUG) ");
-				for (i = 0; i < getword(L4_RWArg_Length); i++) {
+				for (i = 0; i < length; i++) {
 					char ch = getbyte(L4_RWArg_DataBegin, i);
 					cputchar(ch);
+				}
+				cputs("\n");
+				return 0;
+			case L4_Read:
+				for (i = 0; i < length; i++) {
+					getbyte(L4_ReadRet_DataBegin, i) = 'a' + i % 26;
 				}
 				cputs("\n");
 				return 0;
@@ -281,12 +305,14 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					while (num > 0) {
 						if (water >= end)
 							break;
+						void *virtPage = Arch_makeVirtPage(water);
+						water += PageSize;
+						virtPage = pnewslab(virtPage);
+						//dprintk("L4_Segment_AllocSlab: virtPage = %p", virtPage);
+						assert(virtPage);
 						memset(dest, 0, sizeof(cap_t));
 						dest->c_type = L4_SlabCap;
-						dest->c_objptr = pnewslab(Arch_makeVirtPage(water));
-						dprintk("L4_Segment_AllocSlab: virtPage = %p", dest->c_objptr);
-						assert(dest->c_objptr);
-						water += PageSize;
+						dest->c_objptr = virtPage;
 						dest++;
 						num--;
 					}
@@ -400,10 +426,12 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 							break;
 						void *objVirtPtr = target->c_objptr + target->c_water;
 						target->c_water += objSize;
+						objVirtPtr = pslabnew(objVirtPtr);
+						memset(objVirtPtr, 0, objSize);
+						//dprintk("L4_Slab_Allocate: objVirtPtr = %p", objVirtPtr);
 						memset(dest, 0, sizeof(cap_t));
+						dest->c_objptr = objVirtPtr;
 						dest->c_type = objType;
-						dest->c_objptr = pslabnew(objVirtPtr);
-						dprintk("L4_Slab_Allocate: objVirtPtr = %p", dest->c_objptr);
 						dest++;
 						num--;
 					}

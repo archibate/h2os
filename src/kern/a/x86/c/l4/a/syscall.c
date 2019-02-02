@@ -11,4 +11,8 @@ void hwsysintr(void)
 	shrt[L4_ShortMsg_ESI] = kIFrame[IFrame_ESI];
 	shrt[L4_ShortMsg_EBP] = kIFrame[IFrame_EBP];
 	kIFrame[IFrame_EAX] = systemCall(cptr, shrt);
+	kIFrame[IFrame_EBX] = shrt[L4_ShortMsg_EBX];
+	kIFrame[IFrame_EDI] = shrt[L4_ShortMsg_EDI];
+	kIFrame[IFrame_ESI] = shrt[L4_ShortMsg_ESI];
+	kIFrame[IFrame_EBP] = shrt[L4_ShortMsg_EBP];
 }

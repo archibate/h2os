@@ -43,6 +43,13 @@
 vmlinu*
 *Image
 
+# Initrd Images
+initrd
+
+# Disk Images
+*.img
+*.iso
+
 # Debug files
 *.dSYM/
 *.su

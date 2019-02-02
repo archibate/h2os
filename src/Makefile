@@ -1,7 +1,7 @@
 include tools/general.mak
 
 .PHONY: kern/kernel.elf.strip
-kern/kernel.elf.strip: libc/libc.a init/init.elf.strip
+kern/kernel.elf.strip: libc/libc.a
 	make -C $(@D) $(@F)
 
 .PHONY: init/init.elf.strip

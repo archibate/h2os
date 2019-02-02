@@ -24,28 +24,38 @@ vmlinux:
 	ln -s src/kern/kernel.elf.strip $@
 
 
-CLEAN+=h2os.iso
-h2os.iso: isodir
+CLEAN+=initrd
+.PHONY: initrd
+initrd:
+	rm -f $@
+	make -C src init/init.elf.strip
+	ln -s src/init/init.elf.strip $@
+
+
+CLEAN+=os.iso
+os.iso: isodir
 	grub-mkrescue -o $@ isodir
 
 CLEAN+=isodir
 .PHONY: isodir
-isodir: scripts/grub.cfg
+isodir: scripts/grub.cfg vmlinux
+	rm -rf $@
 	mkdir -p $@/boot/grub
 	cp scripts/grub.cfg $@/boot/grub
-	cp vmlinux $@/boot
+	cp `readlink vmlinux` $@/boot/vmlinux-l4-$(PLAT)
+	cp `readlink initrd` $@/boot/initrd-l4env-$(PLAT)
 
 
 QEMUFLAGS+=-m 256 $(if $(DEBUG),-S -s,)
 QEMUPATHPREFIX=$(if $(MINGW),$D/,)
 
 .PHONY: run
-run: vmlinux
-	$(QEMU) -kernel $(QEMUPATHPREFIX)$< $(QEMUFLAGS)
+run: vmlinux initrd
+	$(QEMU) -kernel $(QEMUPATHPREFIX)vmlinux -initrd "initrd,README.md" $(QEMUFLAGS)
 
 .PHONY: runiso
-runiso: h2os.iso
-	$(QEMU) -cdrom $(QEMUPATHPREFIX)$< -boot d $(QEMUFLAGS)
+runiso: os.iso
+	$(QEMU) -cdrom $(QEMUPATHPREFIX)os.iso -boot d $(QEMUFLAGS)
 
 
 .PHONY: clean

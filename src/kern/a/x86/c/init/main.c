@@ -9,6 +9,7 @@ void kern_start(void)
 
 	CALL(init_mmu);
 	CALL(con_init);
+	CALL(parse_bootinfo);
 	CALL(test_cpuid);
 	CALL(init_gdt);
 	CALL(init_idt);

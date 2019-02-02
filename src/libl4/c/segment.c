@@ -3,6 +3,19 @@
 #include <l4/arguments.h>
 #include <l4/services.h>
 
+/**
+ * @function	l4Segment_Split
+ *
+ * @brief	split a segment into ahalf
+ *
+ * @param cptr	capability to the segment
+ *
+ * @param point	at which segment is cut
+ *
+ * @return	the kernel return value
+ *
+ * @retval -Libl4_Error	unexcepted error
+ */
 int l4Segment_Split(l4CPtr_t cptr, l4Byte_t point)
 {
 	l4Word_t msg[] =
@@ -13,32 +26,25 @@ int l4Segment_Split(l4CPtr_t cptr, l4Byte_t point)
 	return l4Invoke(cptr, &msg, sizeof(msg));
 }
 
+/**
+ * @function	l4Segment_AllocSlab
+ *
+ * @brief	alloc slab(s) from a segment
+ *
+ * @param cptr	capability to the segment
+ *
+ * @param count	how many slabs to create
+ *
+ * @return	the kernel return value
+ *
+ * @retval -Libl4_Error	unexcepted error
+ */
 int l4Segment_AllocSlab(l4CPtr_t cptr, l4Word_t count)
 {
 	l4Word_t msg[] =
 	{
 		[L4_Arg_Service] = L4_Segment_AllocSlab,
 		[L4_Segment_AllocSlab_Arg_Count] = count,
-	};
-	return l4Invoke(cptr, &msg, sizeof(msg));
-}
-
-int l4Slab_Retype(l4CPtr_t cptr, l4Byte_t type)
-{
-	l4Word_t msg[] =
-	{
-		[L4_Arg_Service] = L4_Slab_Retype,
-		[L4_Slab_Retype_Arg_ObjType] = type,
-	};
-	return l4Invoke(cptr, &msg, sizeof(msg));
-}
-
-int l4Slab_Allocate(l4CPtr_t cptr, l4Word_t count)
-{
-	l4Word_t msg[] =
-	{
-		[L4_Arg_Service] = L4_Slab_Allocate,
-		[L4_Slab_Allocate_Arg_Count] = count,
 	};
 	return l4Invoke(cptr, &msg, sizeof(msg));
 }

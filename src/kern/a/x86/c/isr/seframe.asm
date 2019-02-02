@@ -20,6 +20,10 @@ sysenter_entry:
 	mov ecx, eax
 	mov edx, ShortMsg
 	call systemCall
+	mov ebx, [ShortMsg_EBX]
+	mov edi, [ShortMsg_EDI]
+	mov esi, [ShortMsg_ESI]
+	mov ebp, [ShortMsg_EBP]
 	pop es
 	pop ds
 	pop edx

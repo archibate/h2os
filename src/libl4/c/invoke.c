@@ -2,7 +2,18 @@
 #include <libl4/message.h>
 #include <libl4/errors.h>
 
-int l4Invoke(l4CPtr_t cptr, const void *buf, size_t size)
+/**
+ * @function	l4Invoke
+ *
+ * @brief	invoke stage of a message
+ *
+ * @param cptr	capability to invoke
+ *
+ * @return	the kernel return value
+ *
+ * @retval -Libl4_Error	unexcepted error
+ */
+l4Ret_t l4Invoke(l4CPtr_t cptr, const void *buf, size_t size)
 {
 	l4MsgInit();
 	if (l4MsgWrite(buf, size))

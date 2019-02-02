@@ -5,6 +5,18 @@
 #include <libl4/captrs.h>
 #include <libl4/puts.h>
 
+/**
+ * @function	l4Debug_Halt
+ *
+ * @brief	halt the machine through L4 debugger
+ *
+ * @note	would be failed if kernel is not
+ * 		configured with debug object support
+ *
+ * @return	the kernel return value
+ *
+ * @retval -Libl4_Error	unexcepted error
+ */
 int l4Debug_Halt(void)
 {
 	l4Word_t msg[] =
@@ -14,6 +26,20 @@ int l4Debug_Halt(void)
 	return l4Invoke(Libl4_CapDebug, &msg, sizeof(msg));
 }
 
+/**
+ * @function	l4Debug_Puts
+ *
+ * @brief	print message on console through L4 debugger
+ *
+ * @note	would be failed if kernel is not
+ * 		configured with debug object support
+ *
+ * @param s	pointer to the message string
+ *
+ * @return	the kernel return value
+ *
+ * @retval -Libl4_Error	unexcepted error
+ */
 int l4Debug_Puts(const char *s)
 {
 	return l4Puts(Libl4_CapDebug, s);

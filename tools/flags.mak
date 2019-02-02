@@ -13,9 +13,14 @@ FUNCTIONS+=no-stack-protector
 DBGFLAGS+=stabs+ gdb
 endif
 
+ifeq ($(shell if [ -d a ]; then echo 1; fi),1)
 ADIRS=. a/$(ARCH)
-ifeq ($(shell if [ -f a/$(ARCH)/$(BITS) ]; then echo 1; fi),1)
+ifeq ($(shell if [ -d a/$(ARCH)/$(BITS) ]; then echo 1; fi),1)
 ADIRS+=a/$(ARCH)/$(BITS)
+endif
+ifeq ($(shell if [ -d a/$(BITS) ]; then echo 1; fi),1)
+ADIRS+=a/$(BITS)
+endif
 endif
 
 include tools/modules.mak

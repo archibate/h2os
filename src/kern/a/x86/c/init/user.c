@@ -12,8 +12,8 @@
 #include <k/x86/gdt.h>
 #include <k/asm/iframe.h>
 
-#ifdef CONFIG_LOG_INITIMAGE
-#define tprintk(...) printk(...)
+#ifdef CONFIG_DUMP_INITIMG
+#define tprintk(...) printk(__VA_ARGS__)
 #else
 #define tprintk(...) /* Nothing */
 #endif
@@ -43,13 +43,15 @@ static void _NORETURN goto_user_entry(void *pc, void *sp)
 	move_to_user(uc);
 }
 
-void setup_mycaps(void);
+extern void setup_mycaps(void);
 static void *loadelf(const char *data, const char *edata);
 void setup_user(void)
 {
 	void *pc, *sp = 0;
-	extern const char initImage[], initImageEnd[];
-	if (!(pc = loadelf(initImage, initImageEnd)))
+	extern const char *biInitimg, *biInitimgEnd;
+	if (!biInitimg)
+		panic("no init image provided");
+	if (!(pc = loadelf(biInitimg, biInitimgEnd)))
 		panic("init image ELF format wrong");
 	tprintk("load init image done");
 

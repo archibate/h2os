@@ -19,5 +19,8 @@ void init_main(void)
 	context[L4_Context_EDI] = 0xcafebabe;
 	l4TCB_SetContext(Libl4_CapTCB0, &context);
 	l4Debug_Puts("Hello, L4Debug!");
+	static char buf[273];
+	l4Read(Libl4_CapDebug, buf, sizeof(buf));
+	l4Debug_Puts(buf);
 	l4Debug_Halt();
 }

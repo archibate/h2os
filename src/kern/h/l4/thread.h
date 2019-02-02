@@ -10,5 +10,6 @@ typedef struct TCB
 	word_t extraBuf[L4_MaxExtraWords];
 	word_t context[L4_ContextWords];
 	word_t priority;
+	struct TCB *next, *prev;
 }
 tcb_t;

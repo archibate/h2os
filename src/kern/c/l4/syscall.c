@@ -56,7 +56,7 @@ void setup_mycaps(void)
 		.c_type = L4_BufferCap,
 		.c_objptr = &tcb0.extraBuf,
 		//.c_base = &tcb0.extraBuf,
-		.c_limit = L4_MaxExtraWords,
+		.c_limit = L4_MaxExtraWords * sizeof(word_t),
 		.c_water = 0,
 	};
 	cspace[L4_InitCapSigma0] = (cap_t)

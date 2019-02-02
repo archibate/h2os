@@ -16,3 +16,7 @@ enum L4_ArgumentsIndex {
 	L4_Slab_Allocate_Arg_Count = 1,
 	L4_Slab_Retype_Arg_ObjType = 1,
 };
+
+enum L4_ReturnsIndex {
+	L4_ReadRet_DataBegin = 0,
+};
