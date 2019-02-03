@@ -1,16 +1,25 @@
 include tools/general.mak
 
-.PHONY: all
-all: libc.a
+.PHONY: default
+default: all
 
 SRCS+=$(shell find $(SRCPATH) -regex '.*\.\(c\|asm\)')
 OBJS=$(SRCS:%=%.o)
 
-CLEAN+=libc.a $(OBJS)
-libc.a: $(OBJS)
+CLEAN+=$(OBJS)
+ALL+=out/lib/libc.a
+out/lib/libc.a: $(OBJS)
+	@mkdir -p $(@D)
 	$(EL) ar $@
 	$(AR) cqs $@ $(OBJS)
+
+.PHONY: all
+all: $(ALL)
 
 .PHONY: clean
 clean:
 	rm -rf $(CLEAN)
+
+.PHONY: distclean
+distclean:
+	rm -rf $(CLEAN) out

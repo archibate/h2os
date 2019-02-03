@@ -80,6 +80,9 @@ docs
 # Mac OS X Store Files
 .DS_Store
 
+# Package Output Files
+out/
+
 # ISO Root Files
 isodir/
 

@@ -26,11 +26,11 @@ end
 # For kernel debugging
 # Add KERNEL file for debugging information
 define asfu
-	add-symbol-file src/$arg0/$arg0.elf 0x10000000
+	add-symbol-file src/$arg0/out/bin/$arg0 0x10000000
 end
 
 define asfk
-	add-symbol-file src/kern/kernel.elf 0x100000
+	add-symbol-file src/kern/vmlinux.elf 0x100000
 end
 
 define qq

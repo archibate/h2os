@@ -3,15 +3,10 @@ include tools/general.mak
 .PHONY: default
 default: all
 
-SRCS+=$(shell find $(SRCPATH) -regex '.*\.\(c\|asm\)')
-OBJS=$(SRCS:%=%.o)
-
-CLEAN+=$(OBJS)
-ALL+=out/lib/libl4.a
-out/lib/libl4.a: $(OBJS)
+ALL+=out/boot/grub/grub.cfg
+out/boot/grub/grub.cfg: grub.cfg
 	@mkdir -p $(@D)
-	$(EL) ar $@
-	$(AR) cqs $@ $(OBJS)
+	cp $< $@
 
 .PHONY: all
 all: $(ALL)

@@ -39,4 +39,4 @@
 
 %.strip: %
 	$(EL) strip $<
-	$(STRIP) -S -O elf32-i386 -o $@ $<
+	$(STRIP) $(STRIPFLAGS) -o $@ $<

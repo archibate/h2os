@@ -40,3 +40,4 @@ ASMFLAGS+=$(DEFINES:%=-D%) $(INCPATH:%=-I%/)
 ASMFLAGS+=-P $(ROOT)/scripts/nasm.inc
 LDFLAGS+=-static -nostdlib
 LDFLAGS+=$(LIBPATH:%=-L%)
+STRIPFLAGS+=-S -O elf32-i386
