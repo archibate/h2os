@@ -11,6 +11,8 @@
 #include <lohitools.h>
 #include <assert.h>
 #include <l4/a/mkvpage.h>
+#include <l4/endpoint.h>
+#include <l4/sched.h>
 #include <l4/thread.h>
 #include <conio.h>
 #include <asm/clsti.h>
@@ -245,6 +247,15 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			case L4_CSpace_SetDestSlot:
 				target->c_water = getword(L4_CSpace_SetDestSlot_Arg_SlotCPtr);
 				return 0;
+			default:
+				return -L4_EService;
+			}
+		}
+	case L4_EndpointCap:
+		{
+			endpoint_t *ep = target->c_objptr;
+			switch (service)
+			{
 			default:
 				return -L4_EService;
 			}

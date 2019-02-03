@@ -8,7 +8,8 @@
 #include <l4/consts.h>
 #include <l4/errors.h>
 #include <l4/thread.h>
-tcb_t tcb0, *currTcb = &tcb0;
+#include <l4/sched.h>
+tcb_t tcb0;
 #include <k/kbase.h>
 #include <l4/captypes.h>
 #include <l4/inicaps.h>
@@ -22,6 +23,7 @@ void setup_mycaps(void)
 		.c_limit = L4_InitCapMax,
 		.c_water = L4_InitCapDestSlot0,
 	};
+	schedSetActive(&tcb0);
 	cspace[L4_InitCapCSpace] = (cap_t)
 	{
 		.c_type = L4_CRefCap,

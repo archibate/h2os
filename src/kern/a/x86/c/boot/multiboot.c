@@ -11,7 +11,7 @@ _SECTION(".mboot_header") struct mboot_header multiboot_header =
 
 struct mboot_info *mboot;
 
-void save_mboot_pointer(struct mboot_info *mb_ptr, int mb_magic)
+void save_mboot_pointer(struct mboot_info *mb_ptr, uint mb_magic)
 {
 	mboot = mb_magic == MB_MAGIC_EAX ? mb_ptr : 0;
 }

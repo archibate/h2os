@@ -1,5 +1,6 @@
 #pragma once
 
+typedef _Bool bool;
 typedef unsigned char uint8_t, uchar;
 typedef unsigned short uint16_t, ushort;
 typedef unsigned int uint32_t, uint;

@@ -3,6 +3,7 @@
 enum L4_CapType
 {
 	L4_NullCap = 0,
+	L4_EndpointCap,
 	L4_ConsoleCap,
 	L4_IOPortCap,
 	L4_DebugCap,
