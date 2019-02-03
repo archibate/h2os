@@ -4,9 +4,7 @@
 #include <l4/services.h>
 
 /**
- * @function	l4Segment_Split
- *
- * @brief	split a segment into ahalf
+ * split a segment into ahalf
  *
  * @param cptr	capability to the segment
  *
@@ -27,9 +25,7 @@ int l4Segment_Split(l4CPtr_t cptr, l4Byte_t point)
 }
 
 /**
- * @function	l4Segment_AllocSlab
- *
- * @brief	alloc slab(s) from a segment
+ * alloc slab(s) from a segment
  *
  * @param cptr	capability to the segment
  *

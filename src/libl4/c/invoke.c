@@ -3,11 +3,13 @@
 #include <libl4/errors.h>
 
 /**
- * @function	l4Invoke
- *
- * @brief	invoke stage of a message
+ * invoke stage of a message
  *
  * @param cptr	capability to invoke
+ *
+ * @param buf	data to send
+ *
+ * @param size	size of the data
  *
  * @return	the kernel return value
  *

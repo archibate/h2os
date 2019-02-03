@@ -7,9 +7,7 @@
 #include <numtools.h>
 
 /**
- * @function	l4PWrite
- *
- * @brief	write data into a capability at a specific offset
+ * write data into a capability at a specific offset
  *
  * @param cptr	capability pointer
  *

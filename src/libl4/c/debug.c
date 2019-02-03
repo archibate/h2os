@@ -6,9 +6,7 @@
 #include <libl4/puts.h>
 
 /**
- * @function	l4Debug_Halt
- *
- * @brief	halt the machine through L4 debugger
+ * halt the machine through L4 debugger
  *
  * @note	would be failed if kernel is not
  * 		configured with debug object support
@@ -27,9 +25,7 @@ int l4Debug_Halt(void)
 }
 
 /**
- * @function	l4Debug_Puts
- *
- * @brief	print message on console through L4 debugger
+ * print message on console through L4 debugger
  *
  * @note	would be failed if kernel is not
  * 		configured with debug object support

@@ -16,9 +16,7 @@ static l4Byte_t msg_shrt[L4_ShortMsgBytes];
 
 
 /**
- * @function	l4MsgInit
- *
- * @brief	initialize the message to be sent
+ * initialize the message to be sent
  */
 void l4MsgInit(void)
 {
@@ -28,8 +26,6 @@ void l4MsgInit(void)
 }
 
 /**
- * @function	l4MsgGetBufSize
- *
  * @return	maxium bytes we can transfer per invocation
  */
 size_t l4MsgGetBufSize(void)
@@ -38,9 +34,7 @@ size_t l4MsgGetBufSize(void)
 }
 
 /**
- * @function	l4MsgInvoke
- *
- * @brief	invoke stage of a message
+ * invoke stage of a message
  *
  * @param cptr	capability to invoke
  *
@@ -55,9 +49,7 @@ l4Ret_t l4MsgInvoke(l4CPtr_t cptr)
 }
 
 /**
- * @function	l4MsgWrite
- *
- * @brief	write into the message buffer to be sent
+ * write into the message buffer to be sent
  *
  * @param buf	data to write
  *
@@ -82,9 +74,7 @@ l4Ret_t l4MsgWrite(const void *buf, size_t size)
 }
 
 /**
- * @function	l4MsgRead
- *
- * @brief	read data from the message buffer of received
+ * read data from the message buffer of received
  *
  * @param buf	buffer for read
  *
@@ -114,9 +104,7 @@ l4Ret_t l4MsgRead(void *buf, size_t size)
 static int need_rewind = 1;
 
 /**
- * @function	l4ExtraRewind
- *
- * @brief	rewind kernel's extra buffer
+ * rewind kernel's extra buffer
  */
 void l4ExtraRewind(void)
 {
@@ -124,9 +112,7 @@ void l4ExtraRewind(void)
 }
 
 /**
- * @function	l4ExtraWrite
- *
- * @brief	write to kernel's extra buffer
+ * write to kernel's extra buffer
  *
  * @param buf	data to write
  *
@@ -144,9 +130,7 @@ l4Ret_t l4ExtraWrite(const void *buf, size_t size)
 }
 
 /**
- * @function	l4ExtraRead
- *
- * @brief	read from kernel's extra buffer
+ * read from kernel's extra buffer
  *
  * @param buf	buffer for read
  *

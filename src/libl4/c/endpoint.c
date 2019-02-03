@@ -4,9 +4,7 @@
 #include <l4/services.h>
 
 /**
- * @function	l4Endpoint_Retype
- *
- * @brief	retype an endpoint
+ * retype an endpoint
  *
  * @param cptr	capability to the endpoint
  *

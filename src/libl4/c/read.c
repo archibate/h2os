@@ -7,9 +7,7 @@
 #include <numtools.h>
 
 /**
- * @function	l4Read
- *
- * @brief	read data from a capability
+ * read data from a capability
  *
  * @param cptr	capability pointer
  *

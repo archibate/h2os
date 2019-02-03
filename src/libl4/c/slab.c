@@ -4,9 +4,7 @@
 #include <l4/services.h>
 
 /**
- * @function	l4Slab_Retype
- *
- * @brief	bind a specific type on slab
+ * bind a specific type on slab
  *
  * @param cptr	capability to the slab
  *
@@ -27,9 +25,7 @@ int l4Slab_Retype(l4CPtr_t cptr, l4Byte_t type)
 }
 
 /**
- * @function	l4Slab_Allocate
- *
- * @brief	allocate object(s) from a slab
+ * allocate object(s) from a slab
  *
  * @param cptr	capability to the slab
  *
