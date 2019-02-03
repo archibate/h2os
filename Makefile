@@ -13,7 +13,7 @@ QEMU=qemu-system-i386
 
 
 .PHONY: all
-all: out
+all: isodir
 
 
 CLEAN+=os.iso

@@ -25,10 +25,10 @@ endif
 
 include tools/modules.mak
 
-LIBPATH+=$(MODULES:%=$(ROOT)/src/%)
+LIBPATH+=$(ROOT)/isodir/lib
 SRCPATH+=$(ADIRS:%=%/c)
 INCPATH+=$(ADIRS:%=%/h) $(ADIRS:%=%/sh) \
-	 $(foreach path,$(LIBPATH),$(ADIRS:%=$(path)/%/sh)) \
+	 $(foreach path,$(MODULES:%=$(ROOT)/src/%),$(ADIRS:%=$(path)/%/sh)) \
 	 $(ROOT)/include
 
 CFLAGS+=-nostdinc

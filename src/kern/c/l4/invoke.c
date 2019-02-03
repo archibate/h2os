@@ -302,6 +302,9 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			case L4_TCB_SetPriority:
 				tcb->priority = getword(L4_TCB_SetPriority_Arg_Priority);
 				return 0;
+			case L4_TCB_Active:
+				schedSetActive(tcb);
+				return 0;
 			default:
 				return -L4_EService;
 			}

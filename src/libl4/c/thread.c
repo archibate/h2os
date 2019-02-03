@@ -28,3 +28,21 @@ int l4TCB_SetPriority(l4CPtr_t cptr, l4Byte_t priority)
 	};
 	return l4Invoke(cptr, &header, sizeof(header));
 }
+
+int l4TCB_GetExtraBuffer(l4CPtr_t cptr)
+{
+	l4Word_t header[] =
+	{
+		[L4_Arg_Service] = L4_TCB_GetExtraBuffer,
+	};
+	return l4Invoke(cptr, &header, sizeof(header));
+}
+
+int l4TCB_Active(l4CPtr_t cptr)
+{
+	l4Word_t header[] =
+	{
+		[L4_Arg_Service] = L4_TCB_Active,
+	};
+	return l4Invoke(cptr, &header, sizeof(header));
+}

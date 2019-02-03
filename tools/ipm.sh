@@ -24,17 +24,16 @@ read_ini_deps()
 }
 dep_rescue()
 {
-	pkg=${1?package name}
-	deps=`awk -F = '{print $1,$2}' $ipm_src/$pkg/package.ini | read_ini_deps`
-
-	echo $pkg
-	for d in $deps
+	true ${1?package name}
+	for d in `awk -F = '{print $1,$2}' $ipm_src/$1/package.ini | read_ini_deps`
 	do
-		#if ! grep -qs $d $ipm_var/packages.lst
-		#then
-		dep_rescue $d
-		#fi
+		if ! echo $dpkgs | grep $d
+		then
+			dep_rescue $d
+		fi
 	done
+	dpkgs+="$1 "
+	let pkgcnt+=1
 }
 
 real_install()
@@ -50,7 +49,7 @@ real_install()
 	then
 		echo "--> installing $p"
 		mkdir -p $ipm_dest
-		for x in boot bin
+		for x in boot bin lib
 		do
 			if [ -d $dir/out/$x ]
 			then
@@ -65,25 +64,25 @@ real_install()
 
 ipm_install()
 {
-	pkgs=
+	dpkgs=
 	pkgcnt=0
 	for p in $*
-	do pkgs+=$(echo `dep_rescue $p | sort -u`)
+	do dep_rescue $p
 	done
 
 	echo ======================================
-	echo "packages: $pkgs"
+	echo "packages: $dpkgs"
 	echo ======================================
 
-	for p in $pkgs
+	for p in $dpkgs
 	do real_install $p
 	done
 }
 
+ipm_init
 op=${1?ipm operation}
 shift
 case $op in
-init) ipm_init;;
 install) ipm_install $*;;
 *) echo bad ipm operation $1 >&2;;
 esac
