@@ -74,6 +74,9 @@ CMakeCache.txt
 *.gen.c
 *.gen.h
 
+# Doxygen Generated Results
+docs
+
 # Mac OS X Store Files
 .DS_Store
 

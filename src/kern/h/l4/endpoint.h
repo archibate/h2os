@@ -9,3 +9,6 @@ typedef struct Endpoint
 	queue_t qWaiter;
 }
 endpoint_t;
+
+void epCall(endpoint_t *ep, tcb_t *caller, bool nbsend, bool recv);
+void epWait(endpoint_t *ep, tcb_t *waiter);

@@ -15,6 +15,7 @@ enum L4_ServiceNumber
 	L4_Segment_AllocSlab,
 	L4_Slab_Retype,
 	L4_Slab_Allocate,
+	L4_Endpoint_Retype,
 	L4_TCB_SetContext,
 	L4_TCB_SetPriority,
 	L4_TCB_GetExtraBuffer,

@@ -3,12 +3,12 @@
 #include <memory.h>
 #include <assert.h>
 
-void copyData(tcb_t *recver, tcb_t *sender)
+static void copyData(tcb_t *recver, tcb_t *sender)
 {
 	memcpy(recver->extraBuf, sender->extraBuf, sizeof(recver->extraBuf));
 }
 
-void epCall(endpoint_t *ep, tcb_t *caller, bool nbsend, bool recv)
+void epCall(endpoint_t *ep, tcb_t *caller, bool block, bool recv)
 {
 	assert(caller->state == TCB_Running);
 	tcb_t *waiter = queuePopLast(&ep->qWaiter, tcb_t);
@@ -22,7 +22,7 @@ void epCall(endpoint_t *ep, tcb_t *caller, bool nbsend, bool recv)
 			schedSetInactive(caller);
 			//waiter->replySlot = makeThreadReplyEndpointCap(caller);
 		}
-	} else {
+	} else if (block) {
 		caller->state = recv ? TCB_OnCall : TCB_OnRecv;
 		schedSetInactive(caller);
 		queueAddFirst(&ep->qCaller, caller);

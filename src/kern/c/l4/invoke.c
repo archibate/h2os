@@ -3,6 +3,7 @@
 #include <l4/errors.h>
 #include <l4/invoke.h>
 #include <l4/captypes.h>
+#include <l4/eptypes.h>
 #include <l4/services.h>
 #include <l4/arguments.h>
 #include <l4/capability.h>
@@ -254,10 +255,31 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 	case L4_EndpointCap:
 		{
 			endpoint_t *ep = target->c_objptr;
-			switch (service)
+			switch (target->c_retype)
 			{
+			case L4_EPUntyped:
+				switch (service)
+				{
+				case L4_Endpoint_Retype:
+					target->c_retype = getword(L4_Endpoint_Retype_Arg_EPType);
+					return 0;
+				default:
+					return -L4_EService;
+				};
+			case L4_EPNBSend:
+				epCall(ep, schedGetCurr(), 0, 0);
+				return 0;
+			case L4_EPSend:
+				epCall(ep, schedGetCurr(), 1, 0);
+				return 0;
+			case L4_EPCall:
+				epCall(ep, schedGetCurr(), 1, 1);
+				return 0;
+			case L4_EPWait:
+				epWait(ep, schedGetCurr());
+				return 0;
 			default:
-				return -L4_EService;
+				return -L4_ERetype;
 			}
 		}
 	case L4_TCBCap:
