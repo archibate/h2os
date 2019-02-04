@@ -25,5 +25,6 @@ typedef struct TCB
 	//cap_t replySlot;
 	word_t extraBuf[L4_MaxExtraWords];
 	word_t context[L4_ContextWords];
+	word_t pgdirPaddr;
 }
 tcb_t;

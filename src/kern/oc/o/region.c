@@ -1,22 +1,5 @@
 #include <o/region.h>
 #include <o/frames.h>
-#include <mmu/types.h>
-#include <mmu/mmu.h>
-#include <mmu/page.h>
-#include <mmu/pte.h>
-#include <assert.h>
-
-static pte_t *touch_pdi(Frames_t *fs, pde_t *pd, uint pdi)
-{
-	pte_t *pt;
-	if (!PdeIsValid(pd[pdi])) {
-		pt = (pte_t*)PteAddr(_Frames_GetFramePte(fs));
-		pd[pdi] = PdePgtab((va_t)pt);
-	} else {
-		pt = (pte_t*)PdePgtabAddr(pd[pdi]);
-	}
-	return pt;
-}
 
 void Region_Map(Region_t const *r, Frames_t *fsMap, Frames_t *fsPgtab)
 {

@@ -12,5 +12,11 @@ enum L4_InitCapPtr
 	L4_InitCapSigma0,
 	L4_InitCapDestSlot0,
 	L4_InitCaps,
-	L4_InitCapMax = L4_InitCaps + 24,
+	L4_InitCapMax = 512,
 };
+
+#include <stassert.h>
+static void __stassert1sa345907rklhsf(void)
+{
+	static_assert(L4_InitCapMax > L4_InitCaps);
+}

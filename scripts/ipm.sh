@@ -54,7 +54,7 @@ real_install()
 			if [ -d $dir/out/$x ]
 			then
 				echo "  + $ipm_dest/$x"
-				cp -r $dir/out/$x $ipm_dest
+				$ipm_sudo cp -r $dir/out/$x $ipm_dest
 			fi
 		done
 	fi

@@ -4,9 +4,11 @@
 #include <l4/queue.h>
 
 extern queue_t running;
-#define schedGetCurr()		queueFirst(&running, tcb_t)
-#define currTcb			schedGetCurr()
+extern tcb_t *currTcb;
 
+#define schedGetCurr()		queueFirst(&running, tcb_t)
+#define schedEnter()		(currTcb = schedGetCurr())
+void schedLeave(void);
 #define schedInit()		queueInit(&running)
 #define schedNext()		queueNext(&running)
 #define schedSetActive(x)	queueAddFirst(&running, x)

@@ -9,14 +9,13 @@ void kern_start(void)
 
 	CALL(init_mmu);
 	CALL(con_init);
-	CALL(parse_bootinfo);
 	CALL(test_cpuid);
 	CALL(init_gdt);
 	CALL(init_idt);
 	CALL(init_tss);
 	CALL(init_kdrvs);
 	CALL(init_kfers);
-	CALL(setup_user);
+	CALL(init_usermods);
 
 	cli();
 	hlt();

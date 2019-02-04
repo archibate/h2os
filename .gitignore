@@ -82,6 +82,7 @@ docs
 
 # Package Output Files
 out/
+grub4dos/
 
 # ISO Root Files
 isodir/
