@@ -13,12 +13,20 @@ QEMU=qemu-system-i386
 
 
 .PHONY: all
-CLEAN+=isodir
 all: isodir
 
 
+CLEAN+=isodir
+.PHONY: isodir
+isodir:
+	sudo umount isodir || true
+	rm -rf $@
+	mkdir -p isodir
+	./ipm install base
+
 CLEAN+=os.iso
-os.iso: isodir
+.PHONY: os.iso
+os.iso:
 	sudo umount isodir || true
 	rm -rf $@
 	mkdir -p isodir
@@ -26,6 +34,7 @@ os.iso: isodir
 	grub-mkrescue -o $@ isodir
 
 CLEAN+=os.img
+.PHONY: os.img
 os.img:
 	sudo umount isodir || true
 	rm -rf $@

@@ -4,6 +4,7 @@
 #include <l4/inicaps.h>
 #include <l4/captypes.h>
 #include <l4/thread.h>
+#include <l4/sched.h>
 #include <mmu/mmu.h>
 #include <k/pool.h>
 
@@ -15,7 +16,6 @@ void setup_mytcb(void)
 	cap_t *cspace = calloc(L4_InitCapMax, sizeof(cap_t));
 	tcb_t *tcb = &tcbpool[maxtid++];
 	init_mycaps(cspace, tcb);
-	dprintk("cspace=%p!", cspace);
 	tcb->cspace = (cap_t)
 	{
 		.c_type = L4_CSpaceCap,
@@ -24,4 +24,5 @@ void setup_mytcb(void)
 		.c_water = L4_InitCapDestSlot0,
 	};
 	tcb->pgdirPaddr = mmu_getPgdirPaddr();
+	schedSetActive(tcb);
 }
