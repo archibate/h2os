@@ -15,5 +15,11 @@ enum Libl4_CapPtr
 	Libl4_CapDestSlot1,
 	Libl4_CapDestSlot2,
 	Libl4_CapSlab0,
+	Libl4_CapSlab1,
+	Libl4_CapSlab2,
+	Libl4_CapSlab3,
 	Libl4_CapTCB0,
+	Libl4_CapPgdir0,
+	Libl4_CapPgtab0,
+	Libl4_CapPage0,
 };

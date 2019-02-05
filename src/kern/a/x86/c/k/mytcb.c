@@ -16,13 +16,17 @@ void setup_mytcb(void)
 	cap_t *cspace = calloc(L4_InitCapMax, sizeof(cap_t));
 	tcb_t *tcb = &tcbpool[maxtid++];
 	init_mycaps(cspace, tcb);
-	tcb->cspace = (cap_t)
+	tcb->t_cspace = (cap_t)
 	{
 		.c_type = L4_CSpaceCap,
 		.c_objptr = cspace,
 		.c_limit = L4_InitCapMax,
 		.c_water = L4_InitCapDestSlot0,
 	};
-	tcb->pgdirPaddr = mmu_getPgdirPaddr();
+	tcb->t_pgdir = (cap_t)
+	{
+		.c_type = L4_PgdirCap,
+		.c_objaddr = mmu_getPgdirPaddr(),
+	};
 	schedSetActive(tcb);
 }

@@ -8,49 +8,24 @@
 #include <l4/sched.h>
 #include <l4/captypes.h>
 #include <l4/inicaps.h>
-
-cap_t *csLookup(cap_t *cs, cptr_t cptr)
-{
-	if (cptr > cs->c_limit)
-		return 0;
-	return &((cap_t*)cs->c_objptr)[cptr];
-}
-
-cap_t *csGetDestSlot(cap_t *cs)
-{
-	assert(cs->c_water < cs->c_limit);
-	return &((cap_t*)cs->c_objptr)[cs->c_water];
-}
-
-cap_t *uncref(cap_t *cap)
-{
-	if (!cap)
-		return cap;
-	if (cap->c_type == L4_CRefCap)
-		cap = cap->c_objptr;
-	assert(cap->c_type != L4_CRefCap);
-	return cap;
-}
+#include <l4/clookup.h>
 
 int _FASTCALL systemCall(cptr_t cptr, word_t *shortMsg)
 {
 	int res;
 	schedEnter();
-	cap_t *cspace = uncref(&currTcb->cspace);
-	assert(cspace->c_type == L4_CSpaceCap);
-	cap_t *cap = uncref(csLookup(cspace, cptr));
-	cap_t *capDest = uncref(csGetDestSlot(cspace));
-	assert(capDest);
+	cap_t *cap = capLookup(cptr);
+	cap_t *capDest = capGetDestSlot();
 	if (!cap) {
 		panic("syscall: fail to lookup cap %#x", cptr);
-		res = -L4_ECapLookup;
+		res = -L4_ECTarget;
 		goto out;
 	}
 
 	extern const char *__ntNameTableOfEnum_L4_CapType[];
 	//extern const char *__ntNameTableOfEnum_L4_InitCapPtr[];
 	extern const char *__ntNameTableOfEnum_L4_ServiceNumber[];
-	if (cptr != L4_InitCapExtra) dprintk("&%x<%s$%x@%x[%x:%x%%%x]>: %s(%x)[%.8s%.8s]",
+	if (cptr != L4_InitCapExtra) dprintk("&%x<%s$%x@%x[%x:%x%%%x]>: %s(%x)[%.8s%.7s]",
 			cptr,//10+__ntNameTableOfEnum_L4_InitCapPtr[cptr],
 			3+__ntNameTableOfEnum_L4_CapType[cap->c_type], cap->c_retype,
 			cap->c_objptr, cap->c_base, cap->c_limit, cap->c_water,

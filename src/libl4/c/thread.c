@@ -21,28 +21,49 @@ int l4TCB_SetContext(l4CPtr_t cptr, l4ThreadContext_t const *context)
 
 int l4TCB_SetPriority(l4CPtr_t cptr, l4Byte_t priority)
 {
-	l4Word_t header[] =
+	l4Word_t msg[] =
 	{
 		[L4_Arg_Service] = L4_TCB_SetPriority,
 		[L4_TCB_SetPriority_Arg_Priority] = priority,
 	};
-	return l4Invoke(cptr, &header, sizeof(header));
+	return l4Invoke(cptr, &msg, sizeof(msg));
+}
+
+int l4TCB_SetCap(l4CPtr_t cptr, l4Word_t cidx, l4CPtr_t cap)
+{
+	l4Word_t msg[] =
+	{
+		[L4_Arg_Service] = L4_TCB_SetCap,
+		[L4_TCB_SetCap_Arg_CapIdx] = cidx,
+		[L4_TCB_SetCap_Arg_CPtr] = cap,
+	};
+	return l4Invoke(cptr, &msg, sizeof(msg));
+}
+
+int l4TCB_GetCap(l4CPtr_t cptr, l4Word_t cidx)
+{
+	l4Word_t msg[] =
+	{
+		[L4_Arg_Service] = L4_TCB_GetCap,
+		[L4_TCB_GetCap_Arg_CapIdx] = cidx,
+	};
+	return l4Invoke(cptr, &msg, sizeof(msg));
 }
 
 int l4TCB_GetExtraBuffer(l4CPtr_t cptr)
 {
-	l4Word_t header[] =
+	l4Word_t msg[] =
 	{
 		[L4_Arg_Service] = L4_TCB_GetExtraBuffer,
 	};
-	return l4Invoke(cptr, &header, sizeof(header));
+	return l4Invoke(cptr, &msg, sizeof(msg));
 }
 
 int l4TCB_Active(l4CPtr_t cptr)
 {
-	l4Word_t header[] =
+	l4Word_t msg[] =
 	{
 		[L4_Arg_Service] = L4_TCB_Active,
 	};
-	return l4Invoke(cptr, &header, sizeof(header));
+	return l4Invoke(cptr, &msg, sizeof(msg));
 }

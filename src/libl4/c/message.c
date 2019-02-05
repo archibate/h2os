@@ -9,7 +9,8 @@
 
 static void l4ExtraRewind(void);
 static l4Ret_t l4ExtraWrite(const void *buf, size_t len);
-l4Ret_t l4ExtraRead(void *buf, size_t size);
+static l4Ret_t l4ExtraCapWrite(const l4CPtr_t *caps, size_t capnr);
+static l4Ret_t l4ExtraRead(void *buf, size_t size);
 
 static size_t msg_bytes;
 static l4Byte_t msg_shrt[L4_ShortMsgBytes];
@@ -98,6 +99,33 @@ l4Ret_t l4MsgRead(void *buf, size_t size)
 	return l4ExtraRead(buf, size);
 }
 
+#if 0
+/**
+ * write into the capabiity buffer to be sent
+ *
+ * @param caps	capability pointers to write
+ *
+ * @param capnr	number of the capabilities
+ *
+ * @retval 0	success
+ *
+ * @retval !0	error from kernel
+ */
+l4Ret_t l4MsgCapWrite(const l4CPtr_t *caps, size_t capnr)
+{
+	if (msg_caps < L4_ShortMsgCPtrs) {
+		size_t nr = MIN(capnr, L4_ShortMsgCaps - msg_caps);
+		memcpy(msg_capshrt + msg_caps, caps, nr * sizeof(l4CPtr_t));
+		msg_caps += nr;
+		capnr += nr;
+		capnr -= nr;
+		if (!size)
+			return 0;
+	}
+	return l4ExtraCapWrite(caps, capnr);
+}
+#endif
+
 #include <libl4/buffer.h>
 #include <libl4/captrs.h>
 
@@ -112,7 +140,7 @@ void l4ExtraRewind(void)
 }
 
 /**
- * write to kernel's extra buffer
+ * write to kernel's extra message buffer
  *
  * @param buf	data to write
  *
@@ -129,8 +157,29 @@ l4Ret_t l4ExtraWrite(const void *buf, size_t size)
 	return ret;
 }
 
+#if 0
 /**
- * read from kernel's extra buffer
+ * write to kernel's extra capability buffer
+ *
+ * @param caps	capability pointers to write
+ *
+ * @param capnr	number of the capabilities
+ *
+ * @retval 0	success
+ *
+ * @retval !0	error from kernel
+ */
+l4Ret_t l4ExtraCapWrite(const l4CPtr_t *caps, size_t capnr)
+{
+	l4Ret_t ret = l4Buffer_WriteFrags(Libl4_CapExtraCaps,
+			caps, capnr * sizeof(l4CPtr_t), need_caprewind);
+	need_caprewind = 0;
+	return ret;
+}
+#endif
+
+/**
+ * read from kernel's extra message buffer
  *
  * @param buf	buffer for read
  *

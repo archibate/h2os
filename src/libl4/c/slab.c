@@ -4,22 +4,26 @@
 #include <l4/services.h>
 
 /**
- * bind a specific type on slab
+ * retype a page into a slab
  *
- * @param cptr	capability to the slab
+ * @param cptr	capability to the page
  *
  * @param type	on which type is slab retyped
  *
  * @return	the kernel return value
  *
+ * @retval 0	success
+ *
+ * @retval -L4_ERetype	given `type` is not a valid slab type
+ *
  * @retval -Libl4_Error	unexcepted error
  */
-int l4Slab_Retype(l4CPtr_t cptr, l4Byte_t type)
+int l4Page_RetypeToSlab(l4CPtr_t cptr, l4Byte_t type)
 {
 	l4Word_t msg[] =
 	{
-		[L4_Arg_Service] = L4_Slab_Retype,
-		[L4_Slab_Retype_Arg_ObjType] = type,
+		[L4_Arg_Service] = L4_Page_RetypeToSlab,
+		[L4_Page_RetypeToSlab_Arg_ObjType] = type,
 	};
 	return l4Invoke(cptr, &msg, sizeof(msg));
 }
@@ -32,6 +36,12 @@ int l4Slab_Retype(l4CPtr_t cptr, l4Byte_t type)
  * @param count	how many objects to create
  *
  * @return	the kernel return value
+ *
+ * @retval 0	success
+ *
+ * @retval >0	the number of objects NOT created
+ *
+ * @retval -L4_ERetype	slab not retyped
  *
  * @retval -Libl4_Error	unexcepted error
  */

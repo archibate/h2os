@@ -9,7 +9,10 @@ typedef struct capability
 	byte_t c_retype;
 	half_t c_water;
 	segment_t seg;
-	void *c_objptr;
+	union {
+		void *c_objptr;
+		word_t c_objaddr;
+	};
 }
 cap_t;
 #define c_base		seg.base

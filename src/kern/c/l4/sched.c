@@ -8,7 +8,7 @@ tcb_t *currTcb;
 void schedLeave(void)
 {
 	tcb_t *next = schedGetCurr();
-	assert(next->pgdirPaddr);
+	assert(next->t_pgdirAddr);
 	if (next != currTcb)
-		mmu_setPgdirPaddr(next->pgdirPaddr);
+		mmu_setPgdirPaddr(next->t_pgdirAddr);
 }
