@@ -1,0 +1,31 @@
+proto TCB_SetPCSP
+in word pc
+in word sp
+end proto
+
+proto Write
+in word length
+in string[.] data
+out ret_len
+end proto
+
+proto Read
+in word length
+out string[.] data
+out ret_len
+end proto
+
+proto Pgdir_MapPage
+in cap page
+in word vaddr
+end proto
+
+proto TCB_GetCap
+in word idx
+out cap cap
+end proto
+
+proto TCB_SetCap
+in word idx
+in cap cap
+end proto
