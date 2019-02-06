@@ -1,5 +1,5 @@
 #include <l4/a/tswitch.h>
-#include <k/a/mswitch.h>
+#include <l4/a/mswitch.h>
 #include <k/asm/seframe.h>
 #include <k/asm/iframe.h>
 #include <l4/asm/context.h>
@@ -9,18 +9,13 @@
 #include <stassert.h>
 #include <assert.h>
 
-static void switch_context(word_t oldCtx[L4_ContextWords],
-			   word_t newCtx[L4_ContextWords]);
-
-void switch_task(tcb_t *oldTcb, tcb_t *newTcb)
+void Arch_switchTask(tcb_t *oldTcb, tcb_t *newTcb)
 {
-	word_t oldPd = oldTcb->t_pgdirAddr;
-	word_t newPd = newTcb->t_pgdirAddr;
-	if (oldPd != newPd)
-		switch_pgdir(oldPd, newPd);
-	switch_context(oldTcb->context, newTcb->context);
+	Arch_switchPgdirAndUTCB(
+			(void*)oldTcb->t_pgdirAddr,
+			(void*)newTcb->t_pgdirAddr,
+			newTcb->t_utcbAddr);
 }
-
 #if 0 // {{{
 static bool is_seframe(void)
 {

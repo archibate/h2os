@@ -24,7 +24,7 @@ void dumpuser(void)
 			EF(FL_DF, DF, df),
 			EF(FL_YF, YF, yf),
 			EF(FL_IF, IF, if),
-			FL_IOPL(eflags),
+			GET_FL_IOPL(eflags),
 			EF(FL_NT, NT, nt),
 			EF(FL_RF, RF, rf),
 			EF(FL_VM, VM, vm),

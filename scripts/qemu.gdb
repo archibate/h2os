@@ -56,3 +56,5 @@ end
 qemu
 asfk
 asfu init
+
+set $utcb = (utcb_t*)0x3fd000

@@ -5,13 +5,14 @@
 #include <k/asm/seframe.h>
 #include <mmu/page.h>
 
-#define KernSEStackTop  (KernPhysEnd)
-#define KernIStackTop   (KernPhysEnd - 2 * PageSize)
-#define KernIFrame      (KernIStackTop - IFrameWords * 4)
-#define KernSEFrame     (KernSEStackTop - SEFrameWords * 4)
+#define KernSEFrame     (KernUTCBAddr)
+#define KernSEStackTop  (KernSEFrame + SEFrameWords * 4)
+#define KernIFrame      (KernSEStackTop)
+#define KernIStackTop   (KernIFrame + IFrameWords * 4)
 
 #ifndef _GPCPP_
 #include <inttypes.h>
+#define kUTCB    ((struct UTCB*)KernUTCBAddr)
 #define kIFrame  ((ulong*)KernIFrame)
 #define kSEFrame ((ulong*)KernSEFrame)
 #endif

@@ -2,12 +2,15 @@ bits 32
 section .text
 
 globl move_to_user
+globl se_iframe_exiter
 globl iframe_exiter
 extrn hwintr
 
 move_to_user:
 	mov esp, [esp + 4]
 	jmp iframe_exiter
+
+SEFrameWords equ 4 ; N: keep sync with h/k/asm/seframe.h
 
 introute:
 	push ds
@@ -18,9 +21,13 @@ introute:
 	mov eax, ss
 	mov ds, eax
 	mov es, eax
-	push esp
+	mov eax, esp
+	sub esp, 4*SEFrameWords
+	push eax
 	call hwintr
 	add esp, 4
+se_iframe_exiter:
+	add esp, 4*SEFrameWords
 iframe_exiter:
 	popad
 	pop gs

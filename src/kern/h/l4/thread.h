@@ -24,10 +24,12 @@ typedef struct TCB
 	byte_t state;
 	byte_t priority;
 	word_t extraBuf[L4_MaxExtraWords];
-	word_t context[L4_ContextWords];
+	//word_t context[L4_ContextWords];
 }
 tcb_t;
 
-#define t_pgdir  caps[L4_TCBCap_Pgdir]
-#define t_cspace caps[L4_TCBCap_CSpace]
+#define t_pgdir  caps[L4_TCBCap_Pgdir]  // L4_PgdirCap
+#define t_utcb   caps[L4_TCBCap_UTCB]   // L4_PageCap
+#define t_cspace caps[L4_TCBCap_CSpace] // L4_CSPaceCap
 #define t_pgdirAddr t_pgdir.c_objaddr
+#define t_utcbAddr  t_utcb.c_objaddr

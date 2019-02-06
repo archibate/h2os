@@ -17,11 +17,10 @@ void init_main(void)
 	l4Puts(Libl4_CapConsole, "0123456789abcdefghijklmnopqrstuvwxyz\n");
 
 	l4SetDestSlot(Libl4_CapSlab0);
-	l4Segment_AllocPage(Libl4_CapMemory, 4);
+	l4Segment_AllocPage(Libl4_CapMemory, 5);
 	l4Page_Retype(Libl4_CapSlab0, L4_SlabCap, L4_TCBCap);
 	l4Page_Retype(Libl4_CapPgdir0, L4_PgdirCap, 0);
 	l4Page_Retype(Libl4_CapPgtab0, L4_PgtabCap, 0);
-	l4Page_Retype(Libl4_CapPage0, L4_PageCap, 0);
 
 	l4SetDestSlot(Libl4_CapTCB0);
 	l4Slab_Allocate(Libl4_CapSlab0, 1);
@@ -48,12 +47,10 @@ void init_main(void)
 	l4Pgdir_MapPage(Libl4_CapPgdir0, Libl4_CapPage0, 0x20000000);
 
 #if 1
-	l4ThreadContext_t context;
-	context[L4_Context_PC] = 0x20000000;
-	context[L4_Context_EDI] = 0xcafebabe;
-	l4TCB_SetContext(Libl4_CapTCB0, &context);
 	l4TCB_SetCap(Libl4_CapTCB0, L4_TCBCap_Pgdir, Libl4_CapPgdir0);
 	l4TCB_SetCap(Libl4_CapTCB0, L4_TCBCap_CSpace, Libl4_CapCSpace);
+	l4TCB_SetCap(Libl4_CapTCB0, L4_TCBCap_UTCB, Libl4_CapPage1);
+	l4TCB_SetPCSP(Libl4_CapTCB0, 0x20000000, 0x20000ffc);
 	l4TCB_Active(Libl4_CapTCB0);
 #endif
 

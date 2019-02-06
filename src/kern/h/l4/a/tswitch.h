@@ -2,4 +2,4 @@
 
 #include <l4/thread.h>
 
-void switch_task(tcb_t *oldTcb, tcb_t *newTcb);
+void Arch_switchTask(tcb_t *oldTcb, tcb_t *newTcb);

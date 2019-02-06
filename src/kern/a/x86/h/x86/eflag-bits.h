@@ -12,7 +12,7 @@
 #define FL_IF      (1<<9)		// X: Interrupt Enable
 #define FL_DF      (1<<10)		// C: Direction
 #define FL_OF      (1<<11)		// S: Overflow
-#define FL_IOPL(x) ((x)<<12)		// X: I/O Privilege Level
+#define FL_IOPL_SHIFT 12		// X: I/O Privilege Level
 #define FL_NT      (1<<14)		// X: Nested Task
 #define FL_RF      (1<<16)		// X: Resume Flag
 #define FL_AC      (1<<17)		// X: Alignment Check
@@ -23,3 +23,6 @@
 // S := Status Flag
 // C := Control Flag
 // X := System Flag
+
+#define FL_IOPL(x)	((x)<<FL_IOPL_SHIFT)
+#define GET_FL_IOPL(x)	(((x)>>FL_IOPL_SHIFT)&0x3)

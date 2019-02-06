@@ -1,8 +1,7 @@
 #pragma once
 
 #define KernPhysBegin	0x100000
-#define KernWindowAddr  0x3fd000
-#define KernWinPtAddr   0x3fe000
+#define KernUTCBAddr    0x3fd000
 #define KernPdAddr      0x3ff000
 #define KernPtesBegin   0x400000
 #define KernPtesEnd     0x404000

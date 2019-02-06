@@ -13,6 +13,8 @@ enum L4_ArgumentsIndex
 	L4_TCB_SetCap_Arg_CPtr,
 	L4_TCB_GetCap_Arg_CapIdx = 1,
 	L4_TCB_SetContext_Arg_ContextBegin = 1,
+	L4_TCB_SetPCSP_Arg_PC = 1,
+	L4_TCB_SetPCSP_Arg_SP,
 	L4_TCB_SetPriority_Arg_Priority = 1,
 	L4_Endpoint_Retype_Arg_EPType = 1,
 	L4_CSpace_SetDestSlot_Arg_SlotCPtr = 1,

@@ -14,6 +14,8 @@
 #include <lohitools.h>
 #include <assert.h>
 #include <l4/a/mkvpage.h>
+#include <l4/a/inipgdir.h>
+#include <l4/a/utcb.h>
 #include <l4/endpoint.h>
 #include <l4/sched.h>
 #include <l4/thread.h>
@@ -300,6 +302,8 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			{
 			case L4_TCB_SetCap:
 				{
+					if (tcb->state != TCB_NullState)
+						return -L4_EActived;
 					word_t cidx = getword(L4_TCB_SetCap_Arg_CapIdx);
 					if (cidx > L4_TCBCapsMax)
 						return -L4_ECapIdx;
@@ -308,10 +312,21 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					if (!cap)
 						return -L4_ECLookup;
 					memcpy(dest, cap, sizeof(cap_t));
+					switch (cidx)
+					{
+					case L4_TCBCap_Pgdir:
+						Arch_InitPgdir(dest->c_objptr);
+						break;
+					case L4_TCBCap_UTCB:
+						Arch_InitUTCB(dest->c_objptr);
+						break;
+					}
 				}
 				return 0;
 			case L4_TCB_GetCap:
 				{
+					if (tcb->state != TCB_NullState)
+						return -L4_EActived;
 					word_t cidx = getword(L4_TCB_SetCap_Arg_CapIdx);
 					if (cidx > L4_TCBCapsMax)
 						return -L4_ECapIdx;
@@ -320,23 +335,51 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				}
 				return 0;
 			case L4_TCB_GetExtraBuffer:
+				if (tcb->state != TCB_NullState)
+					return -L4_EActived;
 				memset(capDest, 0, sizeof(cap_t));
 				capDest->c_type = L4_BufferCap;
 				capDest->c_objptr = prefombr(tcb, &tcb->extraBuf);
 				capDest->c_limit = sizeof(tcb->extraBuf);
 				return 0;
-			case L4_TCB_SetContext:
+			case L4_TCB_SetPCSP:
+				if (tcb->t_utcb.c_type != L4_PageCap)
+					return -L4_ERetype;
+				utcb_t *utcb = tcb->t_utcb.c_objptr;
+				dprintk("utcb=%p", utcb);
+				utcb->iframe[IFrame_PC] = getword(L4_TCB_SetPCSP_Arg_PC);
+				utcb->iframe[IFrame_SP] = getword(L4_TCB_SetPCSP_Arg_SP);
+				utcb->seframe[SEFrame_PC] = getword(L4_TCB_SetPCSP_Arg_PC);
+				utcb->seframe[SEFrame_SP] = getword(L4_TCB_SetPCSP_Arg_SP);
+#if 0
 				for (i = 0; i < L4_ContextWords; i++) {
 					word_t value = getword(L4_TCB_SetContext_Arg_ContextBegin + i);
 					tcb->context[i] = value;
 				}
+				UTCB_SetContext(tcb->t_utcb, context);
+				for (i = 0; i < L4_ContextWords; i++) {
+					word_t value = getword(L4_TCB_SetContext_Arg_ContextBegin + i);
+					tcb->context[i] = value;
+				}
+#endif
 				return 0;
 			case L4_TCB_SetPriority:
 				tcb->priority = getword(L4_TCB_SetPriority_Arg_Priority);
 				return 0;
 			case L4_TCB_Active:
+				if (tcb->state != TCB_NullState)
+					return -L4_EActived;
+				if (tcb->t_cspace.c_type != L4_CSpaceCap)
+					return -L4_ERetype;
+				if (tcb->t_pgdir.c_type != L4_PgdirCap)
+					return -L4_ERetype;
+				if (tcb->t_utcb.c_type != L4_PageCap)
+					return -L4_ERetype;
+				tcb->state = TCB_Running;
 				schedSetActive(tcb);
 				//panic("L4_TCB_Active");
+				/*dprintk("utcb=%p", tcb->t_utcb.c_objptr);
+				dprintk("utcb->pc=%p", ((utcb_t*)tcb->t_utcb.c_objptr)->iframe[IFrame_PC]);*/
 				return 0;
 			default:
 				return -L4_EService;

@@ -29,6 +29,17 @@ int l4TCB_SetPriority(l4CPtr_t cptr, l4Byte_t priority)
 	return l4Invoke(cptr, &msg, sizeof(msg));
 }
 
+int l4TCB_SetPCSP(l4CPtr_t cptr, l4Word_t pc, l4CPtr_t sp)
+{
+	l4Word_t msg[] =
+	{
+		[L4_Arg_Service] = L4_TCB_SetPCSP,
+		[L4_TCB_SetPCSP_Arg_PC] = pc,
+		[L4_TCB_SetPCSP_Arg_SP] = sp,
+	};
+	return l4Invoke(cptr, &msg, sizeof(msg));
+}
+
 int l4TCB_SetCap(l4CPtr_t cptr, l4Word_t cidx, l4CPtr_t cap)
 {
 	l4Word_t msg[] =

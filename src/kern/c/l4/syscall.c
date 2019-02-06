@@ -9,6 +9,7 @@
 #include <l4/captypes.h>
 #include <l4/inicaps.h>
 #include <l4/clookup.h>
+//#include <k/a/dumpuser.h>
 
 int _FASTCALL systemCall(cptr_t cptr, word_t *shortMsg)
 {
@@ -40,5 +41,6 @@ int _FASTCALL systemCall(cptr_t cptr, word_t *shortMsg)
 
 out:
 	schedLeave();
+	//dprintk("susca:%p", __builtin_return_address(0));
 	return res;
 }

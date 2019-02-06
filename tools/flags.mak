@@ -10,7 +10,9 @@ WARNINGS+=error all no-unused-function error=implicit-function-declaration no-ma
           no-format no-error=unused-variable no-error=unused-but-set-variable \
           error=incompatible-pointer-types error=int-conversion no-enum-compare
 FUNCTIONS+=no-stack-protector
+ifdef DEBUG
 DBGFLAGS+=stabs+ gdb
+endif
 endif
 
 ifeq ($(shell if [ -d a ]; then echo 1; fi),1)

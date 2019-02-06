@@ -19,5 +19,6 @@ enum Libl4_CapPtr
 	Libl4_CapPgdir0,
 	Libl4_CapPgtab0,
 	Libl4_CapPage0,
+	Libl4_CapPage1,
 	Libl4_CapTCB0,
 };

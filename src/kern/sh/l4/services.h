@@ -21,6 +21,7 @@ enum L4_ServiceNumber
 	L4_TCB_GetCap,
 	L4_TCB_GetExtraBuffer,
 	L4_TCB_SetContext,
+	L4_TCB_SetPCSP,
 	L4_TCB_SetPriority,
 	L4_CSpace_SetDestSlot,
 	L4_Pgdir_MapPage,

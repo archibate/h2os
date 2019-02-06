@@ -10,5 +10,5 @@ void schedLeave(void)
 {
 	tcb_t *next = schedGetCurr();
 	if (next != currTcb)
-		switch_task(currTcb, next);
+		Arch_switchTask(currTcb, next);
 }
