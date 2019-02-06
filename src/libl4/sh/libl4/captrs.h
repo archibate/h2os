@@ -6,6 +6,7 @@
 enum Libl4_CapPtr
 {
 	Libl4_CapCSpace  = L4_InitCapCSpace,
+	Libl4_CapPgdir   = L4_InitCapPgdir,
 	Libl4_CapMemory  = L4_InitCapSigma0,
 	Libl4_CapConsole = L4_InitCapConsole,
 	Libl4_CapDebug   = L4_InitCapDebug,
@@ -15,11 +16,8 @@ enum Libl4_CapPtr
 	Libl4_CapDestSlot1,
 	Libl4_CapDestSlot2,
 	Libl4_CapSlab0,
-	Libl4_CapSlab1,
-	Libl4_CapSlab2,
-	Libl4_CapSlab3,
-	Libl4_CapTCB0,
 	Libl4_CapPgdir0,
 	Libl4_CapPgtab0,
 	Libl4_CapPage0,
+	Libl4_CapTCB0,
 };

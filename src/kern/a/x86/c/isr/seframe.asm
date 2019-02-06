@@ -2,6 +2,8 @@ bits 32
 section .text
 
 globl sysenter_entry
+globl seframe_exiter
+globl seShortMsg
 extrn systemCall
 
 sysenter_entry:
@@ -13,17 +15,18 @@ sysenter_entry:
 	mov edx, ss
 	mov ds, edx
 	mov es, edx
-	mov [ShortMsg_EBX], ebx
-	mov [ShortMsg_EDI], edi
-	mov [ShortMsg_ESI], esi
-	mov [ShortMsg_EBP], ebp
+	mov [seShortMsg_EBX], ebx
+	mov [seShortMsg_EDI], edi
+	mov [seShortMsg_ESI], esi
+	mov [seShortMsg_EBP], ebp
 	mov ecx, eax
-	mov edx, ShortMsg
+	mov edx, seShortMsg
 	call systemCall
-	mov ebx, [ShortMsg_EBX]
-	mov edi, [ShortMsg_EDI]
-	mov esi, [ShortMsg_ESI]
-	mov ebp, [ShortMsg_EBP]
+seframe_exiter:
+	mov ebx, [seShortMsg_EBX]
+	mov edi, [seShortMsg_EDI]
+	mov esi, [seShortMsg_ESI]
+	mov ebp, [seShortMsg_EBP]
 	pop es
 	pop ds
 	pop edx
@@ -31,13 +34,13 @@ sysenter_entry:
 	sysexit
 
 section .bss
-ShortMsg:
+seShortMsg:
 	; N: keep sync with l4/asm/shortmsg.h
-ShortMsg_EBX:
+seShortMsg_EBX:
 	resd 1
-ShortMsg_EDI:
+seShortMsg_EDI:
 	resd 1
-ShortMsg_ESI:
+seShortMsg_ESI:
 	resd 1
-ShortMsg_EBP:
+seShortMsg_EBP:
 	resd 1

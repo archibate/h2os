@@ -24,7 +24,7 @@ void hwintr(ulong *iframe)
 	case ExceptionPageFault:
 		panic("#PF from %#04x:%p at %#p (%d)",
 				iframe[IFrame_CS], iframe[IFrame_EIP],
-				getcr3(), iframe[IFrame_ErrorCode]);
+				getcr2(), iframe[IFrame_ErrorCode]);
 		return;
 	}
 

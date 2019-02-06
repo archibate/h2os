@@ -8,6 +8,7 @@
 #include <libl4/captrs.h>
 #include <l4/captypes.h>
 #include <l4/tcbcaps.h>
+#include <memory.h>
 
 #define l4SetDestSlot(cptr) l4CSpace_SetDestSlot(Libl4_CapCSpace, cptr)
 
@@ -17,30 +18,38 @@ void init_main(void)
 
 	l4SetDestSlot(Libl4_CapSlab0);
 	l4Segment_AllocPage(Libl4_CapMemory, 4);
-	l4Page_RetypeToSlab(Libl4_CapSlab0, L4_TCBCap);
-	l4Page_RetypeToSlab(Libl4_CapSlab1, L4_PgdirCap);
-	l4Page_RetypeToSlab(Libl4_CapSlab2, L4_PgtabCap);
-	l4Page_RetypeToSlab(Libl4_CapSlab3, L4_PageCap);
+	l4Page_Retype(Libl4_CapSlab0, L4_SlabCap, L4_TCBCap);
+	l4Page_Retype(Libl4_CapPgdir0, L4_PgdirCap, 0);
+	l4Page_Retype(Libl4_CapPgtab0, L4_PgtabCap, 0);
+	l4Page_Retype(Libl4_CapPage0, L4_PageCap, 0);
 
 	l4SetDestSlot(Libl4_CapTCB0);
 	l4Slab_Allocate(Libl4_CapSlab0, 1);
 
+#if 0//{{{
 	l4SetDestSlot(Libl4_CapPgdir0);
 	l4Slab_Allocate(Libl4_CapSlab1, 1);
 
-#if 1
 	l4SetDestSlot(Libl4_CapPgtab0);
 	l4Slab_Allocate(Libl4_CapSlab2, 1);
 
 	l4SetDestSlot(Libl4_CapPage0);
 	l4Slab_Allocate(Libl4_CapSlab3, 1);
+#endif//}}}
+
+	l4Pgdir_MapPgtab(Libl4_CapPgdir, Libl4_CapPgtab0, 0x20000000);
+	l4Pgdir_MapPage(Libl4_CapPgdir, Libl4_CapPage0, 0x20000000);
+	extern char testcode_start[], testcode_end[];
+	memcpy((void*)0x20000000, testcode_start, testcode_end - testcode_start);
+	l4Pgdir_UnmapPage(Libl4_CapPgdir, 0x20000000);
+	l4Pgdir_UnmapPgtab(Libl4_CapPgdir, 0x20000000);
 
 	l4Pgdir_MapPgtab(Libl4_CapPgdir0, Libl4_CapPgtab0, 0x20000000);
 	l4Pgdir_MapPage(Libl4_CapPgdir0, Libl4_CapPage0, 0x20000000);
-#endif
 
-#if 0
+#if 1
 	l4ThreadContext_t context;
+	context[L4_Context_PC] = 0x20000000;
 	context[L4_Context_EDI] = 0xcafebabe;
 	l4TCB_SetContext(Libl4_CapTCB0, &context);
 	l4TCB_SetCap(Libl4_CapTCB0, L4_TCBCap_Pgdir, Libl4_CapPgdir0);

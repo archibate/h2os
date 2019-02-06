@@ -9,6 +9,7 @@
 #include <l4/capability.h>
 #include <l4/asm/shortmsg.h>
 #include <l4/clookup.h>
+#include <k/a/dumpuser.h>
 #include <ovtools.h>
 #include <lohitools.h>
 #include <assert.h>
@@ -24,6 +25,7 @@
 #include <numtools.h>
 #include <mmu/types.h>
 #include <mmu/page.h>
+#include <mmu/mmu.h>
 #include <mmu/pte.h>
 #include <memory.h>
 
@@ -334,7 +336,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				return 0;
 			case L4_TCB_Active:
 				schedSetActive(tcb);
-				panic("L4_TCB_Active");
+				//panic("L4_TCB_Active");
 				return 0;
 			default:
 				return -L4_EService;
@@ -391,6 +393,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 	case L4_PgdirCap:
 		{
 			pde_t *pgdir = target->c_objptr;
+			assert(PgdirOffset((pa_t)pgdir) == 0);
 			switch (service)
 			{
 			case L4_Pgdir_MapPage:
@@ -401,17 +404,19 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 						return -L4_ECLookup;
 					if (pgcap->c_type != L4_PageCap)
 						return -L4_ECapType;
-					void *page = pgcap->c_objptr;
-					assert(PgdirOffset((pa_t)pgdir) == 0);
+					pa_t page = pgcap->c_objaddr;
 					pde_t pde = pgdir[PdeIndex(va)];
 					if (!PdeIsValid(pde))
 						return -L4_EPgtab;
 					pte_t *pt = (pte_t*)PdePgtabAddr(pde);
-					//dprintk("L4_Pgdir_MapPage: pt=%p", pt);
+					dprintk("L4_Pgdir_MapPage: pt=%p", pt);
 					pte_t pte = pt[PteIndex(va)];
 					if (PteIsValid(pte))
 						return -L4_EMapped;
-					pt[PteIndex(va)] = Pte((va_t)page, PtePerm_UserRW);
+					pt[PteIndex(va)] = Pte(page, PtePerm_UserRW);
+					//dprintk("!!pte=%p", pt[PteIndex(va)]);
+					if (mmu_getPgdirPaddr() == (pa_t)pgdir)
+						mmu_invalidatePage(va);//,*((volatile int*)va);
 					return 0;
 				}
 			case L4_Pgdir_MapPgtab:
@@ -422,13 +427,37 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 						return -L4_ECLookup;
 					if (pgcap->c_type != L4_PgtabCap)
 						return -L4_ECapType;
-					word_t ptaddr = pgcap->c_objaddr;
+					pa_t ptaddr = pgcap->c_objaddr;
 					assert(PgdirOffset((pa_t)pgdir) == 0);
 					pde_t pde = pgdir[PdeIndex(va)];
 					if (PdeIsValid(pde))
 						return -L4_EMapped;
-					//dprintk("L4_Pgdir_MapPage: pt=%p", ptaddr);
+					dprintk("L4_Pgdir_MapPgtab: pt=%p", ptaddr);
 					pgdir[PdeIndex(va)] = PdePgtab(ptaddr);
+					return 0;
+				}
+			case L4_Pgdir_UnmapPage:
+				{
+					word_t va = getword(L4_Pgdir_UnmapPage_Arg_VAddr);
+					pde_t pde = pgdir[PdeIndex(va)];
+					if (!PdeIsValid(pde))
+						return -L4_EPgtab;
+					pte_t *pt = (pte_t*)PdePgtabAddr(pde);
+					pte_t pte = pt[PteIndex(va)];
+					if (!PteIsValid(pte))
+						return -L4_EFault;
+					pt[PteIndex(va)] = 0;
+					if (mmu_getPgdirPaddr() == (pa_t)pgdir)
+						mmu_invalidatePage(va);
+					return 0;
+				}
+			case L4_Pgdir_UnmapPgtab:
+				{
+					word_t va = getword(L4_Pgdir_UnmapPgtab_Arg_VAddr);
+					pde_t pde = pgdir[PdeIndex(va)];
+					if (!PdeIsValid(pde))
+						return -L4_EFault;
+					pgdir[PdeIndex(va)] = 0;
 					return 0;
 				}
 			default:
@@ -447,19 +476,33 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					return 0;
 				}
 #endif
-			case L4_Page_RetypeToSlab:
+			case L4_Page_Retype:
 				{
-					byte_t objType = getword(L4_Page_RetypeToSlab_Arg_ObjType);
-					size_t objSize = sysObjSizeOf(objType);
-					if (!objSize)
+					byte_t toType = getword(L4_Page_Retype_Arg_ToType);
+					byte_t objType = getword(L4_Page_Retype_Arg_ObjType);
+					switch (toType) {
+					case L4_PageCap:
+					case L4_PgtabCap:
+					case L4_PgdirCap:
+						target->c_type = toType;
+						dprintk("!!pa=%p", target->c_objaddr);
+						return 0;
+					case L4_SlabCap:
+						{
+							size_t objSize = sysObjSizeOf(objType);
+							if (!objSize)
+								return -L4_ERetype;
+							assert(objSize <= PageSize);
+							target->c_type = L4_SlabCap;
+							target->c_retype = objType;
+							word_t pa = target->c_objaddr;
+							void *vip = Arch_makeVirtPage(pa);
+							target->c_objptr = pslabnew(vip);
+							return 0;
+						}
+					default:
 						return -L4_ERetype;
-					assert(objSize <= PageSize);
-					target->c_type = L4_SlabCap;
-					target->c_retype = objType;
-					word_t pa = target->c_objaddr;
-					void *vip = Arch_makeVirtPage(pa);
-					target->c_objptr = pslabnew(vip);
-					return 0;
+					}
 				}
 			default:
 				return -L4_EService;
@@ -583,12 +626,12 @@ size_t sysObjSizeOf(byte_t objType)
 	{
 	case L4_TCBCap:
 		return sizeof(tcb_t);
-	case L4_PageCap:
+	/*case L4_PageCap:
 		return PageSize;
 	case L4_PgtabCap:
 		return PgtabSize;
 	case L4_PgdirCap:
-		return PgdirSize;
+		return PgdirSize;*/
 	default:
 		return 0;
 	}

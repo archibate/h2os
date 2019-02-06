@@ -4,11 +4,13 @@
 #include <l4/services.h>
 
 /**
- * retype a page into a slab
+ * retype a page into a specific object
  *
  * @param cptr	capability to the page
  *
- * @param type	on which type is slab retyped
+ * @param type	on which type is page retyped
+ *
+ * @param otype	(if type == L4_SlabCap) object type of the slab
  *
  * @return	the kernel return value
  *
@@ -18,12 +20,13 @@
  *
  * @retval -Libl4_Error	unexcepted error
  */
-int l4Page_RetypeToSlab(l4CPtr_t cptr, l4Byte_t type)
+int l4Page_Retype(l4CPtr_t cptr, l4Byte_t type, l4Byte_t otype)
 {
 	l4Word_t msg[] =
 	{
-		[L4_Arg_Service] = L4_Page_RetypeToSlab,
-		[L4_Page_RetypeToSlab_Arg_ObjType] = type,
+		[L4_Arg_Service] = L4_Page_Retype,
+		[L4_Page_Retype_Arg_ToType] = type,
+		[L4_Page_Retype_Arg_ObjType] = otype,
 	};
 	return l4Invoke(cptr, &msg, sizeof(msg));
 }

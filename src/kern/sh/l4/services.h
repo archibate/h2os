@@ -13,8 +13,7 @@ enum L4_ServiceNumber
 	L4_RewindReadFrag,
 	L4_Segment_Split,
 	L4_Segment_AllocPage,
-	L4_Page_RetypeToPage,
-	L4_Page_RetypeToSlab,
+	L4_Page_Retype,
 	L4_Slab_Allocate,
 	L4_Endpoint_Retype,
 	L4_TCB_Active,
@@ -26,6 +25,8 @@ enum L4_ServiceNumber
 	L4_CSpace_SetDestSlot,
 	L4_Pgdir_MapPage,
 	L4_Pgdir_MapPgtab,
+	L4_Pgdir_UnmapPage,
+	L4_Pgdir_UnmapPgtab,
 	L4_Debug_Halt,
 	L4_Debug_Puts,
 };

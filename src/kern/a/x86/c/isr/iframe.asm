@@ -2,11 +2,12 @@ bits 32
 section .text
 
 globl move_to_user
+globl iframe_exiter
 extrn hwintr
 
 move_to_user:
 	mov esp, [esp + 4]
-	jmp intreturn
+	jmp iframe_exiter
 
 introute:
 	push ds
@@ -20,7 +21,7 @@ introute:
 	push esp
 	call hwintr
 	add esp, 4
-intreturn:
+iframe_exiter:
 	popad
 	pop gs
 	pop fs

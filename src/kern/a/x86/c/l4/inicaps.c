@@ -47,6 +47,11 @@ void init_mycaps(cap_t *cspace, tcb_t *tcb)
 		.c_type = L4_CRefCap,
 		.c_objptr = &tcb->t_cspace,
 	};
+	cspace[L4_InitCapPgdir] = (cap_t)
+	{
+		.c_type = L4_CRefCap,
+		.c_objptr = &tcb->t_pgdir,
+	};
 	cspace[L4_InitCapExtra] = (cap_t)
 	{
 		.c_type = L4_BufferCap,

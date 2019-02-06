@@ -10,6 +10,7 @@ include tools/config.mak
 
 
 QEMU=qemu-system-i386
+BOCHS=bochs
 
 
 .PHONY: all
@@ -47,6 +48,7 @@ os.img:
 
 QEMUFLAGS+=-m 256 $(if $(DEBUG),-S -s,)
 QEMUPATHPREFIX=$(if $(MINGW),$D/,)
+BOCHSFLAGS+='megs:256'
 
 .PHONY: run
 run: isodir
@@ -58,9 +60,17 @@ run: isodir
 runiso: os.iso
 	$(QEMU) -cdrom $(QEMUPATHPREFIX)$< -boot d $(QEMUFLAGS)
 
+.PHONY: bochsiso
+bochsiso: os.iso
+	$(BOCHS) -q -n 'boot:cdrom' 'ata0-slave: type=cdrom, path=$<, status=inserted' $(BOCHSFLAGS)
+
 .PHONY: runfda
 runfda: os.img
 	$(QEMU) -fda $(QEMUPATHPREFIX)$< -boot a $(QEMUFLAGS)
+
+.PHONY: bochsfda
+bochsfda: os.img
+	$(BOCHS) -q -n 'boot:a' 'floppya: 1_44=$<, status=inserted' $(BOCHSFLAGS)
 
 
 .PHONY: clean

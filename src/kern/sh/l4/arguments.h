@@ -19,11 +19,14 @@ enum L4_ArgumentsIndex
 	L4_Segment_Split_Arg_Point = 1,
 	L4_Segment_AllocPage_Arg_Count = 1,
 	L4_Slab_Allocate_Arg_Count = 1,
-	L4_Page_RetypeToSlab_Arg_ObjType = 1,
+	L4_Page_Retype_Arg_ToType = 1,
+	L4_Page_Retype_Arg_ObjType,
 	L4_Pgdir_MapPage_Arg_VAddr = 1,
 	L4_Pgdir_MapPage_Arg_PageCPtr,
 	L4_Pgdir_MapPgtab_Arg_VAddr = 1,
 	L4_Pgdir_MapPgtab_Arg_PgtabCPtr,
+	L4_Pgdir_UnmapPage_Arg_VAddr = 1,
+	L4_Pgdir_UnmapPgtab_Arg_VAddr = 1,
 };
 
 enum L4_ReturnsIndex

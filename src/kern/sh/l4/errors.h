@@ -13,7 +13,7 @@ enum L4_ErrorNumber
 	L4_ERetype,
 	L4_EWater,
 	L4_EPgtab,
-	L4_EPage,
+	L4_EFault,
 	L4_EMapped,
 	L4_ErrorMax,
 };

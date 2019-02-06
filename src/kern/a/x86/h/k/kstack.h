@@ -6,7 +6,7 @@
 #include <mmu/page.h>
 
 #define KernSEStackTop  (KernPhysEnd)
-#define KernIStackTop   (KernPhysEnd - PageSize)
+#define KernIStackTop   (KernPhysEnd - 2 * PageSize)
 #define KernIFrame      (KernIStackTop - IFrameWords * 4)
 #define KernSEFrame     (KernSEStackTop - SEFrameWords * 4)
 

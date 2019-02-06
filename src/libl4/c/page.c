@@ -2,8 +2,7 @@
 #include <libl4/invoke.h>
 #include <l4/arguments.h>
 #include <l4/services.h>
-
-#if 0
+#if 0 // {{{
 /**
  * map a page in current address space
  *
@@ -49,7 +48,7 @@ int l4Pgtab_Map(l4CPtr_t cptr, l4Word_t vaddr)
 	};
 	return l4Invoke(cptr, msg, sizeof(msg));
 }
-#endif
+#endif // }}}
 
 /**
  * map a page in a page directory
@@ -107,6 +106,52 @@ int l4Pgdir_MapPgtab(l4CPtr_t cptr, l4CPtr_t pgtab, l4Word_t vaddr)
 		[L4_Arg_Service] = L4_Pgdir_MapPgtab,
 		[L4_Pgdir_MapPgtab_Arg_VAddr] = vaddr,
 		[L4_Pgdir_MapPgtab_Arg_PgtabCPtr] = pgtab,
+	};
+	return l4Invoke(cptr, msg, sizeof(msg));
+}
+
+/**
+ * unmap a page from a page directory
+ *
+ * @param cptr	capability to the page directory
+ *
+ * @param vaddr	virtual address to be mapped
+ *
+ * @return	the kernel return value
+ *
+ * @retval -L4_EFault	virtual address `vaddr` not mapped
+ *
+ * @retval -Libl4_Error	unexcepted error
+ */
+int l4Pgdir_UnmapPage(l4CPtr_t cptr, l4Word_t vaddr)
+{
+	l4Word_t msg[] =
+	{
+		[L4_Arg_Service] = L4_Pgdir_UnmapPage,
+		[L4_Pgdir_MapPage_Arg_VAddr] = vaddr,
+	};
+	return l4Invoke(cptr, &msg, sizeof(msg));
+}
+
+/**
+ * unmap a page table from a page directory
+ *
+ * @param cptr	capability to the page directory
+ *
+ * @param vaddr	virtual address to be mapped
+ *
+ * @return	the kernel return value
+ *
+ * @retval -L4_EFault	virtual address `vaddr` not mapped
+ *
+ * @retval -Libl4_Error	unexcepted error
+ */
+int l4Pgdir_UnmapPgtab(l4CPtr_t cptr, l4Word_t vaddr)
+{
+	l4Word_t msg[] =
+	{
+		[L4_Arg_Service] = L4_Pgdir_UnmapPgtab,
+		[L4_Pgdir_UnmapPgtab_Arg_VAddr] = vaddr,
 	};
 	return l4Invoke(cptr, msg, sizeof(msg));
 }

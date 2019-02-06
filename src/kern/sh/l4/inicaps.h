@@ -8,6 +8,7 @@ enum L4_InitCapPtr
 	L4_InitCapDebug,
 	L4_InitCapTCB,
 	L4_InitCapCSpace,
+	L4_InitCapPgdir,
 	L4_InitCapExtra,
 	L4_InitCapSigma0,
 	L4_InitCapDestSlot0,
