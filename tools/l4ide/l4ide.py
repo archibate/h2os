@@ -7,10 +7,11 @@ def parse_ide(lines):
         if not len(line):
             continue
         elif line[0] == 'proto':
-            _, name = line
-            do_proto(lines, name)
+            _, proto = line
+            do_proto(lines, proto)
 
-def do_proto(lines, name):
+def do_proto(lines, proto):
+    fh.writeln('l4Ret_t %s(', proto)
     while lines:
         line = next(lines)
         line.split()
@@ -20,7 +21,12 @@ def do_proto(lines, name):
             break
         else:
             inout, type, name = line
-            if inout == 'out':
-                out_arg(type, name)
-            if inout == 'in':
-                out_arg(type, name)
+            eval('do_' + inout + '_' + type)(name)
+
+argtypes = {
+        'word': 'l4Word_t',
+        'cap': 'l4CPtr_t',
+}
+
+def do_out_word(name):
+    fh.writeln('l4Word_t %s,' % name)
