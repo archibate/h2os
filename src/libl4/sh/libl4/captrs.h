@@ -11,6 +11,7 @@ enum Libl4_CapPtr
 	Libl4_CapConsole = L4_InitCapConsole,
 	Libl4_CapDebug   = L4_InitCapDebug,
 	Libl4_CapExtra   = L4_InitCapExtra,
+	Libl4_CapThisTCB = L4_InitCapTCB,
 
 	Libl4_CapDestSlot0 = L4_InitCapDestSlot0,
 	Libl4_CapDestSlot1,

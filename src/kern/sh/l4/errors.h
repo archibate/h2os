@@ -12,6 +12,7 @@ enum L4_ErrorNumber
 	L4_ERetype,
 	L4_ECapIdx,
 	L4_EActived,
+	L4_EBlocked,
 	L4_EWater,
 	L4_EPgtab,
 	L4_EFault,

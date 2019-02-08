@@ -20,6 +20,11 @@ void schedSetActive(tcb_t *x)
 
 void schedSetInactive(tcb_t *x)
 {
+	if (&x->list == runningHead) {
+		if (unlikely(runningHead == runningHead->next))
+			panic("sched: Out of Task!");
+		runningHead = runningHead->next;
+	}
 	list_del(&x->list);
 }
 
@@ -33,6 +38,7 @@ void schedLeave(void)
 {
 	//dprintk("sl");
 	tcb_t *next = schedGetCurr();
+	assert(next != (tcb_t*)HOLE_LIST);
 	if (next != currTcb)
 		Arch_switchTask(currTcb, next);
 }

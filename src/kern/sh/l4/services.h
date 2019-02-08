@@ -17,6 +17,7 @@ enum L4_ServiceNumber
 	L4_Slab_Allocate,
 	L4_Endpoint_Retype,
 	L4_TCB_Active,
+	L4_TCB_Suspend,
 	L4_TCB_SetCap,
 	L4_TCB_GetCap,
 	L4_TCB_GetExtraBuffer,

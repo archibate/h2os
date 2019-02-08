@@ -15,6 +15,7 @@ enum TCBState
 	TCB_OnRecv,
 	TCB_OnCall,
 	TCB_Waiting,
+	TCB_Suspend,
 };
 
 typedef struct TCB

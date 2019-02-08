@@ -78,3 +78,12 @@ int l4TCB_Active(l4CPtr_t cptr)
 	};
 	return l4Invoke(cptr, &msg, sizeof(msg));
 }
+
+int l4TCB_Suspend(l4CPtr_t cptr)
+{
+	l4Word_t msg[] =
+	{
+		[L4_Arg_Service] = L4_TCB_Suspend,
+	};
+	return l4Invoke(cptr, &msg, sizeof(msg));
+}

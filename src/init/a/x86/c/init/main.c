@@ -52,10 +52,11 @@ void init_main(void)
 	l4TCB_SetCap(Libl4_CapTCB0, L4_TCBCap_UTCB, Libl4_CapPage1);
 	l4TCB_SetPCSP(Libl4_CapTCB0, 0x20000000, 0x20000ffc);
 	l4TCB_Active(Libl4_CapTCB0);
-#endif
-
-	for (;;)
+	for (int i = 0; i < 300; i++)
 		asm volatile ("int $0x82");
+	l4TCB_Suspend(Libl4_CapThisTCB);
+	for (;;);
+#endif
 
 	l4Debug_Puts("Hello, L4Debug!");
 	static char buf[273];

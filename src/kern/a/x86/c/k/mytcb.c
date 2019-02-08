@@ -34,5 +34,6 @@ void setup_mytcb(void)
 		.c_type = L4_PageCap,
 		.c_objaddr = KernUTCBAddr,
 	};
+	tcb->state = TCB_Running;
 	schedInit(tcb);
 }
