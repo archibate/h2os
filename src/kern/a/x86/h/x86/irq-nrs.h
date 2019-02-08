@@ -1,3 +1,5 @@
+#pragma once
+
 #define IRQ_TIMER	0
 #define IRQ_KEYBD	1
 #define IRQ_SLAVEPIC	2

@@ -8,7 +8,7 @@ queue_t, node_t;
 
 #define _queueFirst(q)	((q)->next)
 #define _queueLast(q)	((q)->next)
-#define queueEmpty(q)	((q)->next == (q)->prev)
+#define queueEmpty(q)	((q)->next == (q) && (q) == (q)->prev)
 
 void queueInit(queue_t *q);
 void queueNext(queue_t *q);

@@ -15,6 +15,7 @@ int _FASTCALL systemCall(cptr_t cptr, word_t *shortMsg)
 {
 	int res;
 	schedEnter();
+	assert(currTcb);
 	cap_t *cap = capLookup(cptr);
 	cap_t *capDest = capGetDestSlot();
 	if (!cap) {

@@ -28,5 +28,6 @@ void setup_mytcb(void)
 		.c_type = L4_PgdirCap,
 		.c_objaddr = mmu_getPgdirPaddr(),
 	};
+	schedInit();
 	schedSetActive(tcb);
 }

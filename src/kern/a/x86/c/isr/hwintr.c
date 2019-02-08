@@ -1,6 +1,8 @@
 #include <k/x86/idt.h>
 #include <k/asm/iframe.h>
+#include <k/a/dumpuser.h>
 #include <k/kstack.h>
+#include <k/printk.h>
 #include <k/panic.h>
 #include <assert.h>
 #include <x86/cregs.h>
@@ -20,6 +22,11 @@ void hwintr(ulong *iframe)
 		assert(iframe == kIFrame);
 		hwsysintr();
 		return;
+	} else if (nr > IntrSyscall) {
+		assert(iframe == kIFrame);
+		//dprintk("int %#x", nr);
+		//dumpuser();
+		return;
 	} else switch (nr) {
 	case ExceptionPageFault:
 		panic("#PF from %#04x:%p at %#p (%d)",
@@ -29,9 +36,4 @@ void hwintr(ulong *iframe)
 	}
 
 	panic("Undefined Interrupt Number %d (%#x)", nr, nr);
-}
-
-void hwirq(uint irq)
-{
-	printk("Undefined IRQ %d (%#x)", irq, irq);
 }

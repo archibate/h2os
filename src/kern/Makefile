@@ -19,8 +19,13 @@ vmlinux.elf: $(LDSCRIPT).i $(OBJS)
 ALL+=out/boot/vmlinux-l4
 out/boot/vmlinux-l4: vmlinux.elf
 	@mkdir -p $(@D)
+ifdef STRIP_KERN
 	$(EL) strip $@
 	$(STRIP) $(STRIPFLAGS) -o $@ $<
+else
+	$(EL) inst $@
+	cp $< $@
+endif
 
 sc/nametab.gen.c: $(wildcard sh/l4/*.h)
 	tools/nametab.sh > $@

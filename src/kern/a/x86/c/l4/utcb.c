@@ -15,7 +15,7 @@ void UTCB_Init(utcb_t *utcb, word_t pc, word_t sp)
 	utcb->iframe[IFrame_ES] = ds;
 	utcb->iframe[IFrame_FS] = ds;
 	utcb->iframe[IFrame_GS] = ds;
-	utcb->seframe[IFrame_EFLAGS] = eflags;
+	utcb->iframe[IFrame_EFLAGS] = eflags;
 	utcb->iframe[IFrame_PC] = pc;
 	utcb->iframe[IFrame_SP] = sp;
 	utcb->seframe[SEFrame_PC] = pc;

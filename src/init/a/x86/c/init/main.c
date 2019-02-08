@@ -54,6 +54,9 @@ void init_main(void)
 	l4TCB_Active(Libl4_CapTCB0);
 #endif
 
+	for (;;)
+		asm volatile ("int $0x82");
+
 	l4Debug_Puts("Hello, L4Debug!");
 	static char buf[273];
 	l4Read(Libl4_CapDebug, buf, sizeof(buf));

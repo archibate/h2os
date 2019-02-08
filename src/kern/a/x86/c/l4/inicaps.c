@@ -36,6 +36,15 @@ void init_mycaps(cap_t *cspace, tcb_t *tcb)
 		.c_limit = KernSigma0End - KernSigma0Begin,
 		.c_water = 0,
 	};
+#if 0
+	cspace[L4_InitCapVRAM] = (cap_t)
+	{
+		.c_type = L4_SegmentCap,
+		.c_base = 0xb8000,
+		.c_limit = 400,
+		.c_water = 0,
+	};
+#endif
 	cspace[L4_InitCapTCB] = (cap_t)
 	{
 		.c_type = L4_TCBCap,

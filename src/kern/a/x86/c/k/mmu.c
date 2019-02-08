@@ -11,7 +11,7 @@ void init_mmu(void)
 		kern_ptes[PageNum(pa)] = Pte(pa, PtePerm_KernRW);
 	kern_ptes[0] = 0;
 
-	for (pa = 0; pa < KernPhysEnd; pa += SectionSize)
+	for (pa = 0; pa < KernVirtEnd; pa += SectionSize)
 		kern_pd[PdeIndex(pa)] = PdePgtab((va_t)&kern_ptes[PageNum(pa)]);
 
 	mmu_setPgdirPaddrEx((pa_t)kern_pd, 0);

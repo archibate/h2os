@@ -6,9 +6,10 @@
 extern queue_t running;
 extern tcb_t *currTcb;
 
-#define schedGetCurr()		queueFirst(&running, tcb_t)
-#define schedEnter()		(currTcb = schedGetCurr())
+void schedTimer(void);
+void schedEnter(void);
 void schedLeave(void);
+#define schedGetCurr()		queueFirst(&running, tcb_t)
 #define schedInit()		queueInit(&running)
 #define schedNext()		queueNext(&running)
 #define schedSetActive(x)	queueAddFirst(&running, x)

@@ -31,6 +31,6 @@ void dumpuser(void)
 			EF(FL_VIF, VIF, vif),
 			EF(FL_VIP, VIP, vip),
 			EF(FL_ID, ID, id));
-	dprintk("INT#%d  ERR=%d", kIFrame[IFrame_IntrNum], kIFrame[IFrame_ErrorCode]);
+	dprintk("INT#%#x ERR=%#x", kIFrame[IFrame_IntrNum], kIFrame[IFrame_ErrorCode]);
 	dprintk("CR2=%p  CR3=%p", getcr2(), getcr3());
 }
