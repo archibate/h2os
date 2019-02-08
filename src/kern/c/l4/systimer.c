@@ -3,5 +3,7 @@
 
 void systemTimer(void)
 {
+	schedEnter();
 	schedTimer();
+	schedLeave();
 }

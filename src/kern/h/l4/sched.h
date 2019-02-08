@@ -1,16 +1,16 @@
 #pragma once
 
 #include <l4/thread.h>
-#include <l4/queue.h>
+#include <list.h>
 
-extern queue_t running;
+extern struct list_head *runningHead;
 extern tcb_t *currTcb;
 
 void schedTimer(void);
 void schedEnter(void);
 void schedLeave(void);
-#define schedGetCurr()		queueFirst(&running, tcb_t)
-#define schedInit()		queueInit(&running)
-#define schedNext()		queueNext(&running)
-#define schedSetActive(x)	queueAddFirst(&running, x)
-#define schedSetInactive(x)	queueRemove(x)
+void schedInit(tcb_t *x);
+void schedSetActive(tcb_t *x);
+void schedSetInactive(tcb_t *x);
+#define schedGetCurr()	list_entry(runningHead, tcb_t, list)
+void schedNext(void);

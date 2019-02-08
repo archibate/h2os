@@ -6,7 +6,7 @@ void UTCB_Init(utcb_t *utcb, word_t pc, word_t sp)
 {
 	word_t cs = SEG_UCODE;
 	word_t ds = SEG_UDATA;
-	word_t eflags = FL_1F | FL_IF;
+	word_t eflags = FL_1F | FL_IF | FL_IOPL(3);
 	utcb->seframe[SEFrame_DS] = ds;
 	utcb->seframe[SEFrame_ES] = ds;
 	utcb->iframe[IFrame_CS] = cs;

@@ -24,7 +24,7 @@ void Arch_switchPgdirAndUTCB(pde_t *oldPd, pde_t *newPd, pa_t utcb)
 	const size_t len = PdeIndex(KernVirtEnd - KernVirtBegin) * sizeof(pde_t);
 	const size_t off = PdeIndex(KernVirtBegin) * sizeof(pde_t);
 #endif
-	printk("Arch_switchPgdirAndUTCB(%p, %p, %p)", oldPd, newPd, utcb);
+	//dprintk("Arch_switchPgdirAndUTCB(%p, %p, %p)", oldPd, newPd, utcb);
 	assert(utcb);
 	assert(!PageOffset(utcb));
 	kern_ptes[PageNum(KernUTCBAddr)] = Pte(utcb, PtePerm_KernRW);

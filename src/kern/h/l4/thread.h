@@ -5,7 +5,7 @@
 #include <l4/tcbcaps.h>
 #include <l4/capability.h>
 #include <l4/asm/context.h>
-#include <l4/queue.h>
+#include <list.h>
 
 enum TCBState
 {
@@ -19,7 +19,8 @@ enum TCBState
 
 typedef struct TCB
 {
-	node_t node;
+	struct list_node list;
+	struct hlist_node hlist;
 	cap_t caps[L4_TCBCapsMax];
 	byte_t state;
 	byte_t priority;

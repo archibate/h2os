@@ -24,7 +24,7 @@ void hwintr(ulong *iframe)
 		return;
 	} else if (nr > IntrSyscall) {
 		assert(iframe == kIFrame);
-		//dprintk("int %#x", nr);
+		dprintk("int %#x", nr);
 		//dumpuser();
 		return;
 	} else switch (nr) {

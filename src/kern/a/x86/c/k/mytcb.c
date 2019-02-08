@@ -1,5 +1,6 @@
-#include <k/printk.h>
+#include <k/kbase.h>
 #include <k/mytcb.h>
+#include <k/printk.h>
 #include <k/inicaps.h>
 #include <l4/inicaps.h>
 #include <l4/captypes.h>
@@ -28,6 +29,10 @@ void setup_mytcb(void)
 		.c_type = L4_PgdirCap,
 		.c_objaddr = mmu_getPgdirPaddr(),
 	};
-	schedInit();
-	schedSetActive(tcb);
+	tcb->t_utcb = (cap_t)
+	{
+		.c_type = L4_PageCap,
+		.c_objaddr = KernUTCBAddr,
+	};
+	schedInit(tcb);
 }

@@ -7,7 +7,7 @@
 #define EOF (-1)
 #endif
 #define offsetof(type, memb) ((unsigned long) &(((type*)0)->memb))
-#define entryof(type, memb, ptr) ({ \
+#define container_of(ptr, type, memb) ({ \
 		typeof(((type*)0)->memb) *_$p = (ptr); \
 		(type*)((char*)_$p - offsetof(type, memb)); \
 	})

@@ -1,12 +1,12 @@
 #pragma once
 
 #include <l4/thread.h>
-#include <l4/queue.h>
+#include <list.h>
 
 typedef struct Endpoint
 {
-	queue_t qCaller;
-	queue_t qWaiter;
+	struct hlist_head qCaller;
+	struct hlist_head qWaiter;
 }
 endpoint_t;
 
