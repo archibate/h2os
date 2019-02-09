@@ -30,8 +30,8 @@ int _FASTCALL systemCall(cptr_t cptr, word_t *shortMsg)
 	extern const char *__ntNameTableOfEnum_L4_ServiceNumber[];
 	if (cptr != L4_InitCapExtra) printk("&%x<%s$%x@%x[%x:%x%%%x]>: %s(%x)[%.8s%.7s]",
 			cptr,//10+__ntNameTableOfEnum_L4_InitCapPtr[cptr],
-			3+__ntNameTableOfEnum_L4_CapType[cap->c_type], cap->c_retype,
-			cap->c_objptr, cap->c_base, cap->c_limit, cap->c_water,
+			3+__ntNameTableOfEnum_L4_CapType[cap->ctype], cap->c_slab.retype,
+			cap->c_objptr, cap->c_segment.base, cap->c_segment.limit, cap->c_slab.water,
 			3+__ntNameTableOfEnum_L4_ServiceNumber[shortMsg[0]],
 			shortMsg[1],shortMsg+2,shortMsg[2]&0xff?currTcb->extraBuf:(void*)"");
 #endif

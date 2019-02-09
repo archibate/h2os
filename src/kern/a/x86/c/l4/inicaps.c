@@ -3,70 +3,69 @@
 #include <l4/errors.h>
 #include <l4/captypes.h>
 #include <l4/inicaps.h>
+#include <mmu/page.h>
 #include <k/kbase.h>
 
 void init_mycaps(cap_t *cspace, tcb_t *tcb)
 {
 	cspace[L4_InitCapNull] = (cap_t)
 	{
-		.c_type = L4_NullCap,
+		.ctype = L4_NullCap,
 	};
 	cspace[L4_InitCapConsole] = (cap_t)
 	{
-		.c_type = L4_ConsoleCap,
+		.ctype = L4_ConsoleCap,
 	};
 	cspace[L4_InitCapIOPort] = (cap_t)
 	{
-		.c_type = L4_IOPortCap,
-		.c_base = 0x0,
-		.c_limit = 0x1000,
+		.ctype = L4_IOPortCap,
+		.c_ioseg.base = 0x0,
+		.c_ioseg.limit = 0x1000,
 	};
 	cspace[L4_InitCapDebug] = (cap_t)
 	{
-		.c_type = L4_DebugCap,
+		.ctype = L4_DebugCap,
 	};
 	cspace[L4_InitCapDestSlot0] = (cap_t)
 	{
-		.c_type = L4_NullCap,
+		.ctype = L4_NullCap,
 	};
 	cspace[L4_InitCapSigma0] = (cap_t)
 	{
-		.c_type = L4_SegmentCap,
-		.c_base = KernSigma0Begin,
-		.c_limit = KernSigma0End - KernSigma0Begin,
-		.c_water = 0,
+		.ctype = L4_SegmentCap,
+		.c_segment.base = PageNum(KernSigma0Begin),
+		.c_segment.limit = PageNum(KernSigma0End - KernSigma0Begin),
+		.c_segment.water = 0,
 	};
 #if 0
 	cspace[L4_InitCapVRAM] = (cap_t)
 	{
-		.c_type = L4_SegmentCap,
-		.c_base = 0xb8000,
-		.c_limit = 400,
-		.c_water = 0,
+		.ctype = L4_SegmentCap,
+		.c_segment.base = PageNum(KernVRAMBegin),
+		.c_segment.limit = PageNum(KernVRAMEnd - KernVRAMBegin),
+		.c_segment.water = 0,
 	};
 #endif
 	cspace[L4_InitCapTCB] = (cap_t)
 	{
-		.c_type = L4_TCBCap,
+		.ctype = L4_TCBCap,
 		.c_objptr = tcb,
-		.c_water = 0,
 	};
 	cspace[L4_InitCapCSpace] = (cap_t)
 	{
-		.c_type = L4_CRefCap,
+		.ctype = L4_CRefCap,
 		.c_objptr = &tcb->t_cspace,
 	};
 	cspace[L4_InitCapPgdir] = (cap_t)
 	{
-		.c_type = L4_CRefCap,
+		.ctype = L4_CRefCap,
 		.c_objptr = &tcb->t_pgdir,
 	};
 	cspace[L4_InitCapExtra] = (cap_t)
 	{
-		.c_type = L4_BufferCap,
-		.c_objptr = &tcb->extraBuf,
-		//.c_base = &tcb->extraBuf,
-		.c_limit = L4_MaxExtraWords * sizeof(word_t),
-		.c_water = 0,
+		.ctype = L4_BufferCap,
+		.c_buffer.objptr = tcb->extraBuf,
+		.c_buffer.limit = L4_MaxExtraWords * sizeof(word_t),
+		.c_buffer.water = 0,
 	};
 }

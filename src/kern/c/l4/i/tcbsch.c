@@ -16,11 +16,11 @@ int do_TCB_Active(tcb_t *tcb)
 {
 	if (tcb->state != TCB_NullState)
 		return -L4_EActived;
-	if (tcb->t_cspace.c_type != L4_CSpaceCap)
+	if (tcb->t_cspace.ctype != L4_CSpaceCap)
 		return -L4_ERetype;
-	if (tcb->t_pgdir.c_type != L4_PgdirCap)
+	if (tcb->t_pgdir.ctype != L4_PgdirCap)
 		return -L4_ERetype;
-	if (tcb->t_utcb.c_type != L4_PageCap)
+	if (tcb->t_utcb.ctype != L4_PageCap)
 		return -L4_ERetype;
 	tcb->state = TCB_Running;
 	schedActive(tcb);
@@ -31,11 +31,11 @@ int do_TCB_Suspend(tcb_t *tcb)
 {
 	if (tcb->state != TCB_Running)
 		return -L4_EBlocked;
-	if (tcb->t_cspace.c_type != L4_CSpaceCap)
+	if (tcb->t_cspace.ctype != L4_CSpaceCap)
 		return -L4_ERetype;
-	if (tcb->t_pgdir.c_type != L4_PgdirCap)
+	if (tcb->t_pgdir.ctype != L4_PgdirCap)
 		return -L4_ERetype;
-	if (tcb->t_utcb.c_type != L4_PageCap)
+	if (tcb->t_utcb.ctype != L4_PageCap)
 		return -L4_ERetype;
 	tcb->state = TCB_Suspend;
 	schedSuspend(tcb);

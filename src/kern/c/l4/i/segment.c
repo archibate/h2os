@@ -5,25 +5,28 @@
 #include <memory.h>
 #include <assert.h>
 
-int do_Segment_Split(cap_t *segm, cap_t *capDest, word_t point)
+int do_Segment_Split(CSegment_t *segm, cap_t *capDest, word_t point)
 {
-	if (point <= segm->c_water)
+	if (point <= segm->water)
 		return -L4_EWater;
+	if (point > segm->limit)
+		return -L4_ELimit;
 	// T: verify(dest)
 	cap_t *dest = capDest;
-	segm->c_limit = point;
+	segm->limit = point;
 	memset(dest, 0, sizeof(cap_t));
-	dest->c_base = segm->c_base + segm->c_limit;
-	dest->c_limit = segm->c_limit - point;
+	dest->ctype = L4_SegmentCap;
+	dest->c_segment.base = segm->base + segm->limit;
+	dest->c_segment.limit = segm->limit - point;
 	return 0;
 }
 
-int do_Segment_AllocPage(cap_t *segm, cap_t *capDest, word_t num)
+int do_Segment_AllocPage(CSegment_t *segm, cap_t *capDest, word_t num)
 {
 	cap_t *dest = capDest;
 	//assert(segm != dest);
-	word_t water = PageUp(segm->c_base + segm->c_water);
-	word_t end = PageDown(segm->c_base + segm->c_limit);
+	word_t water = segm->base + segm->water;
+	word_t end = segm->base + segm->limit;
 	if (end < water)
 		return num;
 	while (num > 0) {
@@ -31,13 +34,13 @@ int do_Segment_AllocPage(cap_t *segm, cap_t *capDest, word_t num)
 			break;
 		//dprintk("L4_Segment_AllocPage: water = %p", water);
 		memset(dest, 0, sizeof(cap_t));
-		dest->c_type = L4_PageCap;
-		dest->c_objaddr = water;
-		water += PageSize;
+		dest->ctype = L4_PageCap;
+		dest->c_objaddr = (water << PageBits);
+		water++;
 		dest++;
 		num--;
 	}
 	assert(!num);
-	segm->c_water = water - segm->c_base;
+	segm->water = water - segm->base;
 	return num;
 }

@@ -38,7 +38,7 @@
 
 #define assertSegmentValid(seg) assert(!ovadd((seg)->base, (seg)->limit))
 
-int verifySegment(segment_t const *seg, word_t offset, word_t length)
+int verifySegment(CSegment_t const *seg, word_t offset, word_t length)
 {
 	assertSegmentValid(seg);
 
@@ -69,12 +69,12 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 
 	word_t service = getword(L4_Arg_Service);
 
-	//dprintk("target=%p, ctype=%d, service=%d", target, target->c_type, service);
+	//dprintk("target=%p, ctype=%d, service=%d", target, target->ctype, service);
 	//dprintk("shortMsg+1=[%8s]", shortMsg + 1);
 
 	word_t i, length = MIN(getword(L4_RWArg_Length), L4_ShortMsgBytes + L4_MaxExtraBytes);
 
-	switch (target->c_type)
+	switch (target->ctype)
 	{
 	case L4_ConsoleCap:
 		{
@@ -92,24 +92,25 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 		}
 	case L4_BufferCap:
 		{
+			CBuffer_t *buffer = &target->c_buffer;
 			switch (service)
 			{
 			case L4_RewindWriteFrag:
 			case L4_RewindReadFrag:
-				target->c_water = 0;
+				buffer->water = 0;
 			case L4_WriteFrag:
 			case L4_ReadFrag:
-				if (target->c_water + L4_RWFragSize > target->c_limit)
+				if (buffer->water + L4_RWFragSize > buffer->limit)
 					return -L4_ELength;
 				if (service == L4_ReadFrag || service == L4_RewindReadFrag)
 					memcpy(shortMsg + L4_RWFragArg_DataBegin,
-							target->c_objptr + target->c_water,
+							buffer->objptr + buffer->water,
 							L4_RWFragSize);
 				else
-					memcpy(target->c_objptr + target->c_water,
+					memcpy(target->c_objptr + buffer->water,
 							shortMsg + L4_RWFragArg_DataBegin,
 							L4_RWFragSize);
-				target->c_water += L4_RWFragSize;
+				buffer->water += L4_RWFragSize;
 				return 0;
 			default:
 				return -L4_EService;
@@ -135,14 +136,15 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 #endif // }}}
 	case L4_IOPortCap:
 		{
-			assertSegmentValid(&target->seg);
+			CSegment_t *ioseg = &target->c_segment;
+			assertSegmentValid(ioseg);
 
 			switch (service)
 			{
 			case L4_PWrite:
 			case L4_PRead:
 				{
-					int res = verifySegment(&target->seg, length, 0);
+					int res = verifySegment(ioseg, length, 0);
 					if (res)
 						return res;
 				}
@@ -152,13 +154,13 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			case L4_PWrite:
 				for (i = 0; i < length; i++) {
 					byte_t data = getbyte(L4_PRWArg_DataBegin, i);
-					word_t port = target->c_base + getword(L4_PRWArg_Offset);
+					word_t port = ioseg->base + getword(L4_PRWArg_Offset);
 					outb(port, data);
 				}
 				return 0;
 			case L4_PRead:
 				for (i = 0; i < length; i++) {
-					word_t port = target->c_base + getword(L4_PRWArg_Offset);
+					word_t port = ioseg->base + getword(L4_PRWArg_Offset);
 					byte_t data = inb(port);
 					getbyte(L4_PRWArg_DataBegin, i) = data;
 				}
@@ -226,7 +228,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 								break;
 						}
 						dest->c_physptr = objPhys;
-						dest->c_type = objType;
+						dest->ctype = objType;
 						if (objType != L4_SegmentCap) {
 							void *p = phymmap(objPhys, objSize, 1);
 							sysRetypeInit(p, objType, objSize);
@@ -252,14 +254,15 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 #endif // }}}
 	case L4_CSpaceCap:
 		{
+			CCSpace_t *cspace = &target->c_cspace;
 			switch (service)
 			{
 			case L4_CSpace_SetDestSlot:
 				{
 					word_t water = getword(L4_CSpace_SetDestSlot_Arg_SlotCPtr);
-					if (water >= target->c_limit)
+					if (water >= cspace->limit)
 						return -L4_ELimit;
-					target->c_water = water;
+					cspace->water = water;
 					return 0;
 				}
 			default:
@@ -268,14 +271,15 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 		}
 	case L4_EndpointCap:
 		{
-			endpoint_t *ep = target->c_objptr;
-			switch (target->c_retype)
+			CEndpoint_t *cep = &target->c_endpoint;
+			endpoint_t *ep = cep->objptr;
+			switch (cep->retype)
 			{
 			case L4_EPUntyped:
 				switch (service)
 				{
 				case L4_Endpoint_Retype:
-					target->c_retype = getword(L4_Endpoint_Retype_Arg_EPType);
+					cep->retype = getword(L4_Endpoint_Retype_Arg_EPType);
 					return 0;
 				default:
 					return -L4_EService;
@@ -313,9 +317,9 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				if (tcb->state != TCB_NullState)
 					return -L4_EActived;
 				memset(capDest, 0, sizeof(cap_t));
-				capDest->c_type = L4_BufferCap;
-				capDest->c_objptr = &tcb->extraBuf;
-				capDest->c_limit = sizeof(tcb->extraBuf);
+				capDest->ctype = L4_BufferCap;
+				capDest->c_buffer.objptr = tcb->extraBuf;
+				capDest->c_buffer.limit = sizeof(tcb->extraBuf);
 				cdepend(capDest, target);
 				return 0;
 			case L4_TCB_SetPCSP:
@@ -335,15 +339,16 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 		}
 	case L4_SegmentCap:
 		{
-			assertSegmentValid(&target->seg);
-			assert(target->c_water <= target->c_limit);
+			CSegment_t *segment = &target->c_segment;
+			assertSegmentValid(segment);
+			assert(segment->water <= segment->limit);
 
 			switch (service)
 			{
 			case L4_Segment_Split:
-				return do_Segment_Split(target, capDest, getword(L4_Segment_Split_Arg_Point));
+				return do_Segment_Split(segment, capDest, getword(L4_Segment_Split_Arg_Point));
 			case L4_Segment_AllocPage:
-				return do_Segment_AllocPage(target, capDest, getword(L4_Segment_AllocPage_Arg_Count));
+				return do_Segment_AllocPage(segment, capDest, getword(L4_Segment_AllocPage_Arg_Count));
 			default:
 				return -L4_EService;
 			}
@@ -360,9 +365,9 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					cap_t *pgcap = getcap(L4_Pgdir_MapPage_Arg_PageCPtr);
 					if (!pgcap)
 						return -L4_ECLookup;
-					if (pgcap->c_type != L4_PageCap)
+					if (pgcap->ctype != L4_PageCap)
 						return -L4_ECapType;
-					pa_t page = pgcap->c_objaddr;
+					pa_t page = pgcap->c_page.objaddr;
 					pde_t pde = pgdir[PdeIndex(va)];
 					if (!PdeIsValid(pde))
 						return -L4_EPgtab;
@@ -383,9 +388,9 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					cap_t *pgcap = getcap(L4_Pgdir_MapPgtab_Arg_PgtabCPtr);
 					if (!pgcap)
 						return -L4_ECLookup;
-					if (pgcap->c_type != L4_PgtabCap)
+					if (pgcap->ctype != L4_PgtabCap)
 						return -L4_ECapType;
-					pa_t ptaddr = pgcap->c_objaddr;
+					pa_t ptaddr = pgcap->c_pgtab.objaddr;
 					assert(PgdirOffset((pa_t)pgdir) == 0);
 					pde_t pde = pgdir[PdeIndex(va)];
 					if (PdeIsValid(pde))
@@ -442,8 +447,8 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					case L4_PageCap:
 					case L4_PgtabCap:
 					case L4_PgdirCap:
-						target->c_type = toType;
-						//dprintk("!!pa=%p", target->c_objaddr);
+						target->ctype = toType;
+						//dprintk("!!pa=%p", target->c_pgdir.objaddr);
 						return 0;
 					case L4_SlabCap:
 						return do_Page_RetypeToSlab(target, toType, objType);
@@ -485,7 +490,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 								break;
 						}
 						dest->c_physptr = objPhys;
-						dest->c_type = objType;
+						dest->ctype = objType;
 						if (objType != L4_SegmentCap) {
 							void *p = phymmap(objPhys, objSize, 1);
 							sysRetypeInit(p, objType, objSize);
@@ -504,7 +509,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					for (i = 0; i < target->c_limit; i++) {
 						word_t pfn = target->c_base + i;
 						dest->c_pgPfn = pfn;
-						dest->c_type = L4_PageCap;
+						dest->ctype = L4_PageCap;
 						dest->c_pgRetype = 0;
 						dest++;
 					}
@@ -532,7 +537,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			};
 		}
 	default:
-		panic("L4_ECapType: %d (%#x)", target->c_type, target->c_type);
+		panic("L4_ECapType: %d (%#x)", target->ctype, target->ctype);
 		return -L4_ECapType;
 	}
 }

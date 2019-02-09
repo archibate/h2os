@@ -5,10 +5,10 @@
 
 cap_t *capLookup(cptr_t cptr)
 {
-	return uncref(csLookup(&currTcb->t_cspace, cptr));
+	return uncref(csLookup(&currTcb->t_cspace.c_cspace, cptr));
 }
 
 cap_t *capGetDestSlot(void)
 {
-	return csGetDestSlot(&currTcb->t_cspace);
+	return csGetDestSlot(&currTcb->t_cspace.c_cspace);
 }

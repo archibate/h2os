@@ -19,20 +19,20 @@ void make_mytcb(void *utcb, void *pgdir)
 	init_mycaps(cspace, tcb);
 	tcb->t_cspace = (cap_t)
 	{
-		.c_type = L4_CSpaceCap,
-		.c_objptr = cspace,
-		.c_limit = L4_InitCapMax,
-		.c_water = L4_InitCapDestSlot0,
+		.ctype = L4_CSpaceCap,
+		.c_cspace.objptr = cspace,
+		.c_cspace.limit = L4_InitCapMax,
+		.c_cspace.water = L4_InitCapDestSlot0,
 	};
 	tcb->t_pgdir = (cap_t)
 	{
-		.c_type = L4_PgdirCap,
-		.c_objptr = pgdir,
+		.ctype = L4_PgdirCap,
+		.c_pgdir.objaddr = (word_t)pgdir,
 	};
 	tcb->t_utcb = (cap_t)
 	{
-		.c_type = L4_PageCap,
-		.c_objptr = utcb,
+		.ctype = L4_PageCap,
+		.c_page.objaddr = (word_t)utcb,
 	};
 	tcb->state = TCB_Running;
 	schedActive(tcb);

@@ -5,9 +5,9 @@
 
 int do_TCB_SetPCSP(tcb_t *tcb, word_t pc, word_t sp)
 {
-	if (tcb->t_utcb.c_type != L4_PageCap)
+	if (tcb->t_utcb.ctype != L4_PageCap)
 		return -L4_ERetype;
-	utcb_t *utcb = tcb->t_utcb.c_objptr;
+	utcb_t *utcb = (void*)tcb->t_utcb.c_page.objaddr;
 
 	utcb->iframe[IFrame_PC] = pc;
 	utcb->iframe[IFrame_SP] = sp;

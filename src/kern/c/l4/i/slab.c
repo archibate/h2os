@@ -25,45 +25,46 @@ static size_t sysObjSizeOf(byte_t objType)
 	}
 }
 
-int do_Page_RetypeToSlab(cap_t *page, byte_t toType, byte_t objType)
+int do_Page_RetypeToSlab(cap_t *target, byte_t toType, byte_t objType)
 {
 	size_t objSize = sysObjSizeOf(objType);
 	if (!objSize)
 		return -L4_ERetype;
 	assert(objSize <= PageSize);
-	page->c_type = L4_SlabCap;
-	page->c_retype = objType;
-	word_t pa = page->c_objaddr;
+	target->ctype = L4_SlabCap;
+	target->c_slab.retype = objType;
+	word_t pa = target->c_page.objaddr;
 	void *vip = Arch_makeVirtPage(pa);
-	page->c_objptr = vip;
+	target->c_slab.objptr = vip;
 	return 0;
 }
 
-int do_Slab_Allocate(cap_t *slab, cap_t *capDest, word_t num)
+int do_Slab_Allocate(cap_t *target, cap_t *capDest, word_t num)
 {
-	/*if (!slab->c_retype)
+	/*if (!slab->retype)
 	  return -L4_ERetype;*/
 	// T: verify(dest)
+	CSlab_t *slab = &target->c_slab;
 	cap_t *dest = capDest;
 	//assert(slab != dest);
-	byte_t objType = slab->c_retype;
+	byte_t objType = slab->retype;
 	size_t objSize = sysObjSizeOf(objType);
 	if (!objSize)
 		return num;//
 	assert(objSize <= PageSize);
-	assert(PageOffset((word_t)slab->c_objptr) == 0);
-	assert(slab->c_water % objSize == 0);
+	assert(PageOffset((word_t)slab->objptr) == 0);
+	assert(slab->water % objSize == 0);
 	while (num > 0) {
-		if (slab->c_water >= PageSize)
+		if (slab->water >= PageSize)
 			break;
-		void *objVirtPtr = slab->c_objptr + slab->c_water;
-		slab->c_water += objSize;
+		void *objVirtPtr = slab->objptr + slab->water;
+		slab->water += objSize;
 		memset(objVirtPtr, 0, objSize);
 		//dprintk("L4_Slab_Allocate: objVirtPtr = %p", objVirtPtr);
 		memset(dest, 0, sizeof(cap_t));
 		dest->c_objptr = objVirtPtr;
-		dest->c_type = objType;
-		cdepend(dest, slab);
+		dest->ctype = objType;
+		cdepend(dest, target);
 		dest++;
 		num--;
 	}
