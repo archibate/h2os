@@ -8,6 +8,7 @@
 #include <libl4/captrs.h>
 #include <l4/captypes.h>
 #include <l4/tcbcaps.h>
+#include <l4/consts.h>
 #include <memory.h>
 
 #define l4SetDestSlot(cptr) l4CSpace_SetDestSlot(Libl4_CapCSpace, cptr)
@@ -54,6 +55,8 @@ void init_main(void)
 	l4TCB_SetCap(Libl4_CapTCB0, L4_TCBCap_CSpace, Libl4_CapCSpace);
 	l4TCB_SetCap(Libl4_CapTCB0, L4_TCBCap_UTCB, Libl4_CapPage1);
 	l4TCB_SetPCSP(Libl4_CapTCB0, 0x20000000, 0x20000ffc);
+	l4TCB_SetPriority(Libl4_CapThisTCB, 5);
+	l4TCB_SetPriority(Libl4_CapTCB0, 2);
 	l4TCB_Active(Libl4_CapTCB0);
 	for (int i = 0; i < 300; i++)
 		asm volatile ("int $0x82");

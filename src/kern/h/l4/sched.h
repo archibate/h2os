@@ -1,15 +1,15 @@
 #pragma once
 
 #include <l4/thread.h>
+#include <l4/consts.h>
 #include <list.h>
 
 extern byte_t currPriority;
-#define L4_MaxPriority 256
 extern struct list_head *runningHeads[L4_MaxPriority];
 #define runningHead  (runningHeads[currPriority])
 extern tcb_t *currTcb;
 
-void schedTimer(void);
+void schedTimerCallback(void);
 void schedEnter(void);
 void schedLeave(void);
 void schedInit(tcb_t *x);

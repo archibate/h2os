@@ -4,6 +4,6 @@
 void systemTimer(void)
 {
 	schedEnter();
-	schedTimer();
+	schedTimerCallback();
 	schedLeave();
 }

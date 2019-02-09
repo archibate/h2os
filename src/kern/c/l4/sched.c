@@ -6,17 +6,19 @@
 
 void _schedLowerPriority(void);
 
+bool currIdle = 1;
 byte_t currPriority;
 struct list_head *runningHeads[L4_MaxPriority];
 tcb_t *currTcb;
 
 void schedActive(tcb_t *x)
 {
+	currIdle = 0;
 	if (!runningHeads[x->priority])
 		list_init(runningHeads[x->priority] = &x->list);
 	else
 		list_add_tail(&x->list, runningHeads[x->priority]);
-	if (x->priority > currPriority)
+	if (currIdle || x->priority > currPriority)
 		currPriority = x->priority;
 }
 
@@ -63,7 +65,8 @@ void _schedLowerPriority(void)
 			return;
 		}
 	}
-	panic("_schedLowerPriority: Out of Task!");
+	currIdle = 1;
+	//panic("_schedLowerPriority: Out of Task!");
 }
 
 void schedNext(void)
@@ -71,10 +74,14 @@ void schedNext(void)
 	runningHead = runningHead->next;
 }
 
-void schedTimer(void)
+void schedTimerCallback(void)
 {
 #ifdef CONFIG_LOG_SCHED_TIMER
-	printk("schedTimer...");
+	printk("schedTimer (%s)...", currIdle ? "idle" : "busy");
 #endif
-	schedNext();
+	if (!currIdle) {
+		schedEnter();
+		schedNext();
+		schedLeave();
+	}
 }

@@ -364,7 +364,13 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 #endif
 				return 0;
 			case L4_TCB_SetPriority:
-				tcb->priority = getword(L4_TCB_SetPriority_Arg_Priority);
+				{
+					byte_t prio = getword(L4_TCB_SetPriority_Arg_Priority);
+					bool running = tcb->state == TCB_Running;
+					if (running) schedSuspend(tcb);
+					tcb->priority = prio;
+					if (running) schedActive(tcb);
+				}
 				return 0;
 			case L4_TCB_Active:
 				if (tcb->state != TCB_NullState)
