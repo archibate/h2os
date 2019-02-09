@@ -7,12 +7,14 @@ typedef struct capability
 {
 	byte_t c_type;
 	byte_t c_retype;
-	half_t c_water;
-	segment_t seg;
+	short refcnt;
+	struct capability *parent;
 	union {
 		void *c_objptr;
 		word_t c_objaddr;
 	};
+	segment_t seg;
+	word_t c_water;
 }
 cap_t;
 #define c_base		seg.base

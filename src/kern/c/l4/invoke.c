@@ -316,7 +316,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				capDest->c_type = L4_BufferCap;
 				capDest->c_objptr = &tcb->extraBuf;
 				capDest->c_limit = sizeof(tcb->extraBuf);
-				cdepend(capDest, tcb);
+				cdepend(capDest, target);
 				return 0;
 			case L4_TCB_SetPCSP:
 				return do_TCB_SetPCSP(tcb,

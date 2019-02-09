@@ -2,7 +2,6 @@
 #include <drv/console.h>
 
 #include <memory.h>
-#include <string.h>
 #include <stdlib.h>
 
 #include <inttypes.h>
@@ -132,13 +131,6 @@ static void __con_putchar(char ch)
 				cx = (cx + 1) % 80;
 	}
 	con_chk_scroll();
-}
-
-void con_puts(const char *s)
-{
-	con_enter();
-	con_write(s, strlen(s));
-	con_leave();
 }
 
 #define XCHGI(x, y) do { (x)^=(y); (y)^=(x); (x)^=(y); } while(0)

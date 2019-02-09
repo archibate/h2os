@@ -1,10 +1,11 @@
 #include <conio.h>
 #include <stdio.h>
+#include <string.h>
 #include <drv/console.h>
 
 int cputs(const char *s)
 {
-	con_puts(s);
+	con_write(s, strlen(s));
 	return 0;
 }
 
