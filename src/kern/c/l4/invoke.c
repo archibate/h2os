@@ -74,6 +74,14 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 
 	word_t i, length = MIN(getword(L4_RWArg_Length), L4_ShortMsgBytes + L4_MaxExtraBytes);
 
+#if 0
+	switch (service)
+	{
+	case L4_Cap_Delete:
+		cdelete(1);
+	}
+#endif
+
 	switch (target->ctype)
 	{
 	case L4_ConsoleCap:
@@ -345,8 +353,10 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 
 			switch (service)
 			{
+#if 0
 			case L4_Segment_Split:
 				return do_Segment_Split(segment, capDest, getword(L4_Segment_Split_Arg_Point));
+#endif
 			case L4_Segment_AllocPage:
 				return do_Segment_AllocPage(segment, capDest, getword(L4_Segment_AllocPage_Arg_Count));
 			default:

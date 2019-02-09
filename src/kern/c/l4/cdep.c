@@ -11,7 +11,8 @@ static void cderef(cap_t *cap);
 
 void cdelete(cap_t *cap)
 {
-	cderef(cap->parent);
+	if (cap->parent)
+		cderef(cap->parent);
 }
 
 void cderef(cap_t *cap)

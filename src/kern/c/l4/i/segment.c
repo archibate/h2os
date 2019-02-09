@@ -5,6 +5,7 @@
 #include <memory.h>
 #include <assert.h>
 
+#if 0
 int do_Segment_Split(CSegment_t *segm, cap_t *capDest, word_t point)
 {
 	if (point <= segm->water)
@@ -20,6 +21,7 @@ int do_Segment_Split(CSegment_t *segm, cap_t *capDest, word_t point)
 	dest->c_segment.limit = segm->limit - point;
 	return 0;
 }
+#endif
 
 int do_Segment_AllocPage(CSegment_t *segm, cap_t *capDest, word_t num)
 {
@@ -36,6 +38,7 @@ int do_Segment_AllocPage(CSegment_t *segm, cap_t *capDest, word_t num)
 		memset(dest, 0, sizeof(cap_t));
 		dest->ctype = L4_PageCap;
 		dest->c_objaddr = (water << PageBits);
+		cdepend(dest, segm);
 		water++;
 		dest++;
 		num--;
