@@ -18,7 +18,11 @@
 #include <l4/a/utcb.h>
 #include <l4/endpoint.h>
 #include <l4/sched.h>
-#include <l4/thread.h>
+#include <l4/i/tcbcap.h>
+#include <l4/i/tcbctx.h>
+#include <l4/i/tcbsch.h>
+#include <l4/i/segment.h>
+#include <l4/i/slab.h>
 #include <conio.h>
 #include <asm/clsti.h>
 #include <x86/io.h>
@@ -30,6 +34,7 @@
 #include <mmu/mmu.h>
 #include <mmu/pte.h>
 #include <memory.h>
+#include <l4/cdep.h>
 
 #define assertSegmentValid(seg) assert(!ovadd((seg)->base, (seg)->limit))
 
@@ -47,12 +52,8 @@ int verifySegment(segment_t const *seg, word_t offset, word_t length)
 	return 0;
 }
 
-#define prefombr(obj, p) p
-#define pnewslab(p) p
-#define pslabnew(p) p
-
-static size_t sysObjSizeOf(byte_t objType);
 int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
+	// T: verify(capDest)
 {
 #define L4_RWFragSize ((L4_ShortMsgWords - L4_RWFragArg_DataBegin) * sizeof(word_t))
 #define L4_ShortMsgBytes (L4_ShortMsgWords * sizeof(word_t))
@@ -301,105 +302,33 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			switch (service)
 			{
 			case L4_TCB_SetCap:
-				{
-					if (tcb->state != TCB_NullState)
-						return -L4_EActived;
-					word_t cidx = getword(L4_TCB_SetCap_Arg_CapIdx);
-					if (cidx > L4_TCBCapsMax)
-						return -L4_ECapIdx;
-					cap_t *cap = getcap(L4_TCB_SetCap_Arg_CPtr);
-					cap_t *dest = &tcb->caps[cidx];
-					if (!cap)
-						return -L4_ECLookup;
-					memcpy(dest, cap, sizeof(cap_t));
-					switch (cidx)
-					{
-					case L4_TCBCap_Pgdir:
-						Arch_InitPgdir(dest->c_objptr);
-						break;
-					case L4_TCBCap_UTCB:
-						Arch_InitUTCB(dest->c_objptr);
-						break;
-					}
-				}
-				return 0;
+				return do_TCB_SetCap(tcb,
+						getword(L4_TCB_SetCap_Arg_CapIdx),
+						getcap(L4_TCB_SetCap_Arg_CPtr));
 			case L4_TCB_GetCap:
-				{
-					if (tcb->state != TCB_NullState)
-						return -L4_EActived;
-					word_t cidx = getword(L4_TCB_SetCap_Arg_CapIdx);
-					if (cidx > L4_TCBCapsMax)
-						return -L4_ECapIdx;
-					cap_t *src = &tcb->caps[cidx];
-					memcpy(capDest, src, sizeof(cap_t));
-				}
-				return 0;
+				return do_TCB_GetCap(tcb,
+						getword(L4_TCB_GetCap_Arg_CapIdx),
+						capDest);
 			case L4_TCB_GetExtraBuffer:
 				if (tcb->state != TCB_NullState)
 					return -L4_EActived;
 				memset(capDest, 0, sizeof(cap_t));
 				capDest->c_type = L4_BufferCap;
-				capDest->c_objptr = prefombr(tcb, &tcb->extraBuf);
+				capDest->c_objptr = &tcb->extraBuf;
 				capDest->c_limit = sizeof(tcb->extraBuf);
+				cdepend(capDest, tcb);
 				return 0;
 			case L4_TCB_SetPCSP:
-				if (tcb->t_utcb.c_type != L4_PageCap)
-					return -L4_ERetype;
-				utcb_t *utcb = tcb->t_utcb.c_objptr;
-				//dprintk("utcb=%p", utcb);
-				utcb->iframe[IFrame_PC] = getword(L4_TCB_SetPCSP_Arg_PC);
-				utcb->iframe[IFrame_SP] = getword(L4_TCB_SetPCSP_Arg_SP);
-				utcb->seframe[SEFrame_PC] = getword(L4_TCB_SetPCSP_Arg_PC);
-				utcb->seframe[SEFrame_SP] = getword(L4_TCB_SetPCSP_Arg_SP);
-#if 0
-				for (i = 0; i < L4_ContextWords; i++) {
-					word_t value = getword(L4_TCB_SetContext_Arg_ContextBegin + i);
-					tcb->context[i] = value;
-				}
-				UTCB_SetContext(tcb->t_utcb, context);
-				for (i = 0; i < L4_ContextWords; i++) {
-					word_t value = getword(L4_TCB_SetContext_Arg_ContextBegin + i);
-					tcb->context[i] = value;
-				}
-#endif
-				return 0;
+				return do_TCB_SetPCSP(tcb,
+						getword(L4_TCB_SetPCSP_Arg_PC),
+						getword(L4_TCB_SetPCSP_Arg_SP));
 			case L4_TCB_SetPriority:
-				{
-					byte_t prio = getword(L4_TCB_SetPriority_Arg_Priority);
-					bool running = tcb->state == TCB_Running;
-					if (running) schedSuspend(tcb);
-					tcb->priority = prio;
-					if (running) schedActive(tcb);
-				}
-				return 0;
+				return do_TCB_SetPriority(tcb,
+						getword(L4_TCB_SetPriority_Arg_Priority));
 			case L4_TCB_Active:
-				if (tcb->state != TCB_NullState)
-					return -L4_EActived;
-				if (tcb->t_cspace.c_type != L4_CSpaceCap)
-					return -L4_ERetype;
-				if (tcb->t_pgdir.c_type != L4_PgdirCap)
-					return -L4_ERetype;
-				if (tcb->t_utcb.c_type != L4_PageCap)
-					return -L4_ERetype;
-				tcb->state = TCB_Running;
-				schedActive(tcb);
-				//panic("L4_TCB_Active");
-				/*dprintk("utcb=%p", tcb->t_utcb.c_objptr);
-				dprintk("utcb->pc=%p", ((utcb_t*)tcb->t_utcb.c_objptr)->iframe[IFrame_PC]);*/
-				return 0;
+				return do_TCB_Active(tcb);
 			case L4_TCB_Suspend:
-				//dprintk("state=%d", tcb->state);
-				if (tcb->state != TCB_Running)
-					return -L4_EBlocked;
-				if (tcb->t_cspace.c_type != L4_CSpaceCap)
-					return -L4_ERetype;
-				if (tcb->t_pgdir.c_type != L4_PgdirCap)
-					return -L4_ERetype;
-				if (tcb->t_utcb.c_type != L4_PageCap)
-					return -L4_ERetype;
-				tcb->state = TCB_Suspend;
-				schedSuspend(tcb);
-				return 0;
+				return do_TCB_Suspend(tcb);
 			default:
 				return -L4_EService;
 			}
@@ -412,42 +341,9 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			switch (service)
 			{
 			case L4_Segment_Split:
-				{
-					word_t point = getword(L4_Segment_Split_Arg_Point);
-					if (point <= target->c_water)
-						return -L4_EWater;
-					// T: verify(dest)
-					cap_t *dest = capDest;
-					target->c_limit = point;
-					memset(dest, 0, sizeof(cap_t));
-					dest->c_base = target->c_base + target->c_limit;
-					dest->c_limit = target->c_limit - point;
-					return 0;
-				}
+				return do_Segment_Split(target, capDest, getword(L4_Segment_Split_Arg_Point));
 			case L4_Segment_AllocPage:
-				{
-					cap_t *dest = capDest;
-					//assert(target != dest);
-					word_t num = getword(L4_Segment_AllocPage_Arg_Count);
-					word_t water = PageUp(target->c_base + target->c_water);
-					word_t end = PageDown(target->c_base + target->c_limit);
-					if (end < water)
-						return num;
-					while (num > 0) {
-						if (water >= end)
-							break;
-						//dprintk("L4_Segment_AllocPage: water = %p", water);
-						memset(dest, 0, sizeof(cap_t));
-						dest->c_type = L4_PageCap;
-						dest->c_objaddr = water;
-						water += PageSize;
-						dest++;
-						num--;
-					}
-					assert(!num);
-					target->c_water = water - target->c_base;
-					return num;
-				}
+				return do_Segment_AllocPage(target, capDest, getword(L4_Segment_AllocPage_Arg_Count));
 			default:
 				return -L4_EService;
 			}
@@ -550,18 +446,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 						//dprintk("!!pa=%p", target->c_objaddr);
 						return 0;
 					case L4_SlabCap:
-						{
-							size_t objSize = sysObjSizeOf(objType);
-							if (!objSize)
-								return -L4_ERetype;
-							assert(objSize <= PageSize);
-							target->c_type = L4_SlabCap;
-							target->c_retype = objType;
-							word_t pa = target->c_objaddr;
-							void *vip = Arch_makeVirtPage(pa);
-							target->c_objptr = pslabnew(vip);
-							return 0;
-						}
+						return do_Page_RetypeToSlab(target, toType, objType);
 					default:
 						return -L4_ERetype;
 					}
@@ -641,37 +526,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				}
 #endif // }}}
 			case L4_Slab_Allocate:
-				{
-					/*if (!target->c_retype)
-						return -L4_ERetype;*/
-					// T: verify(dest)
-					cap_t *dest = capDest;
-					//assert(target != dest);
-					word_t num = getword(L4_Slab_Allocate_Arg_Count);
-					byte_t objType = target->c_retype;
-					size_t objSize = sysObjSizeOf(objType);
-					if (!objSize)
-						return num;//
-					assert(objSize <= PageSize);
-					assert(PageOffset((word_t)target->c_objptr) == 0);
-					assert(target->c_water % objSize == 0);
-					while (num > 0) {
-						if (target->c_water >= PageSize)
-							break;
-						void *objVirtPtr = target->c_objptr + target->c_water;
-						target->c_water += objSize;
-						objVirtPtr = pslabnew(objVirtPtr);
-						memset(objVirtPtr, 0, objSize);
-						//dprintk("L4_Slab_Allocate: objVirtPtr = %p", objVirtPtr);
-						memset(dest, 0, sizeof(cap_t));
-						dest->c_objptr = objVirtPtr;
-						dest->c_type = objType;
-						dest++;
-						num--;
-					}
-					assert(!num);
-					return num;
-				}
+				return do_Slab_Allocate(target, capDest, getword(L4_Slab_Allocate_Arg_Count));
 			default:
 				return -L4_EService;
 			};
@@ -679,22 +534,5 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 	default:
 		panic("L4_ECapType: %d (%#x)", target->c_type, target->c_type);
 		return -L4_ECapType;
-	}
-}
-
-size_t sysObjSizeOf(byte_t objType)
-{
-	switch (objType)
-	{
-	case L4_TCBCap:
-		return sizeof(tcb_t);
-	/*case L4_PageCap:
-		return PageSize;
-	case L4_PgtabCap:
-		return PgtabSize;
-	case L4_PgdirCap:
-		return PgdirSize;*/
-	default:
-		return 0;
 	}
 }

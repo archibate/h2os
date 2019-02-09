@@ -2,7 +2,9 @@
 #include <libl4/mm.h>
 #include <libl4/page.h>
 #include <libl4/cspace.h>
-#include <libl4/thread.h>
+#include <libl4/tcbcap.h>
+#include <libl4/tcbctx.h>
+#include <libl4/tcbsch.h>
 #include <libl4/puts.h>
 #include <libl4/debug.h>
 #include <libl4/captrs.h>
