@@ -1,5 +1,5 @@
 #include <l4/a/tswitch.h>
-#include <l4/a/mswitch.h>
+#include <l4/a/pgdir.h>
 #include <k/asm/seframe.h>
 #include <k/asm/iframe.h>
 #include <l4/asm/context.h>
@@ -12,9 +12,12 @@
 void Arch_switchTask(tcb_t *oldTcb, tcb_t *newTcb)
 {
 	Arch_switchPgdirAndUTCB(
-			(void*)oldTcb->t_pgdirAddr,
+			//(void*)oldTcb->t_pgdirAddr,
 			(void*)newTcb->t_pgdirAddr,
 			newTcb->t_utcbAddr);
+
+	extern void utcb_iframe_exiter(void);
+	kSEFrame[-1] = (word_t)utcb_iframe_exiter;
 }
 #if 0 // {{{
 static bool is_seframe(void)

@@ -10,6 +10,9 @@
 #include <mmu/pte.h>
 #include <assert.h>
 #include <elf32.h>
+#include <k/kstack.h>
+#include <l4/a/utcb.h>
+#include <l4/a/pgdir.h>
 
 #ifdef CONFIG_DUMP_LDMOD
 #define tprintk(...) printk(__VA_ARGS__)
@@ -17,16 +20,22 @@
 #define tprintk(...) /* Nothing */
 #endif
 
-
 static void *loadelf(const void *data, const void *end);
-void *load_module(const void *begin, const void *end)
+void load_module(const void *begin, const void *end)
 {
+	utcb_t *utcb = (utcb_t*)pool_alloc_frame();
+	pde_t *pgdir = (pde_t*)pool_alloc_frame();
+	Arch_InitPgdir(pgdir);
+	Arch_InitUTCB(utcb);
+	Arch_switchPgdirAndUTCB(pgdir, (pa_t)utcb);
+
 	void *pc;
 	if (!(pc = loadelf(begin, end)))
 		panic("bad module ELF format");
+	kUTCB->iframe[IFrame_PC] = (word_t)pc;
 
-	setup_mytcb();
-	return pc;
+	extern void make_mytcb(void *utcb, void *pgdir);
+	make_mytcb(utcb, pgdir);
 }
 
 static void map_zero(va_t va0, size_t size, bool rw);

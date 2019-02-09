@@ -24,20 +24,24 @@ int _FASTCALL systemCall(cptr_t cptr, word_t *shortMsg)
 		goto out;
 	}
 
+#ifdef CONFIG_DEBUG_TRACE
 	extern const char *__ntNameTableOfEnum_L4_CapType[];
 	//extern const char *__ntNameTableOfEnum_L4_InitCapPtr[];
 	extern const char *__ntNameTableOfEnum_L4_ServiceNumber[];
-	if (cptr != L4_InitCapExtra) dprintk("&%x<%s$%x@%x[%x:%x%%%x]>: %s(%x)[%.8s%.7s]",
+	if (cptr != L4_InitCapExtra) printk("&%x<%s$%x@%x[%x:%x%%%x]>: %s(%x)[%.8s%.7s]",
 			cptr,//10+__ntNameTableOfEnum_L4_InitCapPtr[cptr],
 			3+__ntNameTableOfEnum_L4_CapType[cap->c_type], cap->c_retype,
 			cap->c_objptr, cap->c_base, cap->c_limit, cap->c_water,
 			3+__ntNameTableOfEnum_L4_ServiceNumber[shortMsg[0]],
 			shortMsg[1],shortMsg+2,shortMsg[2]&0xff?currTcb->extraBuf:(void*)"");
+#endif
 	res = sysInvoke(cap, capDest, shortMsg, currTcb->extraBuf);
 
+#ifdef CONFIG_DEBUG_TRACE
 	extern const char *__ntNameTableOfEnum_L4_ErrorNumber[];
 	if (res < 0) panic("sysInvoke returned %d (%s)",
 			res, __ntNameTableOfEnum_L4_ErrorNumber[-res]);
+#endif
 	//else dprintk("returning %d", res);
 
 out:

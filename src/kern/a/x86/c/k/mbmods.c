@@ -2,7 +2,6 @@
 #include <k/panic.h>
 #include <k/printk.h>
 #include <k/ldmod.h>
-#include <k/movusr.h>
 #include <k/mboot.h>
 #include <string.h>
 
@@ -28,8 +27,6 @@ void init_usermods(void)
 		const void *begin = (void*)m[0].mod_start;
 		const void *end = (void*)m[0].mod_end;
 		tprintk("#%d  %#p->%#p  %s", i, begin, end, name);
-		void *pc = load_module(begin, end);
-		printk("Launching %s...", name);
-		goto_user_entry(pc, 0);
+		load_module(begin, end);
 	}
 }

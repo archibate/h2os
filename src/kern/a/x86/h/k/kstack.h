@@ -12,6 +12,7 @@
 
 #ifndef _GPCPP_
 #include <inttypes.h>
+#define kPgdir    ((pde_t*)KernPgdirAddr)
 #define kUTCB    ((struct UTCB*)KernUTCBAddr)
 #define kIFrame  ((ulong*)KernIFrame)
 #define kSEFrame ((ulong*)KernSEFrame)

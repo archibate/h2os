@@ -13,15 +13,7 @@
 #define PtePermMask     (PG_W | PG_U)
 #define PtePerm(x)      ((x) & PtePermMask)
 #define setPtePerm(x,a) (((x) &= PtePermMask) |= PtePerm(a))
-//#define PtePermMaxBits  3
-
-#define VMAttributeMask             (PG_PCD | PG_PWT)
-#define VMAttribute_CacheDisabled   (PG_PCD | PG_PWT)
-#define VMAttribute_WriteThrough    (PG_PWT)
-#define VMAttribute_WriteBackOnly   (PG_PCD)
-#define VMAttribute_Cached          (0)
-#define PteVMAttribute(x)           ((x) & VMAttributeMask)
-#define setPteVMAttribute(x,a)      (((x) &= VMAttributeMask) |= VMAttribute(a))
+#define PtePermMaxBits  3
 
 //#define PteAddrMask     (PGMASK)
 #define PteAddr(x)      ((x) & PageHimask)

@@ -14,6 +14,9 @@
 
 void init_main(void)
 {
+	static int inited = 0;
+	while (inited);
+	inited = 1;
 	l4Puts(Libl4_CapConsole, "0123456789abcdefghijklmnopqrstuvwxyz\n");
 
 	l4SetDestSlot(Libl4_CapSlab0);
@@ -54,13 +57,15 @@ void init_main(void)
 	l4TCB_Active(Libl4_CapTCB0);
 	for (int i = 0; i < 300; i++)
 		asm volatile ("int $0x82");
-	l4TCB_Suspend(Libl4_CapThisTCB);
+	//l4TCB_Suspend(Libl4_CapThisTCB);
 	for (;;);
 #endif
 
+#if 0
 	l4Debug_Puts("Hello, L4Debug!");
 	static char buf[273];
 	l4Read(Libl4_CapDebug, buf, sizeof(buf));
 	l4Debug_Puts(buf);
 	l4Debug_Halt();
+#endif
 }

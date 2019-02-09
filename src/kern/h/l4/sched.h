@@ -3,7 +3,10 @@
 #include <l4/thread.h>
 #include <list.h>
 
-extern struct list_head *runningHead;
+extern byte_t currPriority;
+#define L4_MaxPriority 256
+extern struct list_head *runningHeads[L4_MaxPriority];
+#define runningHead  (runningHeads[currPriority])
 extern tcb_t *currTcb;
 
 void schedTimer(void);

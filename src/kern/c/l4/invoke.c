@@ -14,7 +14,7 @@
 #include <lohitools.h>
 #include <assert.h>
 #include <l4/a/mkvpage.h>
-#include <l4/a/inipgdir.h>
+#include <l4/a/pgdir.h>
 #include <l4/a/utcb.h>
 #include <l4/endpoint.h>
 #include <l4/sched.h>
@@ -346,7 +346,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				if (tcb->t_utcb.c_type != L4_PageCap)
 					return -L4_ERetype;
 				utcb_t *utcb = tcb->t_utcb.c_objptr;
-				dprintk("utcb=%p", utcb);
+				//dprintk("utcb=%p", utcb);
 				utcb->iframe[IFrame_PC] = getword(L4_TCB_SetPCSP_Arg_PC);
 				utcb->iframe[IFrame_SP] = getword(L4_TCB_SetPCSP_Arg_SP);
 				utcb->seframe[SEFrame_PC] = getword(L4_TCB_SetPCSP_Arg_PC);
@@ -465,7 +465,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					if (!PdeIsValid(pde))
 						return -L4_EPgtab;
 					pte_t *pt = (pte_t*)PdePgtabAddr(pde);
-					dprintk("L4_Pgdir_MapPage: pt=%p", pt);
+					//dprintk("L4_Pgdir_MapPage: pt=%p", pt);
 					pte_t pte = pt[PteIndex(va)];
 					if (PteIsValid(pte))
 						return -L4_EMapped;
@@ -488,7 +488,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					pde_t pde = pgdir[PdeIndex(va)];
 					if (PdeIsValid(pde))
 						return -L4_EMapped;
-					dprintk("L4_Pgdir_MapPgtab: pt=%p", ptaddr);
+					//dprintk("L4_Pgdir_MapPgtab: pt=%p", ptaddr);
 					pgdir[PdeIndex(va)] = PdePgtab(ptaddr);
 					return 0;
 				}
@@ -541,7 +541,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					case L4_PgtabCap:
 					case L4_PgdirCap:
 						target->c_type = toType;
-						dprintk("!!pa=%p", target->c_objaddr);
+						//dprintk("!!pa=%p", target->c_objaddr);
 						return 0;
 					case L4_SlabCap:
 						{

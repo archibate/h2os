@@ -1,0 +1,5 @@
+case $1 in
+h) c=h; shift;;
+*) c=c;;
+esac
+find $c a/x86/$c -type f -name "*.$c" -exec grep -H "$1" {} \;

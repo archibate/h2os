@@ -4,28 +4,35 @@
 #include <k/panic.h>
 #include <assert.h>
 
-struct list_head *runningHead;
-tcb_t *currTcb;
+void _schedLowerPriority(void);
 
-void schedInit(tcb_t *x)
-{
-	runningHead = &x->list;
-	list_init(runningHead);
-}
+byte_t currPriority;
+struct list_head *runningHeads[L4_MaxPriority];
+tcb_t *currTcb;
 
 void schedSetActive(tcb_t *x)
 {
-	list_add(&x->list, runningHead);
+	if (!runningHeads[x->priority])
+		list_init(runningHeads[x->priority] = &x->list);
+	else
+		list_add_tail(&x->list, runningHeads[x->priority]);
+	if (x->priority > currPriority)
+		currPriority = x->priority;
 }
 
 void schedSetInactive(tcb_t *x)
 {
 	if (&x->list == runningHead) {
-		if (unlikely(runningHead == runningHead->next))
-			panic("sched: Out of Task!");
-		runningHead = runningHead->next;
+		if (runningHead == runningHead->next) {
+			runningHead = 0;
+			_schedLowerPriority();
+		} else {
+			list_del_init(&x->list);
+			schedNext();
+		}
+	} else {
+		list_del(&x->list);
 	}
-	list_del(&x->list);
 }
 
 void schedEnter(void)
@@ -38,22 +45,34 @@ void schedLeave(void)
 {
 	//dprintk("sl");
 	tcb_t *next = schedGetCurr();
-	assert(next != (tcb_t*)HOLE_LIST);
+	assert(next);
+	//assert(next != (tcb_t*)HOLE_LIST);
 	if (next != currTcb)
 		Arch_switchTask(currTcb, next);
+	//dprintk("sll");
+	//dumpuser();
+}
+
+void _schedLowerPriority(void)
+{
+	int i;
+	for (i = 0; i < currPriority; i++) {
+		if (runningHeads[i]) {
+			currPriority = i;
+			dprintk("%d!", i);
+			return;
+		}
+	}
+	panic("_schedLowerPriority: Out of Task!");
 }
 
 void schedNext(void)
 {
-	//dprintk("sn");
-	/*if (runningHead != runningHead->next)
-		panic("!");*/
 	runningHead = runningHead->next;
-	/*if (schedGetCurr() != currTcb)
-		panic("!");*/
 }
 
 void schedTimer(void)
 {
+	dprintk("schedTimer...");
 	schedNext();
 }

@@ -12,7 +12,7 @@
 static tcb_t tcbpool[12];
 static uint maxtid = 0;
 
-void setup_mytcb(void)
+void make_mytcb(void *utcb, void *pgdir)
 {
 	cap_t *cspace = calloc(L4_InitCapMax, sizeof(cap_t));
 	tcb_t *tcb = &tcbpool[maxtid++];
@@ -27,13 +27,13 @@ void setup_mytcb(void)
 	tcb->t_pgdir = (cap_t)
 	{
 		.c_type = L4_PgdirCap,
-		.c_objaddr = mmu_getPgdirPaddr(),
+		.c_objptr = pgdir,
 	};
 	tcb->t_utcb = (cap_t)
 	{
 		.c_type = L4_PageCap,
-		.c_objaddr = KernUTCBAddr,
+		.c_objptr = utcb,
 	};
 	tcb->state = TCB_Running;
-	schedInit(tcb);
+	schedSetActive(tcb);
 }
