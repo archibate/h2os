@@ -17,15 +17,15 @@ void epCall(endpoint_t *ep, tcb_t *caller, bool block, bool recv)
 		assert(waiter->state == TCB_Waiting);
 		copyData(waiter, caller);
 		waiter->state = TCB_Running;
-		schedSetActive(waiter);
+		schedActive(waiter);
 		if (recv) {
 			caller->state = TCB_OnRecv;
-			schedSetInactive(caller);
+			schedSuspend(caller);
 			//waiter->replySlot = makeThreadReplyEndpointCap(caller);
 		}
 	} else if (block) {
 		caller->state = recv ? TCB_OnCall : TCB_OnRecv;
-		schedSetInactive(caller);
+		schedSuspend(caller);
 		hlist_add_head(&caller->hlist, &ep->qWaiter);
 	}
 }
@@ -43,14 +43,14 @@ void epWait(endpoint_t *ep, tcb_t *waiter)
 			break;
 		case TCB_OnSend:
 			caller->state = TCB_Running;
-			schedSetActive(caller);
+			schedActive(caller);
 			break;
 		default:
 			assert(0);
 		}
 	} else {
 		waiter->state = TCB_Waiting;
-		schedSetInactive(waiter);
+		schedSuspend(waiter);
 		hlist_add_head(&waiter->hlist, &ep->qCaller);
 	}
 }

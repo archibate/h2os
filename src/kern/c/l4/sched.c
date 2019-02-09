@@ -10,7 +10,7 @@ byte_t currPriority;
 struct list_head *runningHeads[L4_MaxPriority];
 tcb_t *currTcb;
 
-void schedSetActive(tcb_t *x)
+void schedActive(tcb_t *x)
 {
 	if (!runningHeads[x->priority])
 		list_init(runningHeads[x->priority] = &x->list);
@@ -20,15 +20,15 @@ void schedSetActive(tcb_t *x)
 		currPriority = x->priority;
 }
 
-void schedSetInactive(tcb_t *x)
+void schedSuspend(tcb_t *x)
 {
 	if (&x->list == runningHead) {
 		if (runningHead == runningHead->next) {
 			runningHead = 0;
 			_schedLowerPriority();
 		} else {
-			list_del_init(&x->list);
 			schedNext();
+			list_del(&x->list);
 		}
 	} else {
 		list_del(&x->list);
@@ -73,6 +73,8 @@ void schedNext(void)
 
 void schedTimer(void)
 {
-	dprintk("schedTimer...");
+#ifdef CONFIG_LOG_SCHED_TIMER
+	printk("schedTimer...");
+#endif
 	schedNext();
 }

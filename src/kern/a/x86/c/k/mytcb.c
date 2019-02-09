@@ -35,5 +35,5 @@ void make_mytcb(void *utcb, void *pgdir)
 		.c_objptr = utcb,
 	};
 	tcb->state = TCB_Running;
-	schedSetActive(tcb);
+	schedActive(tcb);
 }

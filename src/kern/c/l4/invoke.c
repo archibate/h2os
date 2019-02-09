@@ -376,13 +376,13 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				if (tcb->t_utcb.c_type != L4_PageCap)
 					return -L4_ERetype;
 				tcb->state = TCB_Running;
-				schedSetActive(tcb);
+				schedActive(tcb);
 				//panic("L4_TCB_Active");
 				/*dprintk("utcb=%p", tcb->t_utcb.c_objptr);
 				dprintk("utcb->pc=%p", ((utcb_t*)tcb->t_utcb.c_objptr)->iframe[IFrame_PC]);*/
 				return 0;
 			case L4_TCB_Suspend:
-				printk("state=%d", tcb->state);
+				//dprintk("state=%d", tcb->state);
 				if (tcb->state != TCB_Running)
 					return -L4_EBlocked;
 				if (tcb->t_cspace.c_type != L4_CSpaceCap)
@@ -392,7 +392,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				if (tcb->t_utcb.c_type != L4_PageCap)
 					return -L4_ERetype;
 				tcb->state = TCB_Suspend;
-				schedSetInactive(tcb);
+				schedSuspend(tcb);
 				return 0;
 			default:
 				return -L4_EService;

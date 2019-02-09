@@ -1,3 +1,4 @@
+#!/bin/sh
 case $1 in
 h) c=h; shift;;
 *) c=c;;

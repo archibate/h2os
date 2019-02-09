@@ -13,7 +13,7 @@ void schedTimer(void);
 void schedEnter(void);
 void schedLeave(void);
 void schedInit(tcb_t *x);
-void schedSetActive(tcb_t *x);
-void schedSetInactive(tcb_t *x);
+void schedActive(tcb_t *x);
+void schedSuspend(tcb_t *x);
 #define schedGetCurr()	list_entry(runningHead, tcb_t, list)
 void schedNext(void);

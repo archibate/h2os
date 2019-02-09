@@ -1,0 +1,2 @@
+#!/bin/sh
+find c h a/x86/c a/x86/h -type f -name "*.[ch]" -exec sed -i "${1?no regexp}" {} \;
