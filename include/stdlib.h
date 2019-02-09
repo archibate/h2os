@@ -2,18 +2,22 @@
 
 
 typedef struct _div_t {
-	unsigned int quot, rem;
+	int quot, rem;
 } div_t;
 
 typedef struct _ldiv_t {
-	unsigned long quot, rem;
+	long quot, rem;
 } ldiv_t;
 
-div_t div(unsigned int a, unsigned int b);
-ldiv_t ldiv(unsigned long a, unsigned long b);
+div_t div(int a, int b);
+ldiv_t ldiv(long a, long b);
+int abs(int x);
+long labs(long x);
 
 
-unsigned long strtol(const char *s, const char **endp, int base);
+long strtol(const char *s, const char **endp, int base);
+unsigned long strtoul(const char *s, const char **endp, int base);
+long atol(const char *s);
 int atoi(const char *s);
 
 

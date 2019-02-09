@@ -63,7 +63,7 @@ void init_main(void)
 	for (int i = 0; i < 300; i++)
 		asm volatile ("int $0x82");
 	l4TCB_Suspend(Libl4_CapThisTCB);
-	for (;;);
+	asm volatile ("cli;hlt");
 #endif
 
 #if 0

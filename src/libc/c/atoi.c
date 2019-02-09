@@ -14,7 +14,7 @@ int ctoi(int c)
 }
 
 
-unsigned long strtol
+unsigned long strtoul
 	( const char *s
 	, const char **endp
 	, int base
@@ -35,7 +35,26 @@ unsigned long strtol
 	return res;
 }
 
+long strtol
+	( const char *s
+	, const char **endp
+	, int base
+	)
+{
+	int sign = 1;
+	switch (*s) {
+	case '-': sign = -1;
+	case '+': s++; break;
+	}
+	return sign * strtoul(s, endp, base);
+}
+
 int atoi(const char *s)
+{
+	return (int)strtol(s, 0, 10);
+}
+
+long atol(const char *s)
 {
 	return strtol(s, 0, 10);
 }

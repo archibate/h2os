@@ -25,11 +25,9 @@ void _geutoa
 	char buf[40];
 #endif
 	char *p = buf + len;
-	div_t d;
 	do {
-		d = div(u, base);
-		*--p = digsel[d.rem];
-		u = d.quot;
+		*--p = digsel[u % base];
+		u /= base;
 	} while (p > buf);
 	while (p < buf + len)
 		putch(*p++);
@@ -112,7 +110,7 @@ again:
 
 		default:
 			if ('1' <= c && c <= '9') {
-				len = strtol(fmt - 1, &fmt, 10);
+				len = strtoul(fmt - 1, &fmt, 10);
 				goto setalg;
 			}
 			putch(c);
