@@ -4,6 +4,7 @@
 #include <l4/machine/asm/cregs.h>
 #include <l4/machine/asm/eflags.h>
 
+#if 0
 void dumpuser(void)
 {
 	uint eflags = kIFrame[IFrame_EFLAGS];
@@ -34,3 +35,4 @@ void dumpuser(void)
 	dprintk("INT#%#x ERR=%#x", kIFrame[IFrame_IntrNum], kIFrame[IFrame_ErrorCode]);
 	dprintk("CR2=%p  CR3=%p", getcr2(), getcr3());
 }
+#endif

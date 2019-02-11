@@ -1,19 +1,12 @@
 #pragma once
 
 #include <l4/system/kbase.h>
-#include <l4/system/asm/iframe.h>
-#include <l4/system/asm/seframe.h>
-#include <l4/machine/mmu/page.h>
+#include <l4/object/utcb.h>
 
-#define KernSEFrame     (KernUTCBAddr)
-#define KernSEStackTop  (KernSEFrame + SEFrameWords * 4)
-#define KernIFrame      (KernSEStackTop)
-#define KernIStackTop   (KernIFrame + IFrameWords * 4)
+#define kPd       ((pde_t*)KernPgdirAddr)
+#define kUTCB     ((struct utcb*)KernUTCBAddr)
+#define kIFrame   (kUTCB->iframe)
+#define kSEFrame  (kUTCB->seframe)
 
-#ifndef _GPCPP_
-#include <inttypes.h>
-#define kPgdir    ((pde_t*)KernPgdirAddr)
-#define kUTCB    ((struct UTCB*)KernUTCBAddr)
-#define kIFrame  ((ulong*)KernIFrame)
-#define kSEFrame ((ulong*)KernSEFrame)
-#endif
+#define KernSEStackTop  ((unsigned long)&kUTCB->seframe + sizeof(kUTCB->seframe))
+#define KernIStackTop   ((unsigned long)&kUTCB->iframe + sizeof(kUTCB->iframe))

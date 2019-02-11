@@ -13,8 +13,8 @@ void init_mmu(void)
 	kPtes[0] = 0;
 
 	for (pa = 0; pa < KernVirtEnd; pa += SectionSize)
-		kPgdir[PdeIndex(pa)] = PdePgtab((va_t)&kPtes[PageNum(pa)]);
+		kPd[PdeIndex(pa)] = PdePgtab((va_t)&kPtes[PageNum(pa)]);
 
-	mmu_setPgdirPaddrEx((pa_t)kPgdir, 0);
+	mmu_setPgdirPaddrEx((pa_t)kPd, 0);
 	mmu_enablePaging();
 }

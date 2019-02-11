@@ -10,7 +10,7 @@
 
 void pgdir_init(struct pgdir *pgdir)
 {
-	memcpy(&pgdir->pd, kPgdir, PdeIndex(KernVirtEnd) * EntrySize);
+	memcpy(&pgdir->pd, kPd, PdeIndex(KernVirtEnd) * EntrySize);
 }
 
 void pgdir_switch(struct pgdir *pgdir, struct utcb *utcb_ptr)
