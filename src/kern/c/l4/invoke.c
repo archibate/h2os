@@ -8,6 +8,7 @@
 #include <l4/arguments.h>
 #include <l4/capability.h>
 #include <l4/asm/shortmsg.h>
+#include <l4/i/cspace.h>
 #include <l4/clookup.h>
 #include <k/a/dumpuser.h>
 #include <ovtools.h>
@@ -16,7 +17,7 @@
 #include <l4/a/mkvpage.h>
 #include <l4/a/pgdir.h>
 #include <l4/a/utcb.h>
-#include <l4/endpoint.h>
+#include <l4/i/endpoint.h>
 #include <l4/sched.h>
 #include <l4/i/tcbcap.h>
 #include <l4/i/tcbctx.h>
@@ -34,7 +35,6 @@
 #include <mmu/mmu.h>
 #include <mmu/pte.h>
 #include <memory.h>
-#include <l4/cdep.h>
 
 #define assertSegmentValid(seg) assert(!ovadd((seg)->base, (seg)->limit))
 
@@ -74,13 +74,8 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 
 	word_t i, length = MIN(getword(L4_RWArg_Length), L4_ShortMsgBytes + L4_MaxExtraBytes);
 
-#if 0
-	switch (service)
-	{
-	case L4_Cap_Delete:
-		cdelete(1);
-	}
-#endif
+	if (!target->ctype)
+		return -L4_ECTarget;
 
 	switch (target->ctype)
 	{
@@ -262,7 +257,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 #endif // }}}
 	case L4_CSpaceCap:
 		{
-			CCSpace_t *cspace = &target->c_cspace;
+			CSpace_t *cspace = &target->c_cspace;
 			switch (service)
 			{
 			case L4_CSpace_SetDestSlot:
@@ -273,14 +268,27 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 					cspace->water = water;
 					return 0;
 				}
+#if 0 // {{{
+			case L4_CSpace_Delete:
+				{
+					cptr_t cptr = getword(L4_CSpace_Delete_Arg_CPtr);
+					cap_t *cap = csLookup(cspace, cptr);
+					if (!cap)
+						return -L4_ENoCap;
+					if (cap->refcnt > 0)
+						return -L4_ERefcnt;
+					cdelete(cap);
+					memset(cap, 0, sizeof(cap_t));
+					return 0;
+				}
+#endif // }}}
 			default:
 				return -L4_EService;
 			}
 		}
 	case L4_EndpointCap:
 		{
-			CEndpoint_t *cep = &target->c_endpoint;
-			endpoint_t *ep = cep->objptr;
+			endpoint_t *ep = target->c_endpont;
 			switch (cep->retype)
 			{
 			case L4_EPUntyped:
@@ -325,10 +333,9 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 				if (tcb->state != TCB_NullState)
 					return -L4_EActived;
 				memset(capDest, 0, sizeof(cap_t));
-				capDest->ctype = L4_BufferCap;
-				capDest->c_buffer.objptr = tcb->extraBuf;
-				capDest->c_buffer.limit = sizeof(tcb->extraBuf);
-				cdepend(capDest, target);
+				buffer->objptr = tcb->extraBuf;
+				buffer->limit = sizeof(tcb->extraBuf);
+				kobject_set_parent(&buffer->ko, &endpoint->ko);
 				return 0;
 			case L4_TCB_SetPCSP:
 				return do_TCB_SetPCSP(tcb,
@@ -355,10 +362,10 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			{
 #if 0
 			case L4_Segment_Split:
-				return do_Segment_Split(segment, capDest, getword(L4_Segment_Split_Arg_Point));
+				return do_Segment_Split(target, capDest, getword(L4_Segment_Split_Arg_Point));
 #endif
 			case L4_Segment_AllocPage:
-				return do_Segment_AllocPage(segment, capDest, getword(L4_Segment_AllocPage_Arg_Count));
+				return do_Segment_AllocPage(target, capDest, getword(L4_Segment_AllocPage_Arg_Count));
 			default:
 				return -L4_EService;
 			}
@@ -547,7 +554,7 @@ int sysInvoke(cap_t *target, cap_t *capDest, word_t *shortMsg, word_t *extraMsg)
 			};
 		}
 	default:
-		panic("L4_ECapType: %d (%#x)", target->ctype, target->ctype);
-		return -L4_ECapType;
+		panic("L4 cap type dismatched: %d (%#x)", target->ctype, target->ctype);
+		return -L4_ECTarget;
 	}
 }

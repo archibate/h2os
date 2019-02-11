@@ -18,6 +18,7 @@ enum L4_ArgumentsIndex
 	L4_TCB_SetPriority_Arg_Priority = 1,
 	L4_Endpoint_Retype_Arg_EPType = 1,
 	L4_CSpace_SetDestSlot_Arg_SlotCPtr = 1,
+	L4_CSpace_Delete_Arg_CPtr = 1,
 	L4_Segment_Split_Arg_Point = 1,
 	L4_Segment_AllocPage_Arg_Count = 1,
 	L4_Slab_Allocate_Arg_Count = 1,

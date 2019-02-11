@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 ipm_src=src
@@ -36,10 +35,9 @@ dep_rescue()
 	let pkgcnt+=1
 }
 
-real_install()
+src_install()
 {
-	p=${1?package name}
-	dir=$ipm_src/$p
+	dir=${1?dir}
 	if [ -f $dir/Makefile ]
 	then
 		echo "--> building $p"
@@ -57,6 +55,33 @@ real_install()
 				$ipm_sudo cp -r $dir/out/$x $ipm_dest
 			fi
 		done
+	fi
+}
+
+pkg_install()
+{
+	pkg=${1?pkg}
+	echo "--> extracting $p"
+	sh -c "cd $ipm_dest && tar -xzvf $pkg"
+}
+
+ipm_archive()
+{
+	p=${1?package name}
+	dir=$ipm_src/$p
+	pkg=$ipm_pub/$p.pkg
+	tar -czvf $pkg $dir
+}
+
+real_install()
+{
+	p=${1?package name}
+	dir=$ipm_src/$p
+	pkg=$ipm_pub/$p.pkg
+	if [ -d $dir ]
+	then src_install $dir
+	elif [ -f $pkg ]
+	then pkg_install $pkg
 	fi
 	echo "+++ installed $p"
 	echo --------------------------------------
@@ -82,7 +107,4 @@ ipm_install()
 ipm_init
 op=${1?ipm operation}
 shift
-case $op in
-install) ipm_install $*;;
-*) echo bad ipm operation $1 >&2;;
-esac
+ipm_$op $*

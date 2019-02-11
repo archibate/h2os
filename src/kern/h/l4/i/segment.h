@@ -5,4 +5,4 @@
 #if 0
 int do_Segment_Split(CSegment_t *segm, cap_t *capDest, word_t point);
 #endif
-int do_Segment_AllocPage(CSegment_t *segm, cap_t *capDest, word_t num);
+int do_Segment_AllocPage(cap_t *target, cap_t *capDest, word_t num);

@@ -7,6 +7,7 @@ DEFINES+=CONFIG_CONSOLE_CLEAR=1 \
 	 CONFIG_DUMP_LDMOD=1 \
 	 CONFIG_LOG_SCHED_TIMER=1 \
 	 CONFIG_LOG_EXTRA_SWI=1
+INCLUDES+=h/l4/types.h h/l4/defines.h
 include tools/general.mak
 
 .PHONY: default

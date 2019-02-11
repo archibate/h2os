@@ -1,6 +1,14 @@
 #pragma once
 
+#include <l4/types.h>
+#include <l4/kobject.h>
 #include <l4/capability.h>
 
-int do_Page_RetypeToSlab(cap_t *page, byte_t toType, byte_t objType);
-int do_Slab_Allocate(cap_t *slab, cap_t *capDest, word_t num);
+typedef struct CSlab {
+	struct kobject ko;
+	void *objptr;
+	word_t water;
+	byte_t retype;
+} CSlab_t;
+
+int do_Slab_Allocate(CSlab_t *slab, cap_t *capDest, word_t num);

@@ -13,6 +13,7 @@ void cdelete(cap_t *cap)
 {
 	if (cap->parent)
 		cderef(cap->parent);
+	cap->ctype = 0;
 }
 
 void cderef(cap_t *cap)

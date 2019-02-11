@@ -1,6 +1,6 @@
 #pragma once
 
-#include <l4/thread.h>
+#include <l4/i/tcb.h>
 #include <l4/consts.h>
 #include <list.h>
 

@@ -11,9 +11,8 @@ static void copyData(tcb_t *recver, tcb_t *sender)
 void epCall(endpoint_t *ep, tcb_t *caller, bool block, bool recv)
 {
 	assert(caller->state == TCB_Running);
-	if (!hlist_empty(&ep->qWaiter)) {
-		hlist_del(ep->qWaiter.first);
-		tcb_t *waiter = hlist_entry(ep->qWaiter.first, tcb_t, hlist);
+	tcb_t *waiter = wq_pop(&ep->waiting);
+	if (waiter) {
 		assert(waiter->state == TCB_Waiting);
 		copyData(waiter, caller);
 		waiter->state = TCB_Running;
@@ -26,16 +25,15 @@ void epCall(endpoint_t *ep, tcb_t *caller, bool block, bool recv)
 	} else if (block) {
 		caller->state = recv ? TCB_OnCall : TCB_OnRecv;
 		schedSuspend(caller);
-		hlist_add_head(&caller->hlist, &ep->qWaiter);
+		wq_add(&waiter->hlist, &ep->calling);
 	}
 }
 
 void epWait(endpoint_t *ep, tcb_t *waiter)
 {
 	assert(waiter->state == TCB_Running);
-	if (!hlist_empty(&ep->qCaller)) {
-		hlist_del(ep->qCaller.first);
-		tcb_t *caller = hlist_entry(ep->qCaller.first, tcb_t, hlist);
+	tcb_t *caller = wq_pop(&ep->calling);
+	if (caller) {
 		copyData(waiter, caller);
 		switch (caller->state) {
 		case TCB_OnCall:
@@ -51,6 +49,6 @@ void epWait(endpoint_t *ep, tcb_t *waiter)
 	} else {
 		waiter->state = TCB_Waiting;
 		schedSuspend(waiter);
-		hlist_add_head(&waiter->hlist, &ep->qCaller);
+		wq_add(&waiter->hlist, &ep->waiting);
 	}
 }

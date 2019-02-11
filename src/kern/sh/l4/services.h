@@ -25,6 +25,7 @@ enum L4_ServiceNumber
 	L4_TCB_SetPCSP,
 	L4_TCB_SetPriority,
 	L4_CSpace_SetDestSlot,
+	L4_CSpace_Delete,
 	L4_Pgdir_MapPage,
 	L4_Pgdir_MapPgtab,
 	L4_Pgdir_UnmapPage,

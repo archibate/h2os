@@ -2,14 +2,14 @@
 #include <l4/captypes.h>
 #include <assert.h>
 
-cap_t *csLookup(CCSpace_t *cs, cptr_t cptr)
+cap_t *csLookup(CSpace_t *cs, cptr_t cptr)
 {
 	if (cptr > cs->limit)
 		return 0;
 	return &((cap_t*)cs->objptr)[cptr];
 }
 
-cap_t *csGetDestSlot(CCSpace_t *cs)
+cap_t *csGetDestSlot(CSpace_t *cs)
 {
 	assert(cs->water < cs->limit);
 	return &((cap_t*)cs->objptr)[cs->water];

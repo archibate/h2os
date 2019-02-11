@@ -17,5 +17,7 @@ enum L4_ErrorNumber
 	L4_EPgtab,
 	L4_EFault,
 	L4_EMapped,
+	L4_ENoCap,
+	L4_ERefcnt,
 	L4_ErrorMax,
 };

@@ -39,12 +39,12 @@ int do_Page_RetypeToSlab(cap_t *target, byte_t toType, byte_t objType)
 	return 0;
 }
 
-int do_Slab_Allocate(cap_t *target, cap_t *capDest, word_t num)
+int do_Slab_Allocate(CSlab_t *slab, cap_t *capDest, word_t num)
+	// TODO: make me clean!!
 {
 	/*if (!slab->retype)
 	  return -L4_ERetype;*/
 	// T: verify(dest)
-	CSlab_t *slab = &target->c_slab;
 	cap_t *dest = capDest;
 	//assert(slab != dest);
 	byte_t objType = slab->retype;
@@ -64,7 +64,7 @@ int do_Slab_Allocate(cap_t *target, cap_t *capDest, word_t num)
 		memset(dest, 0, sizeof(cap_t));
 		dest->c_objptr = objVirtPtr;
 		dest->ctype = objType;
-		cdepend(dest, target);
+		cdepend(&dest->c_ko, &slab->ko);//??
 		dest++;
 		num--;
 	}

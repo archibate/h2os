@@ -2,6 +2,7 @@
 #include <l4/captypes.h>
 #include <l4/errors.h>
 #include <mmu/page.h>
+#include <l4/cdep.h>
 #include <memory.h>
 #include <assert.h>
 
@@ -23,8 +24,9 @@ int do_Segment_Split(CSegment_t *segm, cap_t *capDest, word_t point)
 }
 #endif
 
-int do_Segment_AllocPage(CSegment_t *segm, cap_t *capDest, word_t num)
+int do_Segment_AllocPage(cap_t *target, cap_t *capDest, word_t num)
 {
+	CSegment_t *segm = &target->c_segment;
 	cap_t *dest = capDest;
 	//assert(segm != dest);
 	word_t water = segm->base + segm->water;
@@ -38,7 +40,7 @@ int do_Segment_AllocPage(CSegment_t *segm, cap_t *capDest, word_t num)
 		memset(dest, 0, sizeof(cap_t));
 		dest->ctype = L4_PageCap;
 		dest->c_objaddr = (water << PageBits);
-		cdepend(dest, segm);
+		cdepend(dest, target);
 		water++;
 		dest++;
 		num--;
