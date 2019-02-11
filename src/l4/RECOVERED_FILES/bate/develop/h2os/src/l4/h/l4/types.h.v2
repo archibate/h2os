@@ -1,8 +1,0 @@
-#pragma once
-
-#include <l4/object/waitqueue.h>
-
-struct endpoint
-{
-	wait_queue_head_t waiting, calling;
-};

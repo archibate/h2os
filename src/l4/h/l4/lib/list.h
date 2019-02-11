@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stddef.h>
-#include <ccutils.h>
 
 #define list_entry(ptr, type, member) container_of(ptr, type, member)
 #define list_first_entry(ptr, type, member) list_entry((ptr)->next, type, member)
@@ -14,7 +13,7 @@ struct list_head {
 
 #define LIST_HEAD(name) struct list_head name = INIT_LIST_HEAD(name)
 #define INIT_LIST_HEAD(head) { &(head), &(head) }
-#define HOLE_LIST ((struct list_head *)0xffffffff)
+#define HOLE_LIST ((struct list_head *)INVALID_PTR)
 #define list_empty(l) ((l)->next == (l))
 
 static inline void list_init(struct list_head *head)

@@ -1,5 +1,7 @@
 #include <l4/generic/endpoint.h>
 #include <l4/generic/waitqueue.h>
+#include <l4/enum/thread-states.h>
+#include <l4/generic/thread.h>
 #include <l4/misc/bug.h>
 //#include <memory.h>
 

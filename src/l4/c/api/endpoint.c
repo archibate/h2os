@@ -1,6 +1,7 @@
 #include <l4/api/endpoint.h>
 #include <l4/generic/endpoint.h>
 #include <l4/generic/cap-convert.h>
+#include <l4/generic/thread.h>
 
 int cap_endpoint_send(struct capability *cap, unsigned long addr, const char *buf, size_t size)
 {
