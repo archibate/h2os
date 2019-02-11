@@ -1,18 +1,18 @@
 #include <l4/api/ioport.h>
 #include <l4/machine/asm/io.h>
 
-int cap_ioport_send(struct capability *cap, unsigned long addr, const char *buf, size_t size)
+#if 0
+int sys_io_out(unsigned short port)
 {
-	unsigned short port = addr;
 	while (size--)
 		outb(port, *buf++);
 	return 0;
 }
 
-int cap_ioport_recv(struct capability *cap, unsigned long addr, char *buf, size_t size)
+int sys_io_in(unsigned short port)
 {
-	unsigned short port = addr;
 	while (size--)
 		*buf++ = inb(port);
 	return 0;
 }
+#endif

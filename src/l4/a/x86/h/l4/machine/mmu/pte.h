@@ -4,7 +4,7 @@
 #include "page.h"
 
 #define PteInitialValue (PG_P)
-#define PteIsValid(x)   ((x) & PG_P)
+#define PteIsVaid(x)   ((x) & PG_P)
 
 #define PtePerm_KernRO  (0)
 #define PtePerm_KernRW  (PG_W)
@@ -30,7 +30,7 @@
 
 
 #define PdeInitialValue (PG_P | PG_W | PG_U)
-#define PdeIsValid(x)   ((x) & PG_P)
+#define PdeIsVaid(x)   ((x) & PG_P)
 
 #define PdeType_Pgtab   (PG_P)
 #define PdeType_Section (PG_P | PG_PSE)

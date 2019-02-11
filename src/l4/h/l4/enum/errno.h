@@ -21,7 +21,7 @@
 #define ENODEV	19	// No such device
 #define ENOTDIR	20	// Not a directory
 #define EISDIR	21	// Is a directory
-#define EINVAL	22	// Invalid argument
+#define EINVAL	22	// Invaid argument
 #define ENFILE	23	// File table overflow
 #define EMFILE	24	// Too many open files
 #define ENOTTY	25	// Not a typewriter
@@ -37,7 +37,7 @@
 #define EDEADLK	35	// Resource deadlock would occur
 #define ENAMETOOLONG	36	// File name too long
 #define ENOLCK	37	// No record locks available
-#define ENOSYS	38	// Invalid system call number
+#define ENOSYS	38	// Invaid system call number
 #define ENOTEMPTY	39	// Directory not empty
 #define ELOOP	40	// Too many symbolic links encountered
 #define EWBLOCK	41	// Operation would block (EAGAIN)
@@ -51,12 +51,12 @@
 #define EUNATCH	49	// Protocol driver not attached
 #define ENOCSI	50	// No CSI structure available
 #define EL2HLT	51	// Level 2 halted
-#define EBADE	52	// Invalid exchange
-#define EBADR	53	// Invalid request descriptor
+#define EBADE	52	// Invaid exchange
+#define EBADR	53	// Invaid request descriptor
 #define EXFULL	54	// Exchange full
 #define ENOANO	55	// No anode
-#define EBADRQC	56	// Invalid request code
-#define EBADSLT	57	// Invalid slot
+#define EBADRQC	56	// Invaid request code
+#define EBADSLT	57	// Invaid slot
 #define EDEADLOCK	58	// Resource deadlock would occur (EDEADLK)
 #define EBFONT	59	// Bad font file format
 #define ENOSTR	60	// Device not a stream

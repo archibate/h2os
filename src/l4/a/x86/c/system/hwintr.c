@@ -39,7 +39,7 @@ void _FASTCALL hwintr(struct iframe *iframe)
 				iframe->cs, iframe->pc,
 				*(volatile uchar*)iframe->pc
 				);
-	case ExceptionInvalidOpcode:
+	case ExceptionInvaidOpcode:
 		panic("#UD from %#04x:%p of instruction %02X",
 				iframe->cs, iframe->pc,
 				*(volatile uchar*)iframe->pc

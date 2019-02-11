@@ -5,8 +5,8 @@
 #include "types.h"
 #include "page.h"
 
-#define mmu_invalidatePage(va)       invlpg((void*)(va))
-#define mmu_invalidateAll()          setcr3(getcr3())
+#define mmu_invaidatePage(va)       invlpg((void*)(va))
+#define mmu_invaidateAll()          setcr3(getcr3())
 #define mmu_setPgdirPaddrEx(pd, flg) setcr3(PageDown(pd) | (flg))
 #define mmu_setPgdirPaddr(pd)        setcr3(PageDown(pd))
 #define mmu_getPgdirPaddr(pd)        PageDown(getcr3())

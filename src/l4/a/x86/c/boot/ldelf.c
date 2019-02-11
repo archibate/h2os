@@ -75,14 +75,14 @@ void map_zero(va_t va0, size_t size, bool rw)
 		}
 		page = (pa_t)calloc(1, PageSize);
 		pt[PteIndex(va)] = Pte(page, ptePerm);
-		mmu_invalidatePage(va);
+		mmu_invaidatePage(va);
 	}
 }
 
 pte_t *touch_pdi(pde_t *pd, uint pdi)
 {
 	pte_t *pt;
-	if (!PdeIsValid(pd[pdi])) {
+	if (!PdeIsVaid(pd[pdi])) {
 		pt = calloc(1, PageSize);
 		pd[pdi] = PdePgtab((va_t)pt);
 	} else {

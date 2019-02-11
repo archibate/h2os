@@ -1,28 +1,27 @@
 #include <l4/api/thread.h>
 #include <l4/generic/thread.h>
-#include <l4/generic/cap-convert.h>
-#include <l4/enum/cap-actions.h>
-#include <l4/enum/errno.h>
+#include <l4/generic/idget.h>
 
-int cap_thread_action(struct capability *cap, unsigned int action, unsigned long argument)
+int sys_thread_suspend(l4id_t tid)
 {
-	struct ktcb *tcb = cap_get_thread(cap);
+	struct ktcb *tcb = id_get_thread(tid);
 
-	switch (action)
-	{
-	case CAP_THREAD_SUSPEND:
-		thread_suspend(tcb);
-		return 0;
+	thread_suspend(tcb);
+	return 0;
+}
 
-	case CAP_THREAD_ACTIVE:
-		thread_active(tcb);
-		return 0;
+int sys_thread_active(l4id_t tid)
+{
+	struct ktcb *tcb = id_get_thread(tid);
 
-	case CAP_THREAD_SET_PRIORITY:
-		thread_set_priority(tcb, argument);
-		return 0;
+	thread_active(tcb);
+	return 0;
+}
 
-	default:
-		return -ENOSYS;
-	}
+int sys_thread_set_priority(l4id_t tid, unsigned int priority)
+{
+	struct ktcb *tcb = id_get_thread(tid);
+
+	thread_set_priority(tcb, priority);
+	return 0;
 }

@@ -23,7 +23,7 @@ void pgdir_switch(struct pgdir *pgdir, struct utcb *utcb_ptr)
 	kPtes[PageNum(KernUTCBAddr)] = Pte(utcb, PtePerm_KernRW);
 
 	if (mmu_getPgdirPaddr() == pd) {
-		mmu_invalidatePage(utcb);
+		mmu_invaidatePage(utcb);
 
 	} else {
 		BUG_ON(!pd || PgdirOffset(pd));

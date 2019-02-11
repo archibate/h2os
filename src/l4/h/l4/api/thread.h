@@ -2,4 +2,6 @@
 
 #include <l4/object/capability.h>
 
-int cap_thread_action(struct capability *cap, unsigned int action, unsigned long argument);
+int sys_thread_suspend(l4id_t tid);
+int sys_thread_active(l4id_t tid);
+int sys_thread_set_priority(l4id_t tid, unsigned int priority);

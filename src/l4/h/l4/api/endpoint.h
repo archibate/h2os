@@ -2,5 +2,7 @@
 
 #include <l4/object/capability.h>
 
-int cap_endpoint_send(struct capability *cap, unsigned long addr, const char *buf, size_t size);
-int cap_endpoint_recv(struct capability *cap, unsigned long addr, char *buf, size_t size);
+int sys_nbsend(l4id_t epid);
+int sys_send(l4id_t epid);
+int sys_call(l4id_t epid);
+int sys_recv(l4id_t epid);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <l4/lib/list.h>
-#include <l4/object/space.h>
+#include <l4/enum/rtype.h>
 
 struct ktcb
 {
@@ -11,7 +11,8 @@ struct ktcb
 	unsigned char state;
 	unsigned char priority;
 
-	struct space space;
 	struct utcb *utcb;
 	struct pgdir *pgdir;
+
+	struct id_space *idspaces[RTYPE_MAX];
 };
