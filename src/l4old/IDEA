@@ -1,3 +1,0 @@
-unmap(page)=revoke(page)
-map(page, vspace, addr)=vspace_set(vspace, addr, page:21)
-grant(page, vspace, addr)=vspace_set(vspace, addr, page:02)

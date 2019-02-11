@@ -1,9 +1,0 @@
-#pragma once
-
-enum ExceptionNumbers {
-	ExceptionDivideError,ExceptionDebug,ExceptionNMI,ExceptionBreakPoint,ExceptionOverflow,
-	ExceptionBoundsCheck,ExceptionInvalidOpcode,ExceptionDeviceNotAvailable,
-	ExceptionDoubleFault,ExceptionCoprocessorSegOverrun,ExceptionInvalidTss,
-	ExceptionSegmentNotPresent,ExceptionStackSegment,ExceptionGeneralProtection,
-	ExceptionPageFault,ExceptionReservedException,ExceptionCoprocessorError,
-};
