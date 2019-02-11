@@ -1,7 +1,5 @@
 #pragma once
 
-#include <l4/object/capability.h>
-
 int sys_nbsend(l4id_t epid);
 int sys_send(l4id_t epid);
 int sys_call(l4id_t epid);
