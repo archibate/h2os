@@ -1,1 +1,1 @@
-MODULES=kern init libc libl4
+MODULES=l4 l4env libc libl4

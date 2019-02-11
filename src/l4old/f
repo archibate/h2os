@@ -1,0 +1,2 @@
+#!/bin/sh
+find c h a/x86/c a/x86/h -type f -name "*.[ch]" -exec grep -H "$1" {} \;

@@ -2,15 +2,8 @@
 set -e
 
 ipm_src=src
-ipm_dest=isodir
-ipm_var=out/var/ipm
-
-ipm_init()
-{
-	rm -rf $ipm_var
-	mkdir -p $ipm_var
-	touch $ipm_var/packages.lst
-}
+ipm_pub=pub
+ipm_dest=out
 
 read_ini_deps()
 {
@@ -26,7 +19,7 @@ dep_rescue()
 	true ${1?package name}
 	for d in `awk -F = '{print $1,$2}' $ipm_src/$1/package.ini | read_ini_deps`
 	do
-		if ! echo $dpkgs | grep $d
+		if ! echo $dpkgs | grep $d > /dev/null
 		then
 			dep_rescue $d
 		fi
@@ -47,7 +40,7 @@ src_install()
 	then
 		echo "--> installing $p"
 		mkdir -p $ipm_dest
-		for x in boot bin lib
+		for x in boot bin lib include
 		do
 			if [ -d $dir/out/$x ]
 			then
@@ -62,7 +55,7 @@ pkg_install()
 {
 	pkg=${1?pkg}
 	echo "--> extracting $p"
-	sh -c "cd $ipm_dest && tar -xzvf $pkg"
+	tar -xvf $pkg
 }
 
 ipm_archive()
@@ -70,7 +63,12 @@ ipm_archive()
 	p=${1?package name}
 	dir=$ipm_src/$p
 	pkg=$ipm_pub/$p.pkg
-	tar -czvf $pkg $dir
+	#find $dir/out | sed "s/^`echo src/libc/out | sed 's/\\//\\\\\\//g'`//" | cpio -o
+	ocd=`pwd`
+	cd $dir
+	tar -cvf /tmp/$$-out.pkg out
+	cd $ocd
+	mv /tmp/$$-out.pkg $pkg
 }
 
 real_install()
@@ -78,10 +76,10 @@ real_install()
 	p=${1?package name}
 	dir=$ipm_src/$p
 	pkg=$ipm_pub/$p.pkg
-	if [ -d $dir ]
-	then src_install $dir
-	elif [ -f $pkg ]
+	if [ -f $pkg ]
 	then pkg_install $pkg
+	elif [ -d $dir ]
+	then src_install $dir
 	fi
 	echo "+++ installed $p"
 	echo --------------------------------------
@@ -104,7 +102,6 @@ ipm_install()
 	done
 }
 
-ipm_init
 op=${1?ipm operation}
 shift
 ipm_$op $*

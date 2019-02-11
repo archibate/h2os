@@ -27,17 +27,15 @@ endif
 
 include tools/modules.mak
 
-LIBPATH+=$(ROOT)/isodir/lib
+LIBPATH+=$(ROOT)/out/lib
 SRCPATH+=$(ADIRS:%=%/c)
-INCPATH+=$(ADIRS:%=%/h) $(ADIRS:%=%/sh) \
-	 $(foreach path,$(MODULES:%=$(ROOT)/src/%),$(ADIRS:%=$(path)/%/sh)) \
-	 $(ROOT)/include
+INCPATH+=$(ADIRS:%=%/h) $(ROOT)/include $(ROOT)/out/include
 
 CFLAGS+=-nostdinc
 CFLAGS+=$(OPTIMIZE:%=-O%) $(MODES:%=-m%) \
         $(FUNCTIONS:%=-f%) $(WARNINGS:%=-W%) \
         $(DEFINES:%=-D%) $(INCPATH:%=-I%) \
-	$(DBGFLAGS:%=-g%)
+	$(DBGFLAGS:%=-g%) $(INCLUDES:%=-include%)
 ASMFLAGS+=$(DEFINES:%=-D%) $(INCPATH:%=-I%/)
 ASMFLAGS+=-P $(ROOT)/scripts/nasm.inc
 LDFLAGS+=-static -nostdlib

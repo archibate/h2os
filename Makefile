@@ -14,36 +14,38 @@ BOCHS=bochs
 
 
 .PHONY: all
-all: isodir
+all: out
 
 
-CLEAN+=isodir
-.PHONY: isodir
-isodir:
-	sudo umount isodir || true
+BASE_PKGNAME=l4 l4env
+
+CLEAN+=out
+.PHONY: out
+out:
 	rm -rf $@
-	mkdir -p isodir
-	./ipm install base
+	mkdir -p out
+	./ipm install $(BASE_PKGNAME)
+	rm -rf out/include out/lib
 
 CLEAN+=os.iso
 .PHONY: os.iso
 os.iso:
-	sudo umount isodir || true
-	rm -rf $@
-	mkdir -p isodir
-	./ipm install base
-	grub-mkrescue -o $@ isodir
+	make out
+	grub-mkrescue -o $@ out
+	rm -rf out
 
 CLEAN+=os.img
 .PHONY: os.img
 os.img:
-	sudo umount isodir || true
-	rm -rf $@
-	mkdir -p isodir
+	make out
 	scripts/mkosimg.sh
+	sudo umount isodir || true
+	rm -rf isodir
+	mkdir -p isodir
 	sudo mount os.img isodir
-	ipm_sudo=sudo ./ipm install base
+	sudo mv out/* isodir/*
 	sudo mv isodir/boot/grub/grub.cfg isodir/menu.lst
+	rm -rf out
 
 
 QEMUFLAGS+=-m 256 $(if $(DEBUG),-S -s,)
@@ -51,9 +53,9 @@ QEMUPATHPREFIX=$(if $(MINGW),$D/,)
 BOCHSFLAGS+='megs:256'
 
 .PHONY: run
-run: isodir
-	$(QEMU) -kernel $(QEMUPATHPREFIX)isodir/boot/vmlinux-l4 \
-		-initrd $(QEMUPATHPREFIX)isodir/bin/init \
+run: out
+	$(QEMU) -kernel $(QEMUPATHPREFIX)out/boot/vmlinux-l4 \
+		-initrd $(QEMUPATHPREFIX)out/bin/init \
 		$(QEMUFLAGS)
 
 .PHONY: runiso

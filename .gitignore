@@ -82,7 +82,10 @@ docs
 
 # Package Output Files
 out/
+
+# Custom Ignored Files
 grub4dos/
+old/
 
 # ISO Root Files
 isodir/
