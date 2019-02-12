@@ -15,8 +15,9 @@ DBGFLAGS+=stabs+ gdb
 endif
 endif
 
+ADIRS=.
 ifeq ($(shell if [ -d a ]; then echo 1; fi),1)
-ADIRS=. a/$(ARCH)
+ADIRS+=a/$(ARCH)
 ifeq ($(shell if [ -d a/$(ARCH)/$(BITS) ]; then echo 1; fi),1)
 ADIRS+=a/$(ARCH)/$(BITS)
 endif

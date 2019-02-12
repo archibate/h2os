@@ -13,8 +13,8 @@ def mksys(nx, ny):
                 [', u%d, y%d' % (i,i) for i in range(ny)]) + \
         ''') \\
 rett sys_##func(''' + \
-        ''.join([', t%d x%d' % (i,i) for i in range(nx)]  + \
-                [', u%d*y%d' % (i,i) for i in range(ny)]) + \
+        ','.join([' t%d x%d' % (i,i) for i in range(nx)]  + \
+                 [' u%d*y%d' % (i,i) for i in range(ny)]) + \
         ''') \\
 { \\
 	rett res; \\
@@ -37,7 +37,8 @@ rett sys_##func(''' + \
 ''' + ''.join('\t\t, "=%s" (*y%d) \\\n' % (regs[i], i) for i in range(ny)) + \
 '''\t\t: "a" (_$E(_SYS_##func)) \\''' + \
       ''.join('\n\t\t, "%s" (x%d) \\'   % (regs[i], i) for i in range(nx)) + '''
-                : "ecx", ''' + ''.join('"%s", ' % x for x in vregs[ny:]) + '''"cc", "memory"); \\
+                : "ecx", ''' + ''.join('"%s", ' % x for x in vregs[max(ny,nx):]) + '''"cc", "memory"); \\
+	return res; \\
 }''')
 
 for nx in range(5):

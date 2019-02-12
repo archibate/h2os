@@ -5,7 +5,7 @@ default: all
 
 SRCS+=$(shell find $(SRCPATH) -regex '.*\.\(c\|asm\)')
 OBJS=$(SRCS:%=%.o)
-LIBS=c
+LIBS=c l4
 
 LDSCRIPT=user.ld
 

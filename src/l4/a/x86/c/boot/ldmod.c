@@ -4,6 +4,7 @@
 #include <l4/generic/utcb.h>
 #include <l4/generic/pgdir.h>
 #include <l4/machine/mmu/page.h>
+#include <l4/system/kstack.h>
 #include <l4/misc/panic.h>
 
 void load_module(const void *begin, const void *end)
@@ -18,4 +19,6 @@ void load_module(const void *begin, const void *end)
 	void *pc;
 	if (!(pc = loadelf(begin, end)))
 		panic("bad module ELF format");
+
+	utcb->iframe.pc = (word_t)pc;
 }

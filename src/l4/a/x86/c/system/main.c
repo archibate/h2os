@@ -17,6 +17,7 @@ void _NORETURN kern_start(void)
 	CALL(init_kdrvs);
 	CALL(init_kfers);
 	CALL(init_usermods);
+	CALL(move_to_user);
 
 	clihlt();
 }

@@ -9,7 +9,9 @@ void utcb_init(struct utcb *utcb)
 	word_t cs = SEG_UCODE;
 	word_t ds = SEG_UDATA;
 
+	utcb->iframe.eflags = 0x002;
 	utcb->iframe.cs = cs;
+	utcb->iframe.ss = ds;
 	utcb->iframe.ds = ds;
 	utcb->iframe.es = ds;
 	utcb->iframe.fs = ds;

@@ -7,6 +7,7 @@
 #define _SYS_thread_suspend 5
 #define _SYS_thread_active 6
 #define _SYS_thread_set_priority 7
-#define _SYS_new 8
-#define _SYS_delete 9
-#define _SYS_revoke 10
+#define _SYS_hello 8
+#define _SYS_new 9
+#define _SYS_delete 10
+#define _SYS_revoke 11

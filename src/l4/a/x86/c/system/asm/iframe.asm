@@ -1,14 +1,9 @@
 bits 32
 section .text
 
-globl move_to_user
 globl utcb_iframe_exiter
 globl iframe_exiter
 extrn hwintr
-
-move_to_user:
-	mov esp, [esp + 4]
-	jmp iframe_exiter
 
 SEFrameSize equ 4*4 ; N: sizeof(struct seframe): keep sync with l4/system/asm/seframe.h
 
