@@ -3,7 +3,7 @@ section .text
 
 globl sysenter_entry
 globl seframe_exiter
-extrn hwsysenter
+extrn _systab
 
 sysenter_entry:
 	cli
@@ -14,7 +14,12 @@ sysenter_entry:
 	mov edx, ss
 	mov ds, edx
 	mov es, edx
-	call hwsysenter
+	push ebp
+	push esi
+	push edi
+	push ebx
+	call [_systab + eax * 4]
+	add esp, 16
 seframe_exiter:
 	pop es
 	pop ds

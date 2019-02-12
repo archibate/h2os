@@ -3,6 +3,7 @@
 #include <l4/lib/list.h>
 #include <l4/enum/rtype.h>
 #include <l4/object/identry.h>
+#include <l4/object/slab.h>
 
 struct ktcb
 {
@@ -17,5 +18,6 @@ struct ktcb
 	struct utcb *utcb;
 	struct pgdir *pgdir;
 
+	struct slab slabs[RTYPE_MAX];
 	struct id_space *idspaces[RTYPE_MAX];
 };

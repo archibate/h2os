@@ -3,6 +3,7 @@
 #include <l4/misc/printk.h>
 #include <l4/misc/panic.h>
 #include <l4/misc/assert.h>
+#include <memory.h>
 
 static void _sched_lower_priority(void);
 
@@ -10,6 +11,24 @@ bool curr_idle = 1;
 unsigned char curr_priority;
 struct list_head *running_heads[MAX_PRIORITY];
 struct ktcb *current;
+
+void thread_init(struct ktcb *tcb)
+{
+	memset(tcb, 0, sizeof(*tcb));
+}
+
+void thread_revoke(struct ktcb *tcb)
+{
+	//utcb_delete(&tcb->utcb);
+	//pgdir_delete(&tcb->pgdir);
+	//idspace_delete(&tcb->idspace);
+}
+
+void thread_delete(struct ktcb *tcb)
+{
+	thread_revoke(tcb);
+	hlist_del(&tcb->ide.hlist);
+}
 
 void thread_set_priority(struct ktcb *tcb, unsigned int priority)
 {

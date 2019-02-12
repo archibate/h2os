@@ -3,11 +3,26 @@
 #include <l4/enum/thread-states.h>
 #include <l4/generic/thread.h>
 #include <l4/misc/bug.h>
-//#include <memory.h>
+#include <memory.h>
 
 static void copy_data(struct ktcb *recver, struct ktcb *sender)
 {
 	//memcpy(recver->extraBuf, sender->extraBuf, sizeof(recver->extraBuf));
+}
+
+void endpoint_init(struct endpoint *ep)
+{
+	memset(ep, 0, sizeof(*ep));
+}
+
+void endpoint_revoke(struct endpoint *ep)
+{
+}
+
+void endpoint_delete(struct endpoint *ep)
+{
+	endpoint_revoke(ep);
+	hlist_del(&ep->ide.hlist);
 }
 
 void endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block, bool recv)

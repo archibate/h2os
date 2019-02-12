@@ -15,11 +15,7 @@ void wq_add(wait_queue_head_t *wq, struct ktcb *tcb)
 
 struct ktcb *wq_pop(wait_queue_head_t *wq)
 {
-	struct ktcb *r;
 	if (hlist_empty(&wq->h))
 		return NULL;
-	r = hlist_entry(wq->h.first, struct ktcb, hlist);
-	hlist_del(wq->h.first);
-	wq->h.first = wq->h.first->next;
-	return r;
+	return hlist_entry(__hlist_pop(&wq->h), struct ktcb, hlist);
 }

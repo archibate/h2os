@@ -28,4 +28,19 @@ make_sysnr_h() {
 	done) | awk -F'sys_' '{printf "#define _SYS_%s %d\n", $2, NR}'
 }
 
+make_systab_c() {
+	echo '#include <l4/sys/sysnr.h>'
+	for x in `find h/l4/api -type f -name '*.h'`
+	do echo "#include <l4/api/`basename $x`>"
+	done
+	echo
+
+	echo 'void *_systab[] = {'
+	(for x in `find h/l4/api -type f -name '*.h'`
+	do grep sys_ $x | awk -F'(' '{print $1}'
+	done) | awk -F'sys_' '{printf "\t[_SYS_%s] = sys_%s,\n", $2, $2}'
+	echo '};'
+}
+
 make_sysnr_h > h/l4/sys/sysnr.h
+make_systab_c > c/sys/systab.c

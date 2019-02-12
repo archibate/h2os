@@ -147,6 +147,14 @@ static inline void hlist_del(struct hlist_node *n)
 	n->pprev = NULL;
 }
 
+static inline struct hlist_node *__hlist_pop(struct hlist_head *h)
+{
+	struct hlist_node *r = h->first;
+	h->first = r->next;
+	hlist_del(r);
+	return r;
+}
+
 static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 {
 	n->next = h->first;
