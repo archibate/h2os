@@ -6,10 +6,10 @@
 #ifndef EOF
 #define EOF (-1)
 #endif
-#define offsetof(type, memb) ((unsigned long) &(((type*)0)->memb))
-#define container_of(ptr, type, memb) ({ \
-		typeof(((type*)0)->memb) *_$p = (ptr); \
-		(type*)((char*)_$p - offsetof(type, memb)); \
+#define offsetof(type, member) ((unsigned long) &(((type*)0)->member))
+#define container_of(ptr, type, member) ({ \
+		typeof(((type*)0)->member) *_$p = (ptr); \
+		(type*)((char*)_$p - offsetof(type, member)); \
 	})
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof((a)[0]))
 #define array_sizeof(a) (sizeof(a) / sizeof((a)[0]))

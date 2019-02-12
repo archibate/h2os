@@ -11,6 +11,7 @@ extern struct ktcb *current;
 #define running_head  running_heads[curr_priority]
 #define sched_get_curr()  list_entry(running_head, struct ktcb, list)
 
+void thread_init(struct ktcb *ktcb);
 void thread_set_priority(struct ktcb *tcb, unsigned int priority);
 void thread_active(struct ktcb *x);
 void thread_suspend(struct ktcb *x);

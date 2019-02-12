@@ -133,6 +133,6 @@
 #define ENOTRECOVERABLE	131	// State not recoverable
 #define ERFKILL	132	// Operation not possible due to RF-kill
 #define EHWPOISON	133	// Memory page has hardware error
+
+// L4 specific errors:
 #define ENOCAP	134	// No such capability
-#define EMMSG	135	// Too many messages
-#define ENOTCAP	136	// Capability required
