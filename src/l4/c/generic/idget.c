@@ -24,6 +24,12 @@ l4id_t idg_new_entry(struct ids_entry *ide, unsigned int rtype)
 	return ids_new_entry(&idspaces[rtype], ide);
 }
 
+bool idg_set_entry(struct ids_entry *ide, unsigned int rtype)
+{
+	BUG_ON(rtype >= RTYPE_MAX);
+	return NULL == ids_add(&idspaces[rtype], ide);
+}
+
 bool idg_free_id(unsigned int rtype, l4id_t id)
 {
 	BUG_ON(rtype >= RTYPE_MAX);

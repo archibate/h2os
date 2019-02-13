@@ -21,6 +21,17 @@ sl4id_t sys_rt_new(unsigned int rtype)
 	return id;
 }
 
+int sys_rt_check(unsigned int rtype, l4id_t id)
+{
+	if (rtype > RTYPE_MAX)
+		return -EINVAL;
+
+	void *p = id_get_object(rtype, id);
+	if (!p) return -ESRCH;
+
+	return 0;
+}
+
 int sys_rt_delete(unsigned int rtype, l4id_t id)
 {
 	if (rtype > RTYPE_MAX)

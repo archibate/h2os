@@ -6,3 +6,4 @@
 #define IRQ_SERIAL	4
 #define IRQ_MOUSE	12
 #define IRQ_HARDDISK	14
+#define IRQ_MAX		16

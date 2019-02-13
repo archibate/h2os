@@ -43,7 +43,7 @@ void *ids_add(struct id_space *ids, struct ids_entry *ide)
 		}
 	}
 	hlist_add_head(&ide->hlist, hh);
-	return 0;
+	return NULL;
 }
 
 struct ids_entry *ids_del(struct id_space *ids, l4id_t id)

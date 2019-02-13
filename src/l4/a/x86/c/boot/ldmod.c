@@ -34,7 +34,6 @@ l4id_t load_module(const void *begin, const void *end)
 	utcb->iframe.pc = (word_t)pc;
 
 	struct ktcb *tcb = calloc(1, sizeof(struct ktcb));
-	printk("tcb=%p, utcb=%p, pgdir=%p", tcb, utcb, pgdir);
 	__thread_init(tcb);
 	tcb->utcb = utcb;
 	tcb->pgdir = pgdir;

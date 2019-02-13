@@ -1,6 +1,7 @@
 #include <l4/generic/rtmethod.h>
 #include <l4/generic/thread.h>
 #include <l4/generic/endpoint.h>
+#include <l4/generic/asyncep.h>
 #include <l4/enum/rtype.h>
 #include <l4/misc/bug.h>
 
@@ -12,6 +13,8 @@ size_t _PURE rtype_get_sizeof(unsigned int rtype)
 		return sizeof(struct ktcb);
 	case RTYPE_ENDPOINT:
 		return sizeof(struct endpoint);
+	case RTYPE_ASYNC_EP:
+		return sizeof(struct async_ep);
 	default:
 		return 0;
 	}
@@ -25,6 +28,8 @@ size_t _PURE rtype_offsetof_ide(unsigned int rtype)
 		return offsetof(struct ktcb, ide);
 	case RTYPE_ENDPOINT:
 		return offsetof(struct endpoint, ide);
+	case RTYPE_ASYNC_EP:
+		return offsetof(struct async_ep, ide);
 	default:
 		BUG();
 	}
@@ -67,6 +72,8 @@ void rtype_init(void *p, unsigned int rtype)
 		return thread_init(p);
 	case RTYPE_ENDPOINT:
 		return endpoint_init(p);
+	case RTYPE_ASYNC_EP:
+		return async_init(p);
 	default:
 		BUG();
 	}
@@ -80,6 +87,8 @@ void rtype_revoke(void *p, unsigned int rtype)
 		return thread_revoke(p);
 	case RTYPE_ENDPOINT:
 		return endpoint_revoke(p);
+	case RTYPE_ASYNC_EP:
+		return async_revoke(p);
 	default:
 		BUG();
 	}
@@ -93,6 +102,8 @@ void rtype_delete(void *p, unsigned int rtype)
 		return thread_delete(p);
 	case RTYPE_ENDPOINT:
 		return endpoint_delete(p);
+	case RTYPE_ASYNC_EP:
+		return async_delete(p);
 	default:
 		BUG();
 	}
