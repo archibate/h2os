@@ -26,8 +26,8 @@ void pgdir_switch(struct pgdir *pgdir, struct utcb *utcb_ptr)
 
 	if (mmu_getPgdirPaddr() == pd) {
 		mmu_invaidatePage(KernUTCBAddr);
-		//BUG_ON(utcb_ptr->iframe.pc != kIFrame.pc);
-		//BUG();
+		//BUG_ON(utcb_ptr->iframe.pc != kIFrame.pc);//
+		//BUG();//
 
 	} else {
 		BUG_ON(!pd || PgdirOffset(pd));

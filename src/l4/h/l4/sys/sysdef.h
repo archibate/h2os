@@ -7,7 +7,9 @@ rett sys_##func() \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		: "a" (_$E(_SYS_##func)) \
                 : "ecx", "ebx", "edi", "esi", "cc", "memory"); \
@@ -19,7 +21,9 @@ rett sys_##func( u0*y0) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
 		: "a" (_$E(_SYS_##func)) \
@@ -32,7 +36,9 @@ rett sys_##func( u0*y0, u1*y1) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
 		, "=D" (*y1) \
@@ -46,7 +52,9 @@ rett sys_##func( u0*y0, u1*y1, u2*y2) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
 		, "=D" (*y1) \
@@ -80,7 +88,9 @@ rett sys_##func( t0 x0) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		: "a" (_$E(_SYS_##func)) \
 		, "b" (x0) \
@@ -93,7 +103,9 @@ rett sys_##func( t0 x0, u0*y0) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
 		: "a" (_$E(_SYS_##func)) \
@@ -107,7 +119,9 @@ rett sys_##func( t0 x0, u0*y0, u1*y1) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
 		, "=D" (*y1) \
@@ -122,7 +136,9 @@ rett sys_##func( t0 x0, u0*y0, u1*y1, u2*y2) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
 		, "=D" (*y1) \
@@ -158,7 +174,9 @@ rett sys_##func( t0 x0, t1 x1) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		: "a" (_$E(_SYS_##func)) \
 		, "b" (x0) \
@@ -172,7 +190,9 @@ rett sys_##func( t0 x0, t1 x1, u0*y0) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
 		: "a" (_$E(_SYS_##func)) \
@@ -187,7 +207,9 @@ rett sys_##func( t0 x0, t1 x1, u0*y0, u1*y1) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
 		, "=D" (*y1) \
@@ -203,7 +225,9 @@ rett sys_##func( t0 x0, t1 x1, u0*y0, u1*y1, u2*y2) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
 		, "=D" (*y1) \
@@ -241,7 +265,9 @@ rett sys_##func( t0 x0, t1 x1, t2 x2) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		: "a" (_$E(_SYS_##func)) \
 		, "b" (x0) \
@@ -256,7 +282,9 @@ rett sys_##func( t0 x0, t1 x1, t2 x2, u0*y0) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
 		: "a" (_$E(_SYS_##func)) \
@@ -272,7 +300,9 @@ rett sys_##func( t0 x0, t1 x1, t2 x2, u0*y0, u1*y1) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
 		, "=D" (*y1) \
@@ -289,7 +319,9 @@ rett sys_##func( t0 x0, t1 x1, t2 x2, u0*y0, u1*y1, u2*y2) \
 { \
 	rett res; \
 	asm volatile ( \
+		"push %%ebp\n" \
 		"call libl4_do_syscall\n" \
+		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
 		, "=D" (*y1) \

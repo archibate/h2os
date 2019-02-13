@@ -3,6 +3,7 @@
 #include <l4/enum/thread-states.h>
 #include <l4/generic/task-switch.h>
 #include <l4/misc/printk.h>
+#include <l4/misc/panic.h>
 #include <l4/misc/assert.h>
 #include <l4/misc/bug.h>
 
@@ -40,11 +41,15 @@ void thread_suspend(struct ktcb *x)
 
 	if (&x->list == running_head) {
 		if (running_head == running_head->next) {
+			//list_nuke(&x->list);
 			running_head = NULL;
 			_sched_lower_priority();
 		} else {
+			//printk("curr=%p", sched_get_curr());
 			sched_next();
 			list_del(&x->list);
+			//printk("curr=%p", sched_get_curr());
+			//panic("x:n:p=%p:%p:%p", &x->list, x->list.next, x->list.prev);
 		}
 	} else {
 		list_del(&x->list);
@@ -64,8 +69,10 @@ void sched_leave(void)
 	assert(&next->list != NULL);
 	assert(&next->list != INVALID_PTR);
 	if (next != current) {
+		//printk("slts %p->%p", current, next);
 		task_switch(current, next);
 	}
+	current = NULL;
 }
 
 void _sched_lower_priority(void)

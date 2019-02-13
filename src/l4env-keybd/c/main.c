@@ -9,10 +9,9 @@
 void main(void)
 {
 	sys_print("KEYBD!!!");
-	sys_hello();
 
 	sys_softirq_set_enable(IRQ_KEYBD, true);
-	while (!sys_async_poll(IRQ_KEYBD));
+	sys_async_listen(IRQ_KEYBD);
 	sys_softirq_done(IRQ_KEYBD);
 
 	for (;;)

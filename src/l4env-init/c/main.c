@@ -26,10 +26,11 @@ static char fsf_a[2048], fsf_b[2048];
 
 void main(void)
 {
-	sys_print("MAI!!!");
+	sys_print("MAIN!!!");
 
 	l4id_t id;
 
+#if 1
 	id = sys_rt_new(RTYPE_THREAD);
 	sys_thread_set_register(id, THREAD_REG_PC, (word_t)task_a);
 	sys_thread_set_register(id, THREAD_REG_SP, (word_t)fsf_a+2048);
@@ -39,6 +40,7 @@ void main(void)
 	sys_thread_set_register(id, THREAD_REG_PC, (word_t)task_b);
 	sys_thread_set_register(id, THREAD_REG_SP, (word_t)fsf_b+2048);
 	sys_thread_active(id);
+#endif
 
 	for (int i = 0; i < 10000; i++)
 		sys_putchar('m');

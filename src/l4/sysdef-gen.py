@@ -20,8 +20,8 @@ rett sys_##func(''' + \
 	rett res; \\
 	asm volatile ( \\''')
 
-    if ny >= 4 or nx >= 4:
-        print('''\t\t"push %%ebp\\n" \\''')
+    #if ny >= 4 or nx >= 4:
+    print('''\t\t"push %%ebp\\n" \\''')
     if nx >= 4:
         print('''\t\t"mov %%edx, %%ebp\\n" \\''')
 
@@ -29,8 +29,8 @@ rett sys_##func(''' + \
 
     if ny >= 4:
         print('''\t\t"mov %%edx, %%ebp\\n" \\''')
-    if ny >= 4 or nx >= 4:
-        print('''\t\t"pop %%ebp\\n" \\''')
+    #if ny >= 4 or nx >= 4:
+    print('''\t\t"pop %%ebp\\n" \\''')
 
 
     print('''\t\t: "=a" (res) \\

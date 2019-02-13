@@ -4,6 +4,8 @@
 #include <l4/generic/waitqueue.h>
 #include <l4/enum/thread-states.h>
 #include <memory.h>
+#include <l4/misc/panic.h>
+#include <l4/misc/bug.h>
 
 void async_init(struct async_ep *aep)
 {
@@ -24,6 +26,7 @@ void async_pulse(struct async_ep *aep)
 {
 	struct ktcb *listener = wq_pop(&aep->listening);
 	if (listener) {
+		BUG_ON(listener->state != THREAD_LISTENING);
 		listener->state = THREAD_RUNNING;
 		thread_active(listener);
 
@@ -45,6 +48,7 @@ bool async_poll(struct async_ep *aep)
 
 void async_listen(struct async_ep *aep, struct ktcb *listener)
 {
+	BUG_ON(listener->state != THREAD_RUNNING);
 	if (aep->count > 0) {
 		aep->count--;
 
@@ -52,5 +56,6 @@ void async_listen(struct async_ep *aep, struct ktcb *listener)
 		current->state = THREAD_LISTENING;
 		thread_suspend(listener);
 		wq_add(&aep->listening, listener);
+		//panic("!");
 	}
 }

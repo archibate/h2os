@@ -21,6 +21,8 @@ sysenter_entry:
 	push edi
 	push ebx
         mov esi, [_systab + eax * 4]
+	test esi, esi
+	jz serr
 	call sched_enter
 	call esi
 	add esp, 16
@@ -28,10 +30,16 @@ sysenter_entry:
 	call sched_leave
 seframe_exiter:
 	pop eax
-.sexit_noeax:
 	pop es
 	pop ds
 	pop edx
 	pop ecx
 	sti
 	sysexit
+serr:
+	mov byte [0xb8000], 's'
+	mov byte [0xb8002], 'E'
+	mov byte [0xb8004], 'R'
+	mov byte [0xb8006], 'R'
+	cli
+	hlt
