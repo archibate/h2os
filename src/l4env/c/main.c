@@ -5,28 +5,41 @@
 #include <l4/api/rtalloc.h>
 #include <l4/api/thread.h>
 
-void func(void)
+void task_a(void)
 {
-	sys_print("FUNC!!!");
-	sys_halt();
+	sys_print("TASK_A!!!");
+
+	for (;;)
+		sys_putchar('a');
 }
 
-static char fsf[2048];
+void task_b(void)
+{
+	sys_print("TASK_B!!!");
+
+	for (;;)
+		sys_putchar('b');
+}
+
+static char fsf_a[2048], fsf_b[2048];
 
 void main(void)
 {
 	sys_print("MAIN!!!");
 	sys_hello();
 
-	l4id_t id = sys_rt_new(RTYPE_THREAD);
+	l4id_t id;
 
-	sys_thread_set_register(id, THREAD_REG_PC, (word_t)func);
-
-	sys_thread_set_register(id, THREAD_REG_SP, (word_t)fsf+2048);
-
+	id = sys_rt_new(RTYPE_THREAD);
+	sys_thread_set_register(id, THREAD_REG_PC, (word_t)task_a);
+	sys_thread_set_register(id, THREAD_REG_SP, (word_t)fsf_a+2048);
 	sys_thread_active(id);
 
-	sys_sched_next();
+	id = sys_rt_new(RTYPE_THREAD);
+	sys_thread_set_register(id, THREAD_REG_PC, (word_t)task_b);
+	sys_thread_set_register(id, THREAD_REG_SP, (word_t)fsf_b+2048);
+	sys_thread_active(id);
 
-	sys_halt();
+	for (;;)
+		sys_putchar('m');
 }

@@ -22,6 +22,7 @@ void *_systab[] = {
 	[_SYS_thread_get_priority] = sys_thread_get_priority,
 	[_SYS_thread_get_state] = sys_thread_get_state,
 	[_SYS_hello] = sys_hello,
+	[_SYS_putchar] = sys_putchar,
 	[_SYS_print] = sys_print,
 	[_SYS_halt] = sys_halt,
 };

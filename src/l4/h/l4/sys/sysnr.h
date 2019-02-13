@@ -17,5 +17,6 @@
 #define _SYS_thread_get_priority 15
 #define _SYS_thread_get_state 16
 #define _SYS_hello 17
-#define _SYS_print 18
-#define _SYS_halt 19
+#define _SYS_putchar 18
+#define _SYS_print 19
+#define _SYS_halt 20
