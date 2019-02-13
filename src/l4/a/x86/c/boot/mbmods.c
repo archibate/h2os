@@ -21,8 +21,8 @@ void init_usermods(void)
 	tprintk("#n  StartAddr   EndAddr     Name");
 	for (i = 0; i < mboot->mods_count; i++) {
 		const char *name = (void*)m[i].mod_string;
-		const void *begin = (void*)m[0].mod_start;
-		const void *end = (void*)m[0].mod_end;
+		const void *begin = (void*)m[i].mod_start;
+		const void *end = (void*)m[i].mod_end;
 		tprintk("#%d  %#p->%#p  %s", i, begin, end, name);
 		load_module(begin, end);
 	}

@@ -1,6 +1,7 @@
 #include <l4/boot/ldelf.h>
-#include <l4/boot/alloc.h>
 #include <l4/lib/elf32.h>
+//#include <l4/boot/alloc.h>
+#include <l4/generic/allocpage.h>
 #include <l4/machine/mmu/types.h>
 #include <l4/machine/mmu/page.h>
 #include <l4/machine/mmu/pte.h>
@@ -73,7 +74,7 @@ void map_zero(va_t va0, size_t size, bool rw)
 			pt = touch_pdi(pd, PdeIndex(va));
 			secoff = 0;
 		}
-		page = (pa_t)calloc(1, PageSize);
+		page = (pa_t)alloc_page();
 		pt[PteIndex(va)] = Pte(page, ptePerm);
 		mmu_invaidatePage(va);
 	}
@@ -83,7 +84,7 @@ pte_t *touch_pdi(pde_t *pd, uint pdi)
 {
 	pte_t *pt;
 	if (!PdeIsVaid(pd[pdi])) {
-		pt = calloc(1, PageSize);
+		pt = alloc_page();
 		pd[pdi] = PdePgtab((va_t)pt);
 	} else {
 		pt = (pte_t*)PdePgtabAddr(pd[pdi]);

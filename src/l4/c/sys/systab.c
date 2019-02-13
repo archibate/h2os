@@ -1,10 +1,14 @@
 #include <l4/sys/sysnr.h>
+#include <l4/api/sched.h>
 #include <l4/api/rtalloc.h>
 #include <l4/api/endpoint.h>
 #include <l4/api/thread.h>
 #include <l4/api/hello.h>
 
 void *_systab[] = {
+	[_SYS_exit] = sys_exit,
+	[_SYS_getpid] = sys_getpid,
+	[_SYS_sched_next] = sys_sched_next,
 	[_SYS_rt_new] = sys_rt_new,
 	[_SYS_rt_delete] = sys_rt_delete,
 	[_SYS_rt_revoke] = sys_rt_revoke,
@@ -12,8 +16,6 @@ void *_systab[] = {
 	[_SYS_send] = sys_send,
 	[_SYS_call] = sys_call,
 	[_SYS_recv] = sys_recv,
-	[_SYS_getpid] = sys_getpid,
-	[_SYS_sched_next] = sys_sched_next,
 	[_SYS_thread_check] = sys_thread_check,
 	[_SYS_thread_suspend] = sys_thread_suspend,
 	[_SYS_thread_active] = sys_thread_active,

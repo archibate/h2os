@@ -4,6 +4,7 @@
 #include <l4/api/hello.h>
 #include <l4/api/rtalloc.h>
 #include <l4/api/thread.h>
+#include <l4/api/sched.h>
 
 void task_a(void)
 {
@@ -25,8 +26,7 @@ static char fsf_a[2048], fsf_b[2048];
 
 void main(void)
 {
-	sys_print("MAIN!!!");
-	sys_hello();
+	sys_print("MAI!!!");
 
 	l4id_t id;
 
@@ -40,6 +40,8 @@ void main(void)
 	sys_thread_set_register(id, THREAD_REG_SP, (word_t)fsf_b+2048);
 	sys_thread_active(id);
 
-	for (;;)
+	for (int i = 0; i < 10000; i++)
 		sys_putchar('m');
+
+	sys_exit();
 }

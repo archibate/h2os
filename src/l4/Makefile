@@ -5,13 +5,25 @@ DEFINES+=CONFIG_CONSOLE_CLEAR=1 \
 	 CONFIG_DEBUG_TRACE=1 \
 	 CONFIG_DUMP_MODULES=1 \
 	 CONFIG_DUMP_LDMOD=1 \
-	 CONFIG_LOG_SCHED_TIMER=1 \
+	 #CONFIG_LOG_SCHED_TIMER=1 \
 	 CONFIG_LOG_EXTRA_SWI=1
 INCLUDES+=h/l4/stdafx.h
 include tools/general.mak
 
 .PHONY: default
 default: all
+
+.PHONY: showinfo
+showinfo:
+	@echo CFLAGS=$(CFLAGS)
+	@echo LDFLAGS=$(LDFLAGS)
+	@echo DEFINES=$(DEFINES)
+	@echo INCLUDES=$(INCLUDES)
+	@echo SRCPATH=$(SRCPATH)
+	@echo INCPATH=$(INCPATH)
+	@echo LIBPATH=$(LIBPATH)
+	@echo ADIRS=$(ADIRS)
+	@echo ROOT=$(ROOT)
 
 SRCS+=$(shell find $(SRCPATH) -regex '.*\.\(c\|asm\)')
 OBJS=$(SRCS:%=%.o)

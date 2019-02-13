@@ -2,8 +2,8 @@
 #include <l4/generic/kcache.h>
 #include <l4/generic/rtmethod.h>
 #include <l4/machine/mmu/page.h>
+#include <l4/generic/allocpage.h>
 #include <l4/enum/rtype.h>
-#include <l4/boot/alloc.h>
 #include <l4/misc/printk.h>
 #include <l4/misc/bug.h>
 
@@ -29,7 +29,7 @@ void *kcg_new(unsigned int rtype)
 	if (p == NULL) {
 		unsigned int i;
 		for (i = 0; i < ONCE_FEED_PAGES; i++) {
-			void *page = calloc(1, PageSize);
+			void *page = alloc_page();
 			kcache_add_page(kc, page);
 		}
 

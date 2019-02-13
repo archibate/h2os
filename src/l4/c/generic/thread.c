@@ -27,7 +27,7 @@ void thread_active(struct ktcb *x)
 
 	curr_idle = false;
 	if (!running_heads[x->priority])
-	list_init(running_heads[x->priority] = &x->list);
+		list_init(running_heads[x->priority] = &x->list);
 	else
 		list_add_tail(&x->list, running_heads[x->priority]);
 	if (curr_idle || x->priority > curr_priority)
@@ -40,7 +40,7 @@ void thread_suspend(struct ktcb *x)
 
 	if (&x->list == running_head) {
 		if (running_head == running_head->next) {
-			running_head = 0;
+			running_head = NULL;
 			_sched_lower_priority();
 		} else {
 			sched_next();

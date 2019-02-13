@@ -1,22 +1,10 @@
 #include <l4/api/thread.h>
-#include <l4/generic/sched.h>
 #include <l4/generic/thread.h>
 #include <l4/generic/idget.h>
 #include <l4/enum/thread-states.h>
 #include <l4/enum/thread-registers.h>
 #include <l4/enum/errno.h>
 #include <l4/misc/printk.h>
-
-l4id_t sys_getpid(void)
-{
-	return current->ide.id;
-}
-
-int sys_sched_next(void)
-{
-	sched_next();
-	return 0;
-}
 
 int sys_thread_suspend(l4id_t tid)
 {

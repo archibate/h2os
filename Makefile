@@ -17,7 +17,7 @@ BOCHS=bochs
 all: out
 
 
-BASE_PKGNAME=l4 l4env grub
+BASE_PKGNAME=base
 
 CLEAN+=out
 .PHONY: out
@@ -48,19 +48,35 @@ os.img:
 	rm -rf out
 
 
-QEMUFLAGS+=-m 256 $(if $(DEBUG),-S -s,)
-QEMUPATHPREFIX=$(if $(MINGW),$D/,)
-BOCHSFLAGS+='megs:256'
+MEGS=256
+Q=$(if $(MINGW),$D/,)
+QEMUFLAGS+=-m $(MEGS) $(if $(DEBUG),-S -s,)
+BOCHSFLAGS+='megs:$(MEGS)'
+
+L4ENV_MODS=$(shell cat src/l4env/package.ini | grep deps= | sed 's/deps=//' | sed 's/l4env-//g')
+QINITRD=$(shell echo $(L4ENV_MODS:%=$Qout/bin/%) | awk '{for (i=1;i<=NF;i++)printf "%s%s",$$i,(i!=NF?",":"");}')
+
+.PHONY: showinfo
+showinfo:
+	@echo QEMU=$(QEMU)
+	@echo BOCHS=$(BOCHS)
+	@echo MINGW=$(MINGW)
+	@echo L4ENV_MODS=$(L4ENV_MODS)
+	@echo BASE_PKGNAME=$(BASE_PKGNAME)
+	@echo QEMUFLAGS=$(QEMUFLAGS)
+	@echo BOCHSFLAGS=$(BOCHSFLAGS)
+	@echo QINITRD=$(QINITRD)
+	@echo MEGS=$(MEGS)
 
 .PHONY: run
 run: out
-	$(QEMU) -kernel $(QEMUPATHPREFIX)out/boot/vmlinux-l4 \
-		-initrd $(QEMUPATHPREFIX)out/bin/init \
+	$(QEMU) -kernel $Qout/boot/vmlinux-l4 \
+		-initrd "$(QINITRD)" \
 		$(QEMUFLAGS)
 
 .PHONY: runiso
 runiso: os.iso
-	$(QEMU) -cdrom $(QEMUPATHPREFIX)$< -boot d $(QEMUFLAGS)
+	$(QEMU) -cdrom $Q$< -boot d $(QEMUFLAGS)
 
 .PHONY: bochsiso
 bochsiso: os.iso
@@ -68,7 +84,7 @@ bochsiso: os.iso
 
 .PHONY: runfda
 runfda: os.img
-	$(QEMU) -fda $(QEMUPATHPREFIX)$< -boot a $(QEMUFLAGS)
+	$(QEMU) -fda $Q$< -boot a $(QEMUFLAGS)
 
 .PHONY: bochsfda
 bochsfda: os.img
@@ -78,4 +94,7 @@ bochsfda: os.img
 .PHONY: clean
 clean:
 	rm -rf $(CLEAN)
-	make -C src clean
+
+.PHONY: distclean
+distclean:
+	rm -rf $(CLEAN) out

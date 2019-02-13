@@ -2,8 +2,6 @@
 #include <l4/sys/sysnr.h>
 #include <l4/sys/sysdef.h>
 
-_SYS00(l4id_t,getpid)
-_SYS00(int,sched_next)
 _SYS10(int,thread_check, l4id_t,tid)
 _SYS10(int,thread_suspend, l4id_t,tid)
 _SYS10(int,thread_active, l4id_t,tid)

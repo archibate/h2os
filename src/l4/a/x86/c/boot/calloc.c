@@ -1,4 +1,4 @@
-#include <l4/boot/alloc.h>
+#include <l4/boot/calloc.h>
 #include <l4/system/kbase.h>
 #include <l4/lib/roundtools.h>
 #include <l4/misc/assert.h>
