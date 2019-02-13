@@ -2,6 +2,7 @@
 
 #include <l4/lib/list.h>
 #include <l4/enum/rtype.h>
+#include <l4/object/utcb.h>
 #include <l4/object/identry.h>
 
 struct ktcb

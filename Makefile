@@ -17,7 +17,7 @@ BOCHS=bochs
 all: out
 
 
-BASE_PKGNAME=l4 l4env
+BASE_PKGNAME=l4 l4env grub
 
 CLEAN+=out
 .PHONY: out

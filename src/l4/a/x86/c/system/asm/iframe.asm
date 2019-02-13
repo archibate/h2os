@@ -5,7 +5,7 @@ globl utcb_iframe_exiter
 globl iframe_exiter
 extrn hwintr
 
-SEFrameSize equ 4*4 ; N: sizeof(struct seframe): keep sync with l4/system/asm/seframe.h
+SEFrameSize equ 5*4 ; N: sizeof(struct seframe): keep sync with l4/system/asm/seframe.h
 
 introute:
 	push ds

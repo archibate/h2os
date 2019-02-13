@@ -9,11 +9,8 @@
 #include <l4/generic/thread.h>
 #include <l4/enum/thread-states.h>
 
-void make_simple_thread(struct ktcb *tcb,
-		struct utcb *utcb,
-		struct pgdir *pgdir)
+void make_simple_thread(struct ktcb *tcb, struct pgdir *pgdir)
 {
-	tcb->utcb = utcb;
 	tcb->pgdir = pgdir;
 	tcb->state = THREAD_RUNNING;
 	thread_active(tcb);
@@ -21,18 +18,24 @@ void make_simple_thread(struct ktcb *tcb,
 
 void load_module(const void *begin, const void *end)
 {
-	struct utcb *utcb = calloc(1, PageSize);
 	struct pgdir *pgdir = calloc(1, PageSize);
-	struct ktcb *tcb = calloc(1, sizeof(struct ktcb));
-	make_simple_thread(tcb, utcb, pgdir);
+	struct utcb *utcb = calloc(1, PageSize);
+
+	utcb_init(utcb);
 
 	pgdir_init(pgdir);
-	utcb_init(utcb);
 	pgdir_switch(pgdir, utcb);
 
 	void *pc;
 	if (!(pc = loadelf(begin, end)))
 		panic("bad module ELF format");
-
 	utcb->iframe.pc = (word_t)pc;
+
+	struct ktcb *tcb = calloc(1, sizeof(struct ktcb));
+	__thread_init(tcb);
+	tcb->utcb = utcb;
+	tcb->pgdir = pgdir;
+
+	tcb->state = THREAD_RUNNING;
+	thread_active(tcb);
 }

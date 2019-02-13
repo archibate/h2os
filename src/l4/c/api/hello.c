@@ -10,7 +10,7 @@ int sys_hello(void)
 
 int sys_print(const char *s)
 {
-	printk("sys_print: %s");
+	printk("sys_print: %s", s);
 	return 233;
 }
 

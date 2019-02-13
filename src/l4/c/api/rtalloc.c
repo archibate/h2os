@@ -27,8 +27,7 @@ int sys_rt_delete(unsigned int rtype, l4id_t id)
 		return -EINVAL;
 
 	void *p = id_get_object(rtype, id);
-	if (!p)
-		return -ESRCH;
+	if (!p) return -ESRCH;
 
 	kcg_delete(rtype, p);
 
@@ -42,6 +41,7 @@ int sys_rt_revoke(unsigned int rtype, l4id_t id)
 		return -EINVAL;
 
 	void *p = id_get_object(rtype, id);
+	if (!p) return -ESRCH;
 
 	rtype_revoke(p, rtype);
 

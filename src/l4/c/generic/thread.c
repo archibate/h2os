@@ -1,46 +1,31 @@
+#include <l4/generic/sched.h>
 #include <l4/generic/thread.h>
-#include <l4/generic/task-switch.h>
 #include <l4/enum/thread-states.h>
+#include <l4/generic/task-switch.h>
 #include <l4/misc/printk.h>
-#include <l4/misc/panic.h>
 #include <l4/misc/assert.h>
-#include <memory.h>
+#include <l4/misc/bug.h>
 
 static void _sched_lower_priority(void);
 
-bool curr_idle = 1;
+bool curr_idle = true;
 unsigned char curr_priority;
 struct list_head *running_heads[MAX_PRIORITY];
 struct ktcb *current;
 
-void thread_init(struct ktcb *tcb)
+void thread_set_priority(struct ktcb *tcb, unsigned char priority)
 {
-	memset(tcb, 0, sizeof(*tcb));
-}
-
-void thread_revoke(struct ktcb *tcb)
-{
-	//utcb_delete(&tcb->utcb);
-	//pgdir_delete(&tcb->pgdir);
-	//idspace_delete(&tcb->idspace);
-}
-
-void thread_delete(struct ktcb *tcb)
-{
-	thread_revoke(tcb);
-	hlist_del(&tcb->ide.hlist);
-}
-
-void thread_set_priority(struct ktcb *tcb, unsigned int priority)
-{
-	thread_suspend(tcb);
+	bool need = tcb->state == THREAD_RUNNING;
+	if (need) thread_suspend(tcb);
 	tcb->priority = priority;
-	thread_active(tcb);
+	if (need) thread_active(tcb);
 }
 
 void thread_active(struct ktcb *x)
 {
-	curr_idle = 0;
+	BUG_ON(x->state != THREAD_RUNNING);
+
+	curr_idle = false;
 	if (!running_heads[x->priority])
 	list_init(running_heads[x->priority] = &x->list);
 	else
@@ -51,6 +36,8 @@ void thread_active(struct ktcb *x)
 
 void thread_suspend(struct ktcb *x)
 {
+	BUG_ON(x->state == THREAD_RUNNING);
+
 	if (&x->list == running_head) {
 		if (running_head == running_head->next) {
 			running_head = 0;
@@ -67,17 +54,18 @@ void thread_suspend(struct ktcb *x)
 void sched_enter(void)
 {
 	current = sched_get_curr();
-	assert(current != NULL);
-	assert(current != INVALID_PTR);
+	assert(&current->list != NULL);
+	assert(&current->list != INVALID_PTR);
 }
 
 void sched_leave(void)
 {
 	struct ktcb *next = sched_get_curr();
-	assert(next != NULL);
-	assert(next != INVALID_PTR);
-	if (next != current)
+	assert(&next->list != NULL);
+	assert(&next->list != INVALID_PTR);
+	if (next != current) {
 		task_switch(current, next);
+	}
 }
 
 void _sched_lower_priority(void)
@@ -91,7 +79,6 @@ void _sched_lower_priority(void)
 		}
 	}
 	curr_idle = 1;
-	//panic("_sched_lower_priority: Out of Task!");
 }
 
 void sched_next(void)
