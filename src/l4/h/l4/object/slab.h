@@ -4,6 +4,6 @@
 
 struct slab
 {
-	struct hlist_head f;
+	void *begin, *curr, *end;
 	size_t rsize;
 };

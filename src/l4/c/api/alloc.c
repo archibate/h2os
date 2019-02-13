@@ -6,14 +6,15 @@
 #include <l4/enum/rtype.h>
 #include <l4/enum/errno.h>
 #include <l4/misc/bug.h>
+#include <l4/misc/panic.h>
 
 sl4id_t sys_new(unsigned int rtype)
 {
 	if (rtype > RTYPE_MAX)
 		return -EINVAL;
-	BUG_ON(rtype_get_sizeof(rtype) <= current->slabs[rtype].rsize);
+	BUG_ON(rtype_get_sizeof(rtype) <= current->slabs[rtype]->rsize);
 
-	void *p = slab_new(&current->slabs[rtype]);
+	void *p = slab_new(current->slabs[rtype]);
 	if (!p)
 		return -ENOMEM;
 
@@ -30,7 +31,7 @@ int sys_delete(unsigned int rtype, l4id_t id)
 	void *p = id_get_object(rtype, id);
 	rtype_delete(p, rtype);
 
-	slab_free(&current->slabs[rtype], p);
+	slab_free(current->slabs[rtype], p);
 
 	idg_free_id(rtype, id);
 	return 0;

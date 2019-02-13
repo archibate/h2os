@@ -18,6 +18,6 @@ struct ktcb
 	struct utcb *utcb;
 	struct pgdir *pgdir;
 
-	struct slab slabs[RTYPE_MAX];
+	struct slab *slabs[RTYPE_MAX];
 	struct id_space *idspaces[RTYPE_MAX];
 };

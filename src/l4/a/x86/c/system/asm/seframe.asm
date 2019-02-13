@@ -3,6 +3,8 @@ section .text
 
 globl sysenter_entry
 globl seframe_exiter
+extrn sched_enter
+extrn sched_leave
 extrn _systab
 
 sysenter_entry:
@@ -18,11 +20,18 @@ sysenter_entry:
 	push esi
 	push edi
 	push ebx
+	push eax
+	call sched_enter
+	pop eax
 	call [_systab + eax * 4]
+	push eax
+	call sched_leave
+	pop eax
 	add esp, 16
 seframe_exiter:
 	pop es
 	pop ds
 	pop edx
 	pop ecx
+	sti
 	sysexit

@@ -1,5 +1,6 @@
 #include <l4/generic/thread.h>
 #include <l4/generic/task-switch.h>
+#include <l4/enum/thread-states.h>
 #include <l4/misc/printk.h>
 #include <l4/misc/panic.h>
 #include <l4/misc/assert.h>
@@ -41,7 +42,7 @@ void thread_active(struct ktcb *x)
 {
 	curr_idle = 0;
 	if (!running_heads[x->priority])
-		list_init(running_heads[x->priority] = &x->list);
+	list_init(running_heads[x->priority] = &x->list);
 	else
 		list_add_tail(&x->list, running_heads[x->priority]);
 	if (curr_idle || x->priority > curr_priority)
