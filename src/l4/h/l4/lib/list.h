@@ -164,6 +164,12 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 	h->first = n;
 }
 
+static inline void hlist_move(struct hlist_node *n, struct hlist_head *h)
+{
+	__hlist_del(n);
+	hlist_add_head(n, h);
+}
+
 /* add @n before @next */
 static inline void hlist_add_before(struct hlist_node *n, struct hlist_node *next)
 {

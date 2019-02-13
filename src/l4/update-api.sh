@@ -7,11 +7,10 @@ sys_process() {
 	echo '#include <l4/sys/sysdef.h>'
 	echo
 
-	awk -F'(' '{printf "%s,%s,,\n", $1, substr($2, 1, length($2)-2)}' | sed 's/void,,//' | \
+	sed 's/\*/\* /g' | awk -F'(' '{printf "%s,%s,,\n", $1, substr($2, 1, length($2)-2)}' | sed 's/void,,//' | \
 	awk -F' ' -v RS=',' '{printf "%s,%s, ", substr($0, 1, length($0)-length($NF)-1), $NF}' | \
-	sed -z 's/,\s,,\s[,\s]*/\n/g' | sed 's/^,\s*//g' | \
-	awk -F',' '{if (NF) printf "_SYS%d0(%s)\n", NF/2-1, $0}' | \
-	sed 's/_SYS10(\(.*\), ,/_SYS00(\1/' | sed 's/sys_//'
+	sed -z 's/,\s,,\s[,\s]*/\n/g' | sed 's/^,\s*//g' | awk -F',' '{if (NF) printf "_SYS%d0(%s)\n", NF/2-1, $0}' | \
+	sed 's/_SYS10(\(.*\), ,/_SYS00(\1/' | sed 's/, )/)/' | sed 's/sys_//'
 }
 
 rm -rf libl4/c/api/

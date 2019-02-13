@@ -6,7 +6,7 @@ section .text
 
 global _start
 extrn save_mboot_pointer
-extrn kern_start
+extrn arch_startup
 
 _start:
 	cli
@@ -21,7 +21,7 @@ _start:
 	call save_mboot_pointer
 	add esp, 8
 
-	call kern_start
+	call arch_startup
 stop:
 	hlt
 	jmp stop

@@ -41,8 +41,9 @@ out/include/l4: $(ADIRS:%=%/h/l4)
 	@rm -rf $@
 	cp -r $^ $(@D)
 
-#sc/nametab.gen.c: $(wildcard sh/l4/*.h)
-#	tools/nametab.sh > $@
+c/sys/systab.c h/l4/sys/sysnr.h: $(wildcard h/l4/api/*.h)
+	$(EL) gen $@
+	./update-api.sh
 
 .PHONY: all
 all: $(ALL)
