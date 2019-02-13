@@ -8,7 +8,6 @@
 #include <l4/system/kmm.h>
 #include <l4/misc/bug.h>
 #include <memory.h>
-#include <l4/misc/printk.h>
 
 void pgdir_init(struct pgdir *pgdir)
 {
@@ -26,8 +25,6 @@ void pgdir_switch(struct pgdir *pgdir, struct utcb *utcb_ptr)
 
 	if (mmu_getPgdirPaddr() == pd) {
 		mmu_invaidatePage(KernUTCBAddr);
-		//BUG_ON(utcb_ptr->iframe.pc != kIFrame.pc);//
-		//BUG();//
 
 	} else {
 		BUG_ON(!pd || PgdirOffset(pd));
@@ -35,9 +32,4 @@ void pgdir_switch(struct pgdir *pgdir, struct utcb *utcb_ptr)
 
 		mmu_setPgdirPaddr(pd);
 	}
-
-	/*extern void _NORETURN seframe_exiter(void);
-	extern void _NORETURN utcb_iframe_exiter(void);
-	printk("%p,%p", kErnelExiter, seframe_exiter);
-	//kErnelExiter = utcb_iframe_exiter;*/
 }

@@ -56,6 +56,5 @@ void async_listen(struct async_ep *aep, struct ktcb *listener)
 		current->state = THREAD_LISTENING;
 		thread_suspend(listener);
 		wq_add(&aep->listening, listener);
-		//panic("!");
 	}
 }
