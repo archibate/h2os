@@ -13,10 +13,11 @@ sys_process() {
 	sed 's/_SYS10(\(.*\), ,/_SYS00(\1/' | sed 's/, )/)/' | sed 's/sys_//'
 }
 
-rm -rf libl4/c/api/
-mkdir libl4/c/api/
+libl4=../libl4
+rm -rf $libl4/c/api/
+mkdir $libl4/c/api/
 for x in `find h/l4/api -type f -name '*.h'`
-do grep sys_ $x | sys_process > libl4/c/api/`basename -s.h $x`.c
+do grep sys_ $x | sys_process > $libl4/c/api/`basename -s.h $x`.c
 done
 
 make_sysnr_h() {

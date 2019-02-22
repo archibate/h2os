@@ -1,7 +1,7 @@
 bits 32
 section .text
 
-global libl4_do_syscall
+globl libl4_do_syscall
 
 libl4_do_syscall:
 %if 0

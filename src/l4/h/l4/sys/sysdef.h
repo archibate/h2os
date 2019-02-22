@@ -1,5 +1,7 @@
 #pragma once
 
+#include <l4/sys/syskip.h>
+
 #define _$E(x) x
 
 #define _SYS00(rett, func) \
@@ -8,7 +10,7 @@ rett sys_##func() \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		: "a" (_$E(_SYS_##func)) \
@@ -22,7 +24,7 @@ rett sys_##func( u0*y0) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -37,7 +39,7 @@ rett sys_##func( u0*y0, u1*y1) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -53,7 +55,7 @@ rett sys_##func( u0*y0, u1*y1, u2*y2) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -70,7 +72,7 @@ rett sys_##func( u0*y0, u1*y1, u2*y2, u3*y3) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"mov %%edx, %%ebp\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
@@ -89,7 +91,7 @@ rett sys_##func( t0 x0) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		: "a" (_$E(_SYS_##func)) \
@@ -104,7 +106,7 @@ rett sys_##func( t0 x0, u0*y0) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -120,7 +122,7 @@ rett sys_##func( t0 x0, u0*y0, u1*y1) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -137,7 +139,7 @@ rett sys_##func( t0 x0, u0*y0, u1*y1, u2*y2) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -155,7 +157,7 @@ rett sys_##func( t0 x0, u0*y0, u1*y1, u2*y2, u3*y3) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"mov %%edx, %%ebp\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
@@ -175,7 +177,7 @@ rett sys_##func( t0 x0, t1 x1) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		: "a" (_$E(_SYS_##func)) \
@@ -191,7 +193,7 @@ rett sys_##func( t0 x0, t1 x1, u0*y0) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -208,7 +210,7 @@ rett sys_##func( t0 x0, t1 x1, u0*y0, u1*y1) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -226,7 +228,7 @@ rett sys_##func( t0 x0, t1 x1, u0*y0, u1*y1, u2*y2) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -245,7 +247,7 @@ rett sys_##func( t0 x0, t1 x1, u0*y0, u1*y1, u2*y2, u3*y3) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"mov %%edx, %%ebp\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
@@ -266,7 +268,7 @@ rett sys_##func( t0 x0, t1 x1, t2 x2) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		: "a" (_$E(_SYS_##func)) \
@@ -283,7 +285,7 @@ rett sys_##func( t0 x0, t1 x1, t2 x2, u0*y0) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -301,7 +303,7 @@ rett sys_##func( t0 x0, t1 x1, t2 x2, u0*y0, u1*y1) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -320,7 +322,7 @@ rett sys_##func( t0 x0, t1 x1, t2 x2, u0*y0, u1*y1, u2*y2) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -340,7 +342,7 @@ rett sys_##func( t0 x0, t1 x1, t2 x2, u0*y0, u1*y1, u2*y2, u3*y3) \
 	rett res; \
 	asm volatile ( \
 		"push %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"mov %%edx, %%ebp\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
@@ -363,7 +365,7 @@ rett sys_##func( t0 x0, t1 x1, t2 x2, t3 x3) \
 	asm volatile ( \
 		"push %%ebp\n" \
 		"mov %%edx, %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		: "a" (_$E(_SYS_##func)) \
@@ -382,7 +384,7 @@ rett sys_##func( t0 x0, t1 x1, t2 x2, t3 x3, u0*y0) \
 	asm volatile ( \
 		"push %%ebp\n" \
 		"mov %%edx, %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -402,7 +404,7 @@ rett sys_##func( t0 x0, t1 x1, t2 x2, t3 x3, u0*y0, u1*y1) \
 	asm volatile ( \
 		"push %%ebp\n" \
 		"mov %%edx, %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -423,7 +425,7 @@ rett sys_##func( t0 x0, t1 x1, t2 x2, t3 x3, u0*y0, u1*y1, u2*y2) \
 	asm volatile ( \
 		"push %%ebp\n" \
 		"mov %%edx, %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \
 		, "=b" (*y0) \
@@ -445,7 +447,7 @@ rett sys_##func( t0 x0, t1 x1, t2 x2, t3 x3, u0*y0, u1*y1, u2*y2, u3*y3) \
 	asm volatile ( \
 		"push %%ebp\n" \
 		"mov %%edx, %%ebp\n" \
-		"call libl4_do_syscall\n" \
+		"call "_SYSKIP_SYM_syscall_in"\n" \
 		"mov %%edx, %%ebp\n" \
 		"pop %%ebp\n" \
 		: "=a" (res) \

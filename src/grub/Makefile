@@ -1,4 +1,4 @@
-include tools/general.mak
+include $(ROOT)/tools/general.mak
 
 .PHONY: default
 default: all

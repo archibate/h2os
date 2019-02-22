@@ -1,9 +1,10 @@
-include tools/general.mak
+MAKE_A_LIB=1
+include $(ROOT)/tools/general.mak
 
 .PHONY: default
 default: all
 
-SRCS+=$(shell find $(SRCPATH) -regex '.*\.\(c\|asm\)')
+SRCS+=$(shell find $(SRCPATH) $(FINDFLAGS))
 OBJS=$(SRCS:%=%.o)
 
 CLEAN+=$(OBJS)

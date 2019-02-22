@@ -3,7 +3,13 @@ section .text
 
 globl utcb_iframe_exiter
 globl iframe_exiter
+global movusr_iframe_exiter
+%ifndef _MINGW
 extrn hwintr
+%else
+extern @hwintr@4
+hwintr equ @hwintr@4
+%endif
 
 SEFrameSize equ 5*4 ; N: sizeof(struct seframe): keep sync with l4/system/asm/seframe.h
 
@@ -21,6 +27,7 @@ introute:
 	call hwintr
 utcb_iframe_exiter:
 	add esp, SEFrameSize
+movusr_iframe_exiter:
 iframe_exiter:
 	popad
 	pop gs

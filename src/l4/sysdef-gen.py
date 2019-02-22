@@ -4,6 +4,7 @@ regs = 'bDSd'
 vregs = ['ebx', 'edi', 'esi']
 
 print('''#pragma once\n''')
+print('''#include <l4/sys/syskip.h>\n''')
 print('''#define _$E(x) x''')
 
 def mksys(nx, ny):
@@ -25,7 +26,7 @@ rett sys_##func(''' + \
     if nx >= 4:
         print('''\t\t"mov %%edx, %%ebp\\n" \\''')
 
-    print('''\t\t"call libl4_do_syscall\\n" \\''')
+    print('''\t\t"call "_SYSKIP_SYM_syscall_in"\\n" \\''')
 
     if ny >= 4:
         print('''\t\t"mov %%edx, %%ebp\\n" \\''')

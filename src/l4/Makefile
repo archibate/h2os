@@ -8,7 +8,7 @@ DEFINES+=CONFIG_CONSOLE_CLEAR=1 \
 	 #CONFIG_LOG_SCHED_TIMER=1 \
 	 CONFIG_LOG_EXTRA_SWI=1
 INCLUDES+=h/l4/stdafx.h
-include tools/general.mak
+include $(ROOT)/tools/general.mak
 
 .PHONY: default
 default: all
@@ -25,9 +25,9 @@ showinfo:
 	@echo ADIRS=$(ADIRS)
 	@echo ROOT=$(ROOT)
 
-SRCS+=$(shell find $(SRCPATH) -regex '.*\.\(c\|asm\)')
+SRCS+=$(shell find $(SRCPATH) $(FINDFLAGS))
 OBJS=$(SRCS:%=%.o)
-LIBS=c
+LIBS+=c
 
 LDSCRIPT=a/$(ARCH)/kernel.ld
 
@@ -39,13 +39,8 @@ vmlinux.elf: $(LDSCRIPT).i $(OBJS)
 ALL+=out/boot/vmlinux-l4
 out/boot/vmlinux-l4: vmlinux.elf
 	@mkdir -p $(@D)
-ifdef STRIP_ELF
 	$(EL) strip $@
 	$(STRIP) $(STRIPFLAGS) -o $@ $<
-else
-	$(EL) inst $@
-	cp $< $@
-endif
 
 ALL+=out/include/l4
 out/include/l4: $(ADIRS:%=%/h/l4)

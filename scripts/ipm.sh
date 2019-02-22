@@ -4,6 +4,7 @@ set -e
 ipm_src=src
 ipm_pub=pub
 ipm_dest=out
+ipm_makeflags=-sBj4
 
 read_ini_deps()
 {
@@ -34,7 +35,7 @@ src_install()
 	if [ -f $dir/Makefile ]
 	then
 		echo "--> building $p"
-		make -sBj4 -C $dir
+		make ROOT=`pwd` $ipm_makeflags -C $dir
 	fi
 	if [ -d $dir/out ]
 	then

@@ -1,2 +1,2 @@
-EC=@tools/ec.sh
-EL=@tools/el.sh
+EC=@$(ROOT)/tools/ec.sh
+EL=@$(ROOT)/tools/el.sh

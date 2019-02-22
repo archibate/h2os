@@ -11,7 +11,7 @@ void _NORETURN move_to_user(void)
 	BUG_ON((kIFrame.cs & 3) != 3);
 	asm volatile (
 		"mov %0, %%esp\n"
-		"jmp iframe_exiter\n"
+		"jmp movusr_iframe_exiter\n"
 		:: "r" (&kIFrame));
 	UNREACHABLE();
 }

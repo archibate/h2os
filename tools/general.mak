@@ -1,9 +1,9 @@
 
-include tools/config.mak
-include tools/ecsta.mak
-include tools/tools.mak
-include tools/flags.mak
-include tools/rules.mak
+include $(ROOT)/tools/config.mak
+include $(ROOT)/tools/ecsta.mak
+include $(ROOT)/tools/tools.mak
+include $(ROOT)/tools/flags.mak
+include $(ROOT)/tools/rules.mak
 
 ifndef VERBOSE
 .SILENT:

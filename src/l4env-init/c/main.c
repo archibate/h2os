@@ -42,7 +42,8 @@ void main(void)
 	sys_thread_active(id);
 #endif
 
-	for (int i = 0; i < 10000; i++)
+	int i;
+	for (i = 0; i < 10000; i++)
 		sys_putchar('m');
 
 	sys_exit();

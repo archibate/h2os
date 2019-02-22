@@ -1,18 +1,13 @@
-MAKE_A_LIB=1
 include $(ROOT)/tools/general.mak
 
 .PHONY: default
 default: all
 
-SRCS+=$(shell find $(SRCPATH) $(FINDFLAGS))
-OBJS=$(SRCS:%=%.o)
-
-CLEAN+=$(OBJS)
-ALL+=out/lib/libl4.a
-out/lib/libl4.a: $(OBJS)
+ALL+=out/lib/libgcc.a
+out/lib/libgcc.a: $(OBJS)
 	@mkdir -p $(@D)
-	$(EL) ar $@
-	$(AR) cqs $@ $(OBJS)
+	$(EL) inst $@
+	cp $(ROOT)/../../../../lib/gcc/mingw32/3.4.5/libgcc.a $@
 
 .PHONY: all
 all: $(ALL)

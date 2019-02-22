@@ -8,23 +8,31 @@ config:
 
 include tools/config.mak
 
-
+ifndef QEMU
 QEMU=qemu-system-i386
+endif
+ifndef BOCHS
 BOCHS=bochs
+endif
+IPM=scripts/ipm.sh
 
 
 .PHONY: all
 all: out
 
 
+ifdef MINGW
+BASE_PKGNAME=libgcc base
+else
 BASE_PKGNAME=base
+endif
 
 CLEAN+=out
 .PHONY: out
 out:
 	rm -rf $@
 	mkdir -p out
-	./ipm install $(BASE_PKGNAME)
+	$(IPM) install $(BASE_PKGNAME)
 	rm -rf out/include out/lib
 
 CLEAN+=os.iso
@@ -49,12 +57,11 @@ os.img:
 
 
 MEGS=256
-Q=$(if $(MINGW),$D/,)
 QEMUFLAGS+=-m $(MEGS) $(if $(DEBUG),-S -s,)
 BOCHSFLAGS+='megs:$(MEGS)'
 
 L4ENV_MODS=$(shell cat src/l4env/package.ini | grep deps= | sed 's/deps=//' | sed 's/l4env-//g')
-QINITRD=$(shell echo $(L4ENV_MODS:%=$Qout/bin/%) | awk '{for (i=1;i<=NF;i++)printf "%s%s",$$i,(i!=NF?",":"");}')
+QINITRD=$(shell echo $(L4ENV_MODS:%=out/bin/%) | awk '{for (i=1;i<=NF;i++)printf "%s%s",$$i,(i!=NF?",":"");}')
 
 .PHONY: showinfo
 showinfo:
@@ -70,13 +77,13 @@ showinfo:
 
 .PHONY: run
 run: out
-	$(QEMU) -kernel $Qout/boot/vmlinux-l4 \
+	$(QEMU) -kernel out/boot/vmlinux-l4 \
 		-initrd "$(QINITRD)" \
 		$(QEMUFLAGS)
 
 .PHONY: runiso
 runiso: os.iso
-	$(QEMU) -cdrom $Q$< -boot d $(QEMUFLAGS)
+	$(QEMU) -cdrom $< -boot d $(QEMUFLAGS)
 
 .PHONY: bochsiso
 bochsiso: os.iso
@@ -84,7 +91,7 @@ bochsiso: os.iso
 
 .PHONY: runfda
 runfda: os.img
-	$(QEMU) -fda $Q$< -boot a $(QEMUFLAGS)
+	$(QEMU) -fda $< -boot a $(QEMUFLAGS)
 
 .PHONY: bochsfda
 bochsfda: os.img

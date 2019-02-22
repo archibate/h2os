@@ -4,7 +4,6 @@
 #include <wchar.h>
 #include <memory.h>
 #include <stdlib.h>
-#include <ccutils.h>
 #ifdef _CC_HAS_ALLOCA
 #include <alloca.h>
 #endif

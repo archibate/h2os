@@ -8,6 +8,11 @@
 %.asm.o: %.asm
 	$(EC) asm $<
 	$(ASM) $(ASMFLAGS) -f elf -o $@ $<
+ifdef MINGW
+ifdef MAKE_A_LIB
+	$(OBJCOPY) -O pe-i386 $@
+endif
+endif
 
 %.c.o: %.c
 	$(EC) cc $<

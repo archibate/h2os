@@ -1,7 +1,7 @@
 OPTIMIZE=0
 DEFINES+=__WORDSIZE__=4
 ifdef MINGW
-DEFINES+=_MINGW=1
+DEFINES+=_MINGW=1 main=mingw_main
 endif
 MODES+=32 arch=i386 soft-float
 FUNCTIONS+=no-common no-exceptions no-non-call-exceptions freestanding no-builtin
@@ -26,7 +26,7 @@ ADIRS+=a/$(BITS)
 endif
 endif
 
-include tools/modules.mak
+include $(ROOT)/tools/modules.mak
 
 LIBPATH+=$(ROOT)/out/lib
 SRCPATH+=$(ADIRS:%=%/c)
@@ -38,7 +38,12 @@ CFLAGS+=$(OPTIMIZE:%=-O%) $(MODES:%=-m%) \
         $(DEFINES:%=-D%) $(INCPATH:%=-I%) \
 	$(DBGFLAGS:%=-g%) $(INCLUDES:%=-include%)
 ASMFLAGS+=$(DEFINES:%=-D%) $(INCPATH:%=-I%/)
-ASMFLAGS+=-P $(ROOT)/scripts/nasm.inc
+ASMFLAGS+=-P $(ROOT)/tools/nasm.inc
 LDFLAGS+=-static -nostdlib
 LDFLAGS+=$(LIBPATH:%=-L%)
 STRIPFLAGS+=-S -O elf32-i386
+FINDFLAGS+=-type f $(if $(MINGW),| grep '\.\(c\|asm\)$$',-regex '.*\.\(c\|asm\)')
+
+ifdef MINGW
+LIBS+=gcc
+endif

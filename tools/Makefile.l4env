@@ -1,5 +1,5 @@
 APP=$(shell cat package.ini | grep 'name=' | sed 's/name=mkl4env-//')
-include tools/general.mak
+include $(ROOT)/tools/general.mak
 
 .PHONY: default
 default: all
@@ -17,9 +17,9 @@ showinfo:
 	@echo ROOT=$(ROOT)
 	@echo APP=$(APP)
 
-SRCS+=$(shell find $(SRCPATH) -regex '.*\.\(c\|asm\)')
+SRCS+=$(shell find $(SRCPATH) $(FINDFLAGS))
 OBJS=$(SRCS:%=%.o)
-LIBS=c l4
+LIBS+=c l4
 
 LDSCRIPT=user.ld
 
@@ -31,13 +31,8 @@ $(APP).elf: $(LDSCRIPT).i $(OBJS)
 ALL+=out/bin/$(APP)
 out/bin/$(APP): $(APP).elf
 	@mkdir -p $(@D)
-ifdef STRIP_ELF
 	$(EL) strip $@
 	$(STRIP) $(STRIPFLAGS) -o $@ $<
-else
-	$(EL) inst $@
-	cp $< $@
-endif
 
 .PHONY: all
 all: $(ALL)

@@ -1,8 +1,8 @@
 bits 32
 section .text
 
-globl _start
-extrn main
+global _start
+extrn_main
 
 _start:
 	xor ebp, ebp
