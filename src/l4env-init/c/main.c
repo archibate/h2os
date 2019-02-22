@@ -5,6 +5,7 @@
 #include <l4/api/rtalloc.h>
 #include <l4/api/thread.h>
 #include <l4/api/sched.h>
+#define sys_putchar//
 
 void task_a(void)
 {
