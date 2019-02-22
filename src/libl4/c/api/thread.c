@@ -1,6 +1,7 @@
 #include <l4/stdafx.h>
 #include <l4/sys/sysnr.h>
 #include <l4/sys/sysdef.h>
+#define bool int
 
 _SYS10(int,thread_check, l4id_t,tid)
 _SYS10(int,thread_suspend, l4id_t,tid)

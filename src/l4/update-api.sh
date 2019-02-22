@@ -5,6 +5,7 @@ sys_process() {
 	echo '#include <l4/stdafx.h>'
 	echo '#include <l4/sys/sysnr.h>'
 	echo '#include <l4/sys/sysdef.h>'
+	echo '#define bool int'
 	echo
 
 	sed 's/\*/\* /g' | awk -F'(' '{printf "%s,%s,,\n", $1, substr($2, 1, length($2)-2)}' | sed 's/void,,//' | \

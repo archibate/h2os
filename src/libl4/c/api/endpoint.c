@@ -1,6 +1,7 @@
 #include <l4/stdafx.h>
 #include <l4/sys/sysnr.h>
 #include <l4/sys/sysdef.h>
+#define bool int
 
 _SYS10(int,nbsend, l4id_t,epid)
 _SYS10(int,send, l4id_t,epid)

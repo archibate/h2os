@@ -10,9 +10,13 @@ libl4_do_syscall:
 %else
 	pushfd
 	mov ecx, esp
-	mov edx, sysexited
+	call getpc_edx
+	add edx, sysexited-$
 	sysenter
 sysexited:
 	popfd
+	ret
+getpc_edx:
+	mov edx, [esp]
 	ret
 %endif

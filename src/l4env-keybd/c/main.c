@@ -12,6 +12,7 @@ void main(void)
 
 	sys_softirq_set_enable(IRQ_KEYBD, true);
 	sys_async_listen(IRQ_KEYBD);
+	asm volatile ("ud2");
 	sys_softirq_done(IRQ_KEYBD);
 
 	for (;;)
