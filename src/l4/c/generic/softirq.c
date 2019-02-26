@@ -14,8 +14,7 @@ void init_softirq_aeps(void)
 		struct async_ep *aep = &softirq_aeps[i];
 		async_init(aep);
 		aep->ide.id = i;
-		bool r = idg_set_entry(&aep->ide, RTYPE_ASYNC_EP);
-		BUG_ON(!r);
+		BUG_ON(!idg_set_entry(&aep->ide, RTYPE_ASYNC_EP));
 	}
 }
 

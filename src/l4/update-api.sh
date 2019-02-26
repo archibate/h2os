@@ -15,10 +15,10 @@ sys_process() {
 }
 
 libl4=../libl4
-rm -rf $libl4/c/api/
-mkdir $libl4/c/api/
+rm -rf $libl4/c/api.gen/
+mkdir $libl4/c/api.gen/
 for x in `find h/l4/api -type f -name '*.h'`
-do grep sys_ $x | sys_process > $libl4/c/api/`basename -s.h $x`.c
+do grep sys_ $x | sys_process > $libl4/c/api.gen/`basename -s.h $x`.c
 done
 
 make_sysnr_h() {

@@ -6,6 +6,7 @@
 #include <l4/misc/panic.h>
 #include <l4/misc/assert.h>
 #include <l4/misc/bug.h>
+#include <l4/machine/asm/clsti.h>
 
 static void _sched_lower_priority(void);
 
@@ -48,8 +49,8 @@ void thread_suspend(struct ktcb *x)
 			//printk("curr=%p", sched_get_curr());
 			sched_next();
 			list_del(&x->list);
+			//printk("wl%p", x->list.next);
 			//printk("curr=%p", sched_get_curr());
-			//panic("x:n:p=%p:%p:%p", &x->list, x->list.next, x->list.prev);
 		}
 	} else {
 		list_del(&x->list);
@@ -58,16 +59,19 @@ void thread_suspend(struct ktcb *x)
 
 void sched_enter(void)
 {
+	BUG_ON(running_head == NULL);
+	BUG_ON(running_head == INVALID_PTR);
 	current = sched_get_curr();
-	assert(&current->list != NULL);
-	assert(&current->list != INVALID_PTR);
 }
 
 void sched_leave(void)
 {
+	while (curr_idle)
+		stihltcli();
+
+	BUG_ON(running_head == NULL);
+	BUG_ON(running_head == INVALID_PTR);
 	struct ktcb *next = sched_get_curr();
-	assert(&next->list != NULL);
-	assert(&next->list != INVALID_PTR);
 	if (next != current) {
 		//printk("slts %p->%p", current, next);
 		task_switch(current, next);
@@ -78,14 +82,14 @@ void sched_leave(void)
 void _sched_lower_priority(void)
 {
 	int i;
-	for (i = 0; i < curr_priority; i++) {
+	for (i = curr_priority - 1; i >= 0; i--) {
 		if (running_heads[i]) {
 			curr_priority = i;
-			//dprintk("%d!", i);
+			//panic("%d!", i);
 			return;
 		}
 	}
-	curr_idle = 1;
+	curr_idle = true;
 }
 
 void sched_next(void)

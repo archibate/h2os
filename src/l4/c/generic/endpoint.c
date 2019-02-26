@@ -2,13 +2,9 @@
 #include <l4/generic/waitqueue.h>
 #include <l4/enum/thread-states.h>
 #include <l4/generic/thread.h>
+#include <l4/misc/panic.h>//
 #include <l4/misc/bug.h>
 #include <memory.h>
-
-static void copy_data(struct ktcb *recver, struct ktcb *sender)
-{
-	//memcpy(recver->extraBuf, sender->extraBuf, sizeof(recver->extraBuf));
-}
 
 void endpoint_init(struct endpoint *ep)
 {
@@ -23,6 +19,11 @@ void endpoint_delete(struct endpoint *ep)
 {
 	endpoint_revoke(ep);
 	hlist_del(&ep->ide.hlist);
+}
+
+static void copy_data(struct ktcb *recver, struct ktcb *sender)
+{
+	//memcpy(recver->extraBuf, sender->extraBuf, sizeof(recver->extraBuf));
 }
 
 void endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block, bool recv)
@@ -50,6 +51,7 @@ void endpoint_wait(struct endpoint *ep, struct ktcb *waiter)
 {
 	BUG_ON(waiter->state != THREAD_RUNNING);
 	struct ktcb *caller = wq_pop(&ep->calling);
+	//printk("wait, c:w=%p:%p", caller, waiter);
 	if (caller) {
 		copy_data(waiter, caller);
 		switch (caller->state) {
@@ -65,6 +67,7 @@ void endpoint_wait(struct endpoint *ep, struct ktcb *waiter)
 		}
 	} else {
 		waiter->state = THREAD_WAITING;
+		BUG_ON(waiter->list.next == NULL);
 		thread_suspend(waiter);
 		wq_add(&ep->waiting, waiter);
 	}

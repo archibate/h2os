@@ -7,4 +7,5 @@
 struct id_space
 {
 	struct hlist_head ht[ID_HASH_MAX];
+	l4id_t idmax;
 };

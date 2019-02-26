@@ -5,17 +5,34 @@
 #include <l4/api/asyncep.h>
 #include <l4/api/softirq.h>
 #include <l4/enum/irq-nrs.h>
+#include <l4/api/endpoint.h>
+#include <l4/enum/rflags.h>
+#include <l4/enum/rtype.h>
+
+int epid;
 
 void kb_handler(void);
 int main(void)
 {
 	sys_softirq_set_enable(IRQ_KEYBD, true);
 
+	epid = sys_rt_open(RTYPE_ENDPOINT, 2333, R_CREAT | R_WRONLY);
+	if (epid < 0) {
+		sys_print("error in opening kb endpoint");
+		sys_halt();
+	}
+
 	while (1) {
 		sys_async_listen(IRQ_KEYBD);
 		sys_softirq_done(IRQ_KEYBD);
 		kb_handler();
 	}
+}
+
+void tty_putchar(int ch)
+{
+	sys_send(epid);//todo: impl an fifo buffer inside this server process
+	//t!: use two threads in this server, one for intrhand, one for sendbuf
 }
 
 // Keyboard Map {{{
@@ -105,15 +122,15 @@ static char kb_shift_map[128] =
 
 static char kb_mode;
 
-static char shift(char ch)
+static char shift(char uc)
 {
 	if (kb_mode & E0ESC) {
-		switch (ch) {
+		switch (uc) {
 		case 0x1D: return CTRL;
 		case 0x38: return ALT;
 		}
 	} else {
-		switch (ch) {
+		switch (uc) {
 		case 0x2A:
 		case 0x36: return SHIFT;
 		case 0x1D: return CTRL;
@@ -126,7 +143,7 @@ static char shift(char ch)
 #define TTY_EOF (-1)
 #define TTY_INT (-2)
 
-char ctrl(char ch)
+int ctrl(int ch)
 {
 	switch (ch) {
 	case 'd': return TTY_EOF;
@@ -135,7 +152,7 @@ char ctrl(char ch)
 	return ch;
 }
 
-char alt(char ch)
+int alt(int ch)
 {
 	return ch;
 }
@@ -163,8 +180,8 @@ void kb_handler(void)
 		return;
 	}
 
-	char ch = sc & 0x7f;
-	char m = shift(ch);
+	char uc = sc & 0x7f;
+	char m = shift(uc);
 	if (m) {
 		if (KB_IS_RELEASE(sc))
 			kb_mode &= ~m;
@@ -173,10 +190,11 @@ void kb_handler(void)
 		return;
 	}
 
+	int ch;
 	if (kb_mode & SHIFT)
-		ch = kb_shift_map[ch];
+		ch = kb_shift_map[uc];
 	else
-		ch = kb_map[ch];
+		ch = kb_map[uc];
 
 	if (kb_mode & CTRL)
 		ch = ctrl(ch);
@@ -188,5 +206,5 @@ void kb_handler(void)
 		kb_mode &= ~E0ESC;
 
 	else if (ch)
-		sys_putchar(ch);
+		tty_putchar(ch);
 }

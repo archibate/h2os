@@ -20,6 +20,7 @@ void *_systab[] = {
 	[_SYS_print] = sys_print,
 	[_SYS_halt] = sys_halt,
 	[_SYS_rt_new] = sys_rt_new,
+	[_SYS_rt_open] = sys_rt_open,
 	[_SYS_rt_check] = sys_rt_check,
 	[_SYS_rt_delete] = sys_rt_delete,
 	[_SYS_rt_revoke] = sys_rt_revoke,

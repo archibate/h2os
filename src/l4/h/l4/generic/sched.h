@@ -1,10 +1,10 @@
 #pragma once
 
 #include <l4/object/thread.h>
+#include <l4/enum/priority.h>
 
 extern bool curr_idle;
 extern unsigned char curr_priority;
-#define MAX_PRIORITY  256
 extern struct list_head *running_heads[MAX_PRIORITY];
 extern struct ktcb *current;
 

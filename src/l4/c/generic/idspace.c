@@ -1,6 +1,6 @@
 #include <l4/generic/idspace.h>
+#include <l4/misc/bug.h>
 #include <memory.h>
-#include <stdlib.h>
 
 void ids_init(struct id_space *ids)
 {
@@ -62,7 +62,14 @@ struct ids_entry *ids_del(struct id_space *ids, l4id_t id)
 
 l4id_t ids_new_entry(struct id_space *ids, struct ids_entry *ide)
 {
-	do ide->id = rand() * RAND_MAX + rand();
+#if 0
+	do ide->id = (rand() % 244) * RAND_MAX + rand();
 	while (ids_add(ids, ide));
 	return ide->id;
+#else
+	l4id_t id = ids->idmax++; // T: use idtop大法 instread
+	ide->id = id;
+	BUG_ON(ids_add(ids, ide) != NULL);
+	return id;
+#endif
 }

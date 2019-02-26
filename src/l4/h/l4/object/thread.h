@@ -4,6 +4,8 @@
 #include <l4/enum/rtype.h>
 #include <l4/object/utcb.h>
 #include <l4/object/identry.h>
+#include <l4/object/fdentry.h>
+#include <l4/enum/filedes.h>
 
 struct ktcb
 {
@@ -16,5 +18,10 @@ struct ktcb
 	unsigned char priority;
 
 	struct utcb *utcb;
+
+	// T: below move to kpcb
 	struct pgdir *pgdir;
+
+	l4fd_t fdtop;
+	struct fd_entry fds[MAX_FDS];
 };
