@@ -12,14 +12,7 @@ ALL+=out/lib/libl4.a
 out/lib/libl4.a: $(OBJS)
 	@mkdir -p $(@D)
 	$(EL) ar $@
-	@#cp -r $(ROOT)/out/lib/libc.a $@
 	$(AR) cqs $@ $(OBJS)
-
-ALL+=out/include/l4
-out/include/l4: $(ADIRS:%=%/h/l4)
-	@mkdir -p $(@D)
-	@rm -rf $@
-	cp -r $^ $(@D)
 
 .PHONY: all
 all: $(ALL)

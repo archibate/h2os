@@ -5,34 +5,38 @@
 #include <l4/api/asyncep.h>
 #include <l4/api/softirq.h>
 #include <l4/enum/irq-nrs.h>
-#include <l4/api/endpoint.h>
-#include <l4/enum/rflags.h>
-#include <l4/enum/rtype.h>
+#include <h4/sys/types.h>
+#include <h4/sys/ipc.h>
 
-int epid;
+static int kbds;
+
+void kbds_init(void)
+{
+	kbds = ipc_open(2333, IPC_CREAT | IPC_SEND);
+	if (kbds < 0) {
+		sys_print("error in opening kb endpoint");
+		sys_halt();
+	}
+}
+
+void kbds_putchar(int ch)
+{
+	ipc_begin();
+	ipc_write(&ch, sizeof(ch));
+	ipc_send(kbds);//todo: impl an fifo buffer inside this server process
+	//t!: use two threads in this server, one for intrhand, one for sendbuf
+}
 
 void kb_handler(void);
 int main(void)
 {
+	kbds_init();
 	sys_softirq_set_enable(IRQ_KEYBD, true);
-
-	epid = sys_rt_open(RTYPE_ENDPOINT, 2333, R_CREAT | R_WRONLY);
-	if (epid < 0) {
-		sys_print("error in opening kb endpoint");
-		sys_halt();
-	}
-
 	while (1) {
 		sys_async_listen(IRQ_KEYBD);
 		sys_softirq_done(IRQ_KEYBD);
 		kb_handler();
 	}
-}
-
-void tty_putchar(int ch)
-{
-	sys_send(epid);//todo: impl an fifo buffer inside this server process
-	//t!: use two threads in this server, one for intrhand, one for sendbuf
 }
 
 // Keyboard Map {{{
@@ -206,5 +210,5 @@ void kb_handler(void)
 		kb_mode &= ~E0ESC;
 
 	else if (ch)
-		tty_putchar(ch);
+		kbds_putchar(ch);
 }

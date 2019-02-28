@@ -5,10 +5,10 @@
 #include <l4/api/rtalloc.h>
 #include <l4/api/thread.h>
 #include <l4/api/sched.h>
-#include <l4/api/endpoint.h>
-#include <l4/enum/rflags.h>
-#include <l4/enum/rtype.h>
+#include <h4/sys/types.h>
+#include <h4/sys/ipc.h>
 
+#if 0//{{{
 void task_a(void)
 {
 	sys_print("TASK_A!!!");
@@ -26,6 +26,29 @@ void task_b(void)
 }
 
 static char fsf_a[2048], fsf_b[2048];
+#endif//}}}
+
+//
+static int kbd;
+
+void kbd_init(void)
+{
+	kbd = ipc_open(2333, IPC_CREAT | IPC_RECV);
+	if (kbd < 0) {
+		sys_print("error in open keyboard server");
+		sys_halt();
+	}
+}
+
+int kbd_getchar(void)
+{
+	int ch = 0;
+	ipc_begin();
+	ipc_recv(kbd);
+	ipc_read(&ch, sizeof(ch));
+	return ch;
+}
+//
 
 void main(void)
 {
@@ -33,7 +56,7 @@ void main(void)
 
 	l4id_t id;
 
-#if 0
+#if 0//{{{
 	id = sys_rt_new(RTYPE_THREAD);
 	sys_thread_set_register(id, THREAD_REG_PC, (word_t)task_a);
 	sys_thread_set_register(id, THREAD_REG_SP, (word_t)fsf_a+2048);
@@ -47,18 +70,14 @@ void main(void)
 	int i;
 	for (i = 0; i < 10000; i++)
 		sys_putchar('m');
-#endif
+#endif//}}}
 
-	int kb = sys_rt_open(RTYPE_ENDPOINT, 2333, R_CREAT | R_RDONLY);
-	if (kb < 0) {
-		sys_print("error in open keyboard endpoint");
-		sys_halt();
-	}
+	kbd_init();
 
-	int i = 0;
+	int ch;
 	for (;;) {
-		sys_recv(kb);
-		sys_putchar("/-\\|"[i++%4]);
+		ch = kbd_getchar();
+		sys_putchar(ch);
 	}
 
 	sys_exit();

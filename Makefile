@@ -60,15 +60,15 @@ MEGS=256
 QEMUFLAGS+=-m $(MEGS) $(if $(DEBUG),-S -s,)
 BOCHSFLAGS+='megs:$(MEGS)'
 
-L4ENV_MODS=$(shell cat src/l4env/package.ini | grep deps= | sed 's/deps=//' | sed 's/l4env-//g')
-QINITRD=$(shell echo $(L4ENV_MODS:%=out/bin/%) | awk '{for (i=1;i<=NF;i++)printf "%s%s",$$i,(i!=NF?",":"");}')
+H4_MODS=$(shell cat src/h4/package.ini | grep deps= | sed 's/deps=//' | sed 's/h4-//g')
+QINITRD=$(shell echo $(H4_MODS:%=out/bin/%) | awk '{for (i=1;i<=NF;i++)printf "%s%s",$$i,(i!=NF?",":"");}')
 
 .PHONY: showinfo
 showinfo:
 	@echo QEMU=$(QEMU)
 	@echo BOCHS=$(BOCHS)
 	@echo MINGW=$(MINGW)
-	@echo L4ENV_MODS=$(L4ENV_MODS)
+	@echo H4_MODS=$(H4_MODS)
 	@echo BASE_PKGNAME=$(BASE_PKGNAME)
 	@echo QEMUFLAGS=$(QEMUFLAGS)
 	@echo BOCHSFLAGS=$(BOCHSFLAGS)

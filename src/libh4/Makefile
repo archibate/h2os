@@ -8,15 +8,15 @@ SRCS+=$(shell find $(SRCPATH) $(FINDFLAGS))
 OBJS=$(SRCS:%=%.o)
 
 CLEAN+=$(OBJS)
-ALL+=out/lib/libl4.a
-out/lib/libl4.a: $(OBJS)
+ALL+=out/lib/libh4.a
+out/lib/libh4.a: $(OBJS)
 	@mkdir -p $(@D)
 	$(EL) ar $@
 	@#cp -r $(ROOT)/out/lib/libc.a $@
 	$(AR) cqs $@ $(OBJS)
 
-ALL+=out/include/l4
-out/include/l4: $(ADIRS:%=%/h/l4)
+ALL+=out/include/h4
+out/include/h4: $(ADIRS:%=%/h/h4)
 	@mkdir -p $(@D)
 	@rm -rf $@
 	cp -r $^ $(@D)
