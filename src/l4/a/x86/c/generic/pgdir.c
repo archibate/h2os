@@ -36,3 +36,9 @@ void pgdir_switch(struct pgdir *pgdir,
 		mmu_setPgdirPaddr(pd);
 	}
 }
+
+void __pgdir_switch_halt_utcb(void)
+{
+	kPtes[PageNum(KernUTCBAddr)] = Pte(KernUTCBAddr, PtePerm_KernRW);
+	mmu_invaidatePage(KernUTCBAddr);
+}

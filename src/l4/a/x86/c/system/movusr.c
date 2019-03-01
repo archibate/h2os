@@ -18,6 +18,8 @@ void _NORETURN move_to_user(void)
 
 void _NORETURN sched_halt(void)
 {
+	extern void __pgdir_switch_halt_utcb(void);
+	__pgdir_switch_halt_utcb();
 	asm volatile (
 		"mov %0, %%esp\n"
 		"sti;1:hlt;jmp 1b\n"

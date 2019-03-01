@@ -7,20 +7,30 @@ void sched_enter(void)
 {
 	BUG_ON(running_head == NULL);
 	BUG_ON(running_head == INVALID_PTR);
-	current = sched_get_curr();
+
+	if (curr_idle)
+		current = NULL;
+	else
+		current = sched_get_curr();
 }
 
 void sched_leave(void)
 {
-	while (curr_idle)
+	if (curr_idle) {
+		BUG_ON(sched_get_curr() != NULL);
+		current = NULL;
 		sched_halt();
+		UNREACHABLE();
+	}
 
 	BUG_ON(running_head == NULL);
 	BUG_ON(running_head == INVALID_PTR);
 	struct ktcb *next = sched_get_curr();
+
 	if (next != current) {
-		//printk("slts %p->%p", current, next);
+		printk("%p->%p", current, next);
 		task_switch(current, next);
 	}
+
 	current = NULL;
 }
