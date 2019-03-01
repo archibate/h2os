@@ -3,6 +3,7 @@
 #include <l4/system/kbase.h>
 #include <l4/object/utcb.h>
 
+#define kIPCBuffer   ((void*)KernIPCBuffer)
 #define kUTCB        ((struct utcb*)KernUTCBAddr)
 #define kErnelExiter (kUTCB->exiter)
 #define kIFrame      (kUTCB->iframe)
@@ -11,6 +12,7 @@
 #define KernSEStackTop  ((word_t)&kSEFrame + sizeof(kSEFrame))
 #define KernIStackTop   ((word_t)&kIFrame  + sizeof(kIFrame))
 
+#if 0//{{{
 static void __stassertF12350950(void)
 {
 	static_assert(KernSEStackTop == KernUTCBAddr + sizeof(kErnelExiter) + sizeof(kSEFrame));
@@ -18,3 +20,4 @@ static void __stassertF12350950(void)
 	static_assert((word_t)&kSEFrame == KernUTCBAddr + sizeof(kErnelExiter));
 	static_assert((word_t)&kIFrame == KernUTCBAddr + sizeof(kErnelExiter) + sizeof(kSEFrame));
 }
+#endif//}}}

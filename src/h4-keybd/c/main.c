@@ -21,8 +21,8 @@ void kbds_init(void)
 
 void kbds_putchar(int ch)
 {
-	ipc_begin();
-	ipc_write(&ch, sizeof(ch));
+	ipc_rewind();
+	ipc_put32(ch);
 	ipc_send(kbds);//todo: impl an fifo buffer inside this server process
 	//t!: use two threads in this server, one for intrhand, one for sendbuf
 }

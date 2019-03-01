@@ -11,22 +11,17 @@
 #include <l4/enum/thread-states.h>
 #include <l4/generic/idget.h>
 
-void make_simple_thread(struct ktcb *tcb, struct pgdir *pgdir)
-{
-	tcb->pgdir = pgdir;
-	tcb->state = THREAD_RUNNING;
-	thread_active(tcb);
-}
-
 l4id_t load_module(const void *begin, const void *end)
 {
 	struct pgdir *pgdir = alloc_page();
 	struct utcb *utcb = alloc_page();
+	struct ipc_buf *ipcbuf = alloc_page();
 
 	utcb_init(utcb);
+	memset(ipcbuf, 0, sizeof(*ipcbuf));
 
 	pgdir_init(pgdir);
-	pgdir_switch(pgdir, utcb);
+	pgdir_switch(pgdir, utcb, ipcbuf);
 
 	void *pc;
 	if (!(pc = loadelf(begin, end)))
@@ -37,6 +32,7 @@ l4id_t load_module(const void *begin, const void *end)
 	__thread_init(tcb);
 	tcb->utcb = utcb;
 	tcb->pgdir = pgdir;
+	tcb->ipcbuf = ipcbuf;
 
 	l4id_t id = idg_new_entry(&tcb->ide, RTYPE_THREAD);
 	tcb->state = THREAD_RUNNING;

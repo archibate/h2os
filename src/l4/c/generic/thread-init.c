@@ -18,6 +18,7 @@ void thread_init(struct ktcb *tcb)
 	utcb_init(utcb);
 	tcb->utcb = utcb;
 	tcb->pgdir = current->pgdir;
+	tcb->ipcbuf = current->ipcbuf;
 }
 
 void thread_revoke(struct ktcb *tcb)

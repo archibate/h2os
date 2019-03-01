@@ -12,6 +12,7 @@ struct iframe
 	word_t intr_num, error_code;
 /* pushed by hardware when intrrrupt occurred */
 	word_t pc, cs, eflags;
+#define iframe_kern_top sp
 /* only intrrrupts from user level has: */
 	word_t sp, ss;
 }

@@ -1,4 +1,4 @@
-APP=$(shell cat package.ini | grep 'name=' | sed 's/name=mkl4env-//')
+APP=$(shell cat package.ini | grep 'name=' | sed 's/name=h4-//')
 include $(ROOT)/tools/general.mak
 
 .PHONY: default

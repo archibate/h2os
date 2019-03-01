@@ -1,12 +1,10 @@
 #include <l4/generic/sched.h>
 #include <l4/generic/thread.h>
 #include <l4/enum/thread-states.h>
-#include <l4/generic/task-switch.h>
 #include <l4/misc/printk.h>
 #include <l4/misc/panic.h>
 #include <l4/misc/assert.h>
 #include <l4/misc/bug.h>
-#include <l4/machine/asm/clsti.h>
 
 static void _sched_lower_priority(void);
 
@@ -55,28 +53,6 @@ void thread_suspend(struct ktcb *x)
 	} else {
 		list_del(&x->list);
 	}
-}
-
-void sched_enter(void)
-{
-	BUG_ON(running_head == NULL);
-	BUG_ON(running_head == INVALID_PTR);
-	current = sched_get_curr();
-}
-
-void sched_leave(void)
-{
-	while (curr_idle)
-		stihltcli();
-
-	BUG_ON(running_head == NULL);
-	BUG_ON(running_head == INVALID_PTR);
-	struct ktcb *next = sched_get_curr();
-	if (next != current) {
-		//printk("slts %p->%p", current, next);
-		task_switch(current, next);
-	}
-	current = NULL;
 }
 
 void _sched_lower_priority(void)

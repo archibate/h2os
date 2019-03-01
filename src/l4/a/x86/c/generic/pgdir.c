@@ -14,22 +14,25 @@ void pgdir_init(struct pgdir *pgdir)
 	memcpy(&pgdir->pd, kPd, PdeIndex(KernVirtEnd) * EntrySize);
 }
 
-void pgdir_switch(struct pgdir *pgdir, struct utcb *utcb_ptr)
+void pgdir_switch(struct pgdir *pgdir,
+		struct utcb *utcb_ptr,
+		struct ipc_buf *ipcbuf_ptr)
 {
 	pa_t utcb = (pa_t)utcb_ptr;
+	pa_t ipcbuf = (pa_t)ipcbuf_ptr;
 	pa_t pd = (pa_t)&pgdir->pd;
 
 	BUG_ON(!utcb || PageOffset(utcb));
 
 	kPtes[PageNum(KernUTCBAddr)] = Pte(utcb, PtePerm_KernRW);
+	kPtes[PageNum(KernIPCBuffer)] = Pte(ipcbuf, PtePerm_UserRW);
 
 	if (mmu_getPgdirPaddr() == pd) {
 		mmu_invaidatePage(KernUTCBAddr);
+		mmu_invaidatePage(KernIPCBuffer);
 
 	} else {
 		BUG_ON(!pd || PgdirOffset(pd));
-		BUG_ON(!pgdir->pd[0]);
-
 		mmu_setPgdirPaddr(pd);
 	}
 }

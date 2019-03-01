@@ -2,19 +2,13 @@
 #include <h4/sys/ipc.h>
 #include <memory.h>
 
-#define IPC_BUFSIZ 4096
-
-static char ipc_buffer[IPC_BUFSIZ];
+#include <l4/system/kbase.h>
+#define ipc_buffer ((void*)KernIPCBuffer)
 static size_t ipc_offset;
 
 void *ipc_getbuf(void)
 {
 	return ipc_buffer + ipc_offset;
-}
-
-void ipc_begin(void)
-{
-	ipc_rewind();
 }
 
 int ipc_write(const void *buf, size_t n)

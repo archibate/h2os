@@ -4,35 +4,15 @@
 #include <l4/generic/thread.h>
 #include <l4/misc/panic.h>//
 #include <l4/misc/bug.h>
-#include <memory.h>
 
-void endpoint_init(struct endpoint *ep)
+struct ktcb *endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block, bool recv)
 {
-	memset(ep, 0, sizeof(*ep));
-}
-
-void endpoint_revoke(struct endpoint *ep)
-{
-}
-
-void endpoint_delete(struct endpoint *ep)
-{
-	endpoint_revoke(ep);
-	hlist_del(&ep->ide.hlist);
-}
-
-static void copy_data(struct ktcb *recver, struct ktcb *sender)
-{
-	//memcpy(recver->extraBuf, sender->extraBuf, sizeof(recver->extraBuf));
-}
-
-void endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block, bool recv)
-{
+	bool transferred = false;
 	BUG_ON(caller->state != THREAD_RUNNING);
 	struct ktcb *waiter = wq_pop(&ep->waiting);
 	if (waiter) {
 		BUG_ON(waiter->state != THREAD_WAITING);
-		copy_data(waiter, caller);
+		transferred = true;
 		waiter->state = THREAD_RUNNING;
 		thread_active(waiter);
 		if (recv) {
@@ -40,20 +20,25 @@ void endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block, bool re
 			thread_suspend(caller);
 			//waiter->replySlot = makeThreadReplyEndpointCap(caller);
 		}
+		return waiter;
+
 	} else if (block) {
 		caller->state = recv ? THREAD_ONCALL : THREAD_ONSEND;
 		thread_suspend(caller);
 		wq_add(&ep->calling, waiter);
+		return NULL;
+	} else {
+		return NULL;
 	}
 }
 
-void endpoint_wait(struct endpoint *ep, struct ktcb *waiter)
+struct ktcb *endpoint_wait(struct endpoint *ep, struct ktcb *waiter)
 {
+	bool transferred = false;
 	BUG_ON(waiter->state != THREAD_RUNNING);
 	struct ktcb *caller = wq_pop(&ep->calling);
 	//printk("wait, c:w=%p:%p", caller, waiter);
 	if (caller) {
-		copy_data(waiter, caller);
 		switch (caller->state) {
 		case THREAD_ONCALL:
 			caller->state = THREAD_ONRECV;
@@ -65,10 +50,12 @@ void endpoint_wait(struct endpoint *ep, struct ktcb *waiter)
 		default:
 			BUG();
 		}
+		return caller;
 	} else {
 		waiter->state = THREAD_WAITING;
 		BUG_ON(waiter->list.next == NULL);
 		thread_suspend(waiter);
 		wq_add(&ep->waiting, waiter);
+		return NULL;
 	}
 }

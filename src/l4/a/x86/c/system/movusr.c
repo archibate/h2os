@@ -15,3 +15,12 @@ void _NORETURN move_to_user(void)
 		:: "r" (&kIFrame));
 	UNREACHABLE();
 }
+
+void _NORETURN sched_halt(void)
+{
+	asm volatile (
+		"mov %0, %%esp\n"
+		"sti;1:hlt;jmp 1b\n"
+		:: "r" (&kIFrame.iframe_kern_top));
+	UNREACHABLE();
+}

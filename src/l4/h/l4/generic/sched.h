@@ -13,5 +13,6 @@ extern struct ktcb *current;
 
 void sched_enter(void);
 void sched_leave(void);
+void _NORETURN sched_halt(void);
 void sched_next(void);
 void sched_timer_callback(void);
