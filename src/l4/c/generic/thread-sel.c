@@ -5,13 +5,15 @@
 
 void sched_enter(void)
 {
+	if (curr_idle) {
+		current = NULL;
+		return;
+	}
+
 	BUG_ON(running_head == NULL);
 	BUG_ON(running_head == INVALID_PTR);
 
-	if (curr_idle)
-		current = NULL;
-	else
-		current = sched_get_curr();
+	current = sched_get_curr();
 }
 
 void sched_leave(void)
@@ -28,7 +30,6 @@ void sched_leave(void)
 	struct ktcb *next = sched_get_curr();
 
 	if (next != current) {
-		printk("%p->%p", current, next);
 		task_switch(current, next);
 	}
 

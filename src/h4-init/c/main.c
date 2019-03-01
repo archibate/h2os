@@ -50,10 +50,9 @@ int kbd_getchar(void)
 void main(void)
 {
 	sys_print("MAIN!!!");
-
+#if 0//{{{
 	l4id_t id;
 
-#if 0//{{{
 	id = sys_rt_new(RTYPE_THREAD);
 	sys_thread_set_register(id, THREAD_REG_PC, (word_t)task_a);
 	sys_thread_set_register(id, THREAD_REG_SP, (word_t)fsf_a+2048);
