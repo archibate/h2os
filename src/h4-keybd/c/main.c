@@ -7,12 +7,13 @@
 #include <l4/enum/irq-nrs.h>
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
+#include <h4/servers.h>
 
 static int kbds;
 
 void kbds_init(void)
 {
-	kbds = ipc_open(2333, IPC_CREAT | IPC_SEND);
+	kbds = ipc_open(SVID_KEYBD, IPC_CREAT | IPC_SEND);
 	if (kbds < 0) {
 		sys_print("error in opening kb endpoint");
 		sys_halt();

@@ -86,7 +86,7 @@ out/
 # Custom Ignored Files
 grub4dos/
 old/
-*.gen
+*.gen/
 
 # ISO Root Files
 isodir/

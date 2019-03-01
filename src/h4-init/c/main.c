@@ -7,6 +7,7 @@
 #include <l4/api/sched.h>
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
+#include <h4/servers.h>
 
 #if 0//{{{
 void task_a(void)
@@ -33,7 +34,7 @@ static int kbd;
 
 void kbd_init(void)
 {
-	kbd = ipc_open(2333, IPC_CREAT | IPC_RECV);
+	kbd = ipc_open(SVID_KEYBD, IPC_CREAT | IPC_RECV);
 	if (kbd < 0) {
 		sys_print("error in open keyboard server");
 		sys_halt();
@@ -49,7 +50,6 @@ int kbd_getchar(void)
 
 void main(void)
 {
-	sys_print("MAIN!!!");
 #if 0//{{{
 	l4id_t id;
 

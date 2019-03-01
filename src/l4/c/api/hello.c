@@ -11,7 +11,7 @@ int sys_hello(void)
 
 int sys_putchar(char c)
 {
-	con_setcur(0, 0);
+	//con_setcur(0, 0);
 	con_putchar(c);
 	return 233;
 }
