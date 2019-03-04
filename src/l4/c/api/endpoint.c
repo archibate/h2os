@@ -45,6 +45,26 @@ static int do_sys_send(l4fd_t fd, bool block, bool recv)
 	return 0;
 }
 
+int sys_recv(l4fd_t fd)
+{
+	int err = fd_verify(fd, R_RDONLY);
+	if (err < 0)
+		return err;
+	struct endpoint *ep = fd_get_ep(fd);
+	struct ktcb *target = endpoint_wait(ep, current);
+	if (target != NULL)
+		SWAP(current->ipcbuf, target->ipcbuf);
+	return 0;
+}
+
+int sys_reply(void)
+{
+	struct ktcb *target = endpoint_reply(NULL, current); // T,ep
+	if (target != NULL)
+		SWAP(current->ipcbuf, target->ipcbuf);
+	return target == NULL ? 0 : 1;
+}
+
 int sys_nbsend(l4fd_t fd)
 {
 	return do_sys_send(fd, false, false);
@@ -58,16 +78,4 @@ int sys_send(l4fd_t fd)
 int sys_call(l4fd_t fd)
 {
 	return do_sys_send(fd, true, true);
-}
-
-int sys_recv(l4fd_t fd)
-{
-	int err = fd_verify(fd, R_RDONLY);
-	if (err < 0)
-		return err;
-	struct endpoint *ep = fd_get_ep(fd);
-	struct ktcb *target = endpoint_wait(ep, current);
-	if (target != NULL)
-		SWAP(current->ipcbuf, target->ipcbuf);
-	return 0;
 }

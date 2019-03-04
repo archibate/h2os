@@ -15,6 +15,7 @@ void *_systab[] = {
 	[_SYS_send] = sys_send,
 	[_SYS_call] = sys_call,
 	[_SYS_recv] = sys_recv,
+	[_SYS_reply] = sys_reply,
 	[_SYS_hello] = sys_hello,
 	[_SYS_putchar] = sys_putchar,
 	[_SYS_print] = sys_print,

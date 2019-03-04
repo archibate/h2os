@@ -18,6 +18,8 @@ struct ktcb
 	unsigned char state;
 	unsigned char priority;
 
+	struct ktcb *replying;
+
 	struct utcb *utcb;
 	struct ipc_buf *ipcbuf;
 

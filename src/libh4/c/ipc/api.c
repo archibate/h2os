@@ -29,3 +29,8 @@ int ipc_recv(int fd)
 	ipc_rewind();
 	return r;
 }
+
+int ipc_reply(void)
+{
+	return sys_reply();
+}

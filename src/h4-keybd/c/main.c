@@ -123,9 +123,10 @@ static char kb_shift_map[128] =
 #define SHIFT    (1<<0)
 #define CTRL     (1<<1)
 #define ALT      (1<<2)
-#define E0ESC    (1<<6)
+#define E0ESC    (1<<3)
 
 static char kb_mode;
+static bool kb_caps;
 
 static char shift(char uc)
 {
@@ -185,6 +186,12 @@ void kb_handler(void)
 		return;
 	}
 
+	switch (sc) {
+	case 0x3A:
+		kb_caps = !kb_caps;
+		return;
+	}
+
 	char uc = sc & 0x7f;
 	char m = shift(uc);
 	if (m) {
@@ -206,6 +213,13 @@ void kb_handler(void)
 
 	if (kb_mode & ALT)
 		ch = alt(ch);
+
+	if (kb_caps) {
+		if (ch >= 'a' && ch <= 'z')
+			ch -= 'a' - 'A';
+		else if (ch >= 'A' && ch <= 'Z')
+			ch -= 'A' - 'a';
+	}
 
 	if (KB_IS_RELEASE(sc))
 		kb_mode &= ~E0ESC;

@@ -18,8 +18,8 @@ struct ktcb *endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block,
 		if (recv) {
 			caller->state = THREAD_ONRECV;
 			thread_suspend(caller);
-			//waiter->replySlot = makeThreadReplyEndpointCap(caller);
 		}
+		waiter->replying = recv ? caller : NULL;
 		return waiter;
 
 	} else if (block) {
@@ -58,4 +58,16 @@ struct ktcb *endpoint_wait(struct endpoint *ep, struct ktcb *waiter)
 		wq_add(&ep->waiting, waiter);
 		return NULL;
 	}
+}
+
+struct ktcb *endpoint_reply(struct endpoint *ep, struct ktcb *waiter)
+{
+	struct ktcb *caller = waiter->replying;
+	waiter->replying = NULL;
+	if (caller) {
+		BUG_ON(caller->state != THREAD_ONRECV);
+		caller->state = THREAD_RUNNING;
+		thread_active(caller);
+	}
+	return caller;
 }
