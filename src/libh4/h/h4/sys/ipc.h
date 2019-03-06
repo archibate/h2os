@@ -3,7 +3,7 @@
 #include <h4/sys/ipcflags.h>
 
 void ipc_rewind(void);
-void *ipc_getbuf(void);
+void *ipc_getbuf(size_t *plen);
 int ipc_write(const void *buf, size_t n);
 int ipc_read(void *buf, size_t n);
 int ipc_seek_set(size_t off);
@@ -23,3 +23,5 @@ uint16_t ipc_get16(void);
 int ipc_put16(uint16_t w);
 uint8_t ipc_get8(void);
 int ipc_put8(uint8_t w);
+void *ipc_getbadge(void);
+void ipc_setbadge(void *badge);

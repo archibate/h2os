@@ -6,9 +6,23 @@
 #define ipc_buffer ((void*)KernIPCBuffer)
 static size_t ipc_offset;
 
-void *ipc_getbuf(void)
+void *ipc_getbuf(size_t *plen)
 {
-	return ipc_buffer + ipc_offset;
+	void *p = ipc_buffer + ipc_offset;
+	if (plen) ipc_offset += *plen;
+	return p;
+}
+
+void *ipc_badge;
+
+void *ipc_getbadge(void)
+{
+	return ipc_badge;
+}
+
+void ipc_setbadge(void *badge)
+{
+	ipc_badge = badge;
 }
 
 int ipc_write(const void *buf, size_t n)

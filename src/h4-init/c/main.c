@@ -44,8 +44,7 @@ void kbd_init(void)
 int kbd_getchar(void)
 {
 	ipc_recv(kbd);
-	int ch = ipc_get32();
-	return ch;
+	return ipc_get32();
 }
 //
 

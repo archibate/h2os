@@ -32,7 +32,6 @@ void async_pulse(struct async_ep *aep)
 		//printk("%p", current);
 		thread_active(listener);
 		//printk("%p", sched_get_curr());
-		BUG_ON(sched_get_curr() != listener);
 
 	} else {
 		aep->count++;
