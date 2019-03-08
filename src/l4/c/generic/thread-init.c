@@ -2,21 +2,19 @@
 #include <l4/generic/thread.h>
 #include <l4/enum/thread-states.h>
 #include <l4/generic/allocpage.h>
-#include <l4/generic/utcb.h>
+#include <l4/generic/context.h>
 #include <memory.h>
 
 void __thread_init(struct ktcb *tcb)
 {
 	memset(tcb, 0, sizeof(*tcb));
+	context_init(&tcb->context);
 }
 
 void thread_init(struct ktcb *tcb)
 {
 	__thread_init(tcb);
 
-	struct utcb *utcb = alloc_page();
-	utcb_init(utcb);
-	tcb->utcb = utcb;
 	tcb->pgdir = current->pgdir;
 	tcb->ipcbuf = current->ipcbuf;
 }

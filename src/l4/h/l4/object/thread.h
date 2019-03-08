@@ -6,6 +6,7 @@
 #include <l4/object/ipcbuf.h>
 #include <l4/object/identry.h>
 #include <l4/object/fdentry.h>
+#include <l4/object/context.h>
 #include <l4/enum/filedes.h>
 
 struct ktcb
@@ -20,8 +21,8 @@ struct ktcb
 
 	struct ktcb *replying;
 
-	struct utcb *utcb;
 	struct ipc_buf *ipcbuf;
+	struct context context;
 
 	// T: below move to kpcb
 	struct pgdir *pgdir;

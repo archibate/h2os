@@ -9,6 +9,6 @@ struct utcb
 	void _NORETURN (*exiter)(void);
 	struct seframe seframe;
 	struct iframe iframe;
-	void _NORETURN (*saved_exiter)(void);
+	//void _NORETURN (*saved_exiter)(void);
 }
 _PACKED _ALIGNED(PageSize);

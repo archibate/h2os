@@ -27,9 +27,6 @@ int sys_thread_check(l4id_t tid)
 	if (tcb->state != THREAD_SUSPEND)
 		return -EAGAIN;
 
-	if (tcb->utcb == NULL)
-		return -EINVAL;
-
 	return 0;
 }
 
@@ -41,15 +38,12 @@ int sys_thread_set_register(l4id_t tid, unsigned int reg, word_t value)
 	if (tcb->state != THREAD_SUSPEND)
 		return -EAGAIN;
 
-	if (tcb->utcb == NULL)
-		return -EINVAL;
-
 	switch (reg) {
 	case THREAD_REG_PC:
-		tcb->utcb->iframe.pc = value;
+		tcb->context.pc = value;
 		return 0;
 	case THREAD_REG_SP:
-		tcb->utcb->iframe.sp = value;
+		tcb->context.sp = value;
 		return 0;
 	default:
 		return -EINVAL;
@@ -63,9 +57,6 @@ int sys_thread_active(l4id_t tid)
 
 	if (tcb->state != THREAD_SUSPEND)
 		return -EAGAIN;
-
-	if (tcb->utcb == NULL)
-		return -EINVAL;
 
 	tcb->state = THREAD_RUNNING;
 	thread_active(tcb);

@@ -31,7 +31,6 @@ void sched_leave(void)
 	struct ktcb *next = sched_get_curr();
 
 	if (next != current) {
-		printk("task_switch %p->%p", current, next);
 		task_switch(current, next);
 	}
 

@@ -1,13 +1,13 @@
 #include <l4/generic/task-switch.h>
 #include <l4/generic/pgdir.h>
-
-extern bool ep_transfered;
+#include <l4/generic/context.h>
 
 void task_switch(struct ktcb *old_task, struct ktcb *new_task)
 {
-	pgdir_switch(new_task->pgdir,
-			new_task->utcb,
-			new_task->ipcbuf);
+	pgdir_switch(new_task->pgdir, new_task->ipcbuf);
+	if (old_task != NULL)
+		save_context(&old_task->context);
+	restore_context(&new_task->context);
 }
 
 #if 0//{{{

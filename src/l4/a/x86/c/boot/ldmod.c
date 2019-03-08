@@ -2,7 +2,7 @@
 #include <l4/boot/ldelf.h>
 #include <l4/boot/calloc.h>
 #include <l4/generic/allocpage.h>
-#include <l4/generic/utcb.h>
+#include <l4/generic/context.h>
 #include <l4/generic/pgdir.h>
 #include <l4/machine/mmu/page.h>
 #include <l4/system/kstack.h>
@@ -15,23 +15,19 @@
 l4id_t load_module(const void *begin, const void *end)
 {
 	struct pgdir *pgdir = alloc_page();
-	struct utcb *utcb = alloc_page();
 	struct ipc_buf *ipcbuf = alloc_page();
 
-	utcb_init(utcb);
 	memset(ipcbuf, 0, sizeof(*ipcbuf));
 
 	pgdir_init(pgdir);
-	pgdir_switch(pgdir, utcb, ipcbuf);
+	pgdir_switch(pgdir, ipcbuf);
 
 	void *pc;
 	if (!(pc = loadelf(begin, end)))
 		panic("bad module ELF format");
-	utcb->iframe.pc = (word_t)pc;
-
 	struct ktcb *tcb = calloc(1, sizeof(struct ktcb));
 	__thread_init(tcb);
-	tcb->utcb = utcb;
+	tcb->context.pc = (word_t)pc;
 	tcb->pgdir = pgdir;
 	tcb->ipcbuf = ipcbuf;
 
