@@ -10,6 +10,7 @@
 #include <l4/generic/thread.h>
 #include <l4/enum/thread-states.h>
 #include <l4/generic/idget.h>
+#include <memory.h>
 
 l4id_t load_module(const void *begin, const void *end)
 {

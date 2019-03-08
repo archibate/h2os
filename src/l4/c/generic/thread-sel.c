@@ -2,6 +2,7 @@
 #include <l4/generic/task-switch.h>
 #include <l4/machine/asm/clsti.h>
 #include <l4/misc/bug.h>
+#include <l4/misc/printk.h>
 
 void sched_enter(void)
 {

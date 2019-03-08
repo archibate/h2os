@@ -1,5 +1,6 @@
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
+#include <l4/api/rtalloc.h>
 #include <l4/enum/rtype.h>
 
 int ipc_open(key_t key, unsigned int flags)
@@ -10,4 +11,5 @@ int ipc_open(key_t key, unsigned int flags)
 int ipc_close(int epid)
 {
 	//return sys_rt_close(epid);
+	return 0;
 }

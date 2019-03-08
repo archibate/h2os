@@ -13,6 +13,7 @@ int ipc_send(int fd);
 int ipc_nbsend(int fd);
 int ipc_call(int fd);
 int ipc_recv(int fd);
+int ipc_reply(void);
 int ipc_open(key_t key, unsigned int flags);
 int ipc_close(int fd);
 uintptr_t ipc_getw(void);

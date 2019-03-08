@@ -19,7 +19,7 @@ showinfo:
 
 SRCS+=$(shell find $(SRCPATH) $(FINDFLAGS))
 OBJS=$(SRCS:%=%.o)
-LIBS+=h4 l4 c
+LIBS+=debug h4 l4 c
 
 LDSCRIPT=user.ld
 

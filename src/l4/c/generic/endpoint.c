@@ -7,12 +7,10 @@
 
 struct ktcb *endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block, bool recv)
 {
-	bool transferred = false;
 	BUG_ON(caller->state != THREAD_RUNNING);
 	struct ktcb *waiter = wq_pop(&ep->waiting);
 	if (waiter) {
 		BUG_ON(waiter->state != THREAD_WAITING);
-		transferred = true;
 		waiter->state = THREAD_RUNNING;
 		thread_active(waiter);
 		if (recv) {
@@ -34,7 +32,6 @@ struct ktcb *endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block,
 
 struct ktcb *endpoint_wait(struct endpoint *ep, struct ktcb *waiter)
 {
-	bool transferred = false;
 	BUG_ON(waiter->state != THREAD_RUNNING);
 	struct ktcb *caller = wq_pop(&ep->calling);
 	//printk("wait, c:w=%p:%p", caller, waiter);

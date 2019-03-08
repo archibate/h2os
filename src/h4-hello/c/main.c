@@ -2,6 +2,7 @@
 #include <h4/sys/ipc.h>
 #include <h4/servers.h>
 #include <h4/fs/sysnr.h>
+#include <memory.h>
 #include <errno.h>
 #include <bug.h>
 

@@ -193,7 +193,7 @@ void kb_handler(void)
 		return;
 	}
 
-	char uc = sc & 0x7f;
+	int uc = sc & 0x7f;
 	char m = shift(uc);
 	if (m) {
 		if (KB_IS_RELEASE(sc))
