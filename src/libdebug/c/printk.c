@@ -1,7 +1,14 @@
-#include <l4/misc/printk.h>
-#include <l4/machine/asm/rdtsc.h>
+#include <printk.h>
 #include <stdio.h>
 #include <conio.h>
+
+//#include <l4/machine/asm/rdtsc.h>
+unsigned int rdtsc_lo(void)
+{
+	unsigned int res;
+	asm volatile ("rdtsc" : "=a" (res));
+	return res;
+}
 
 void syslog(const char *s)
 {

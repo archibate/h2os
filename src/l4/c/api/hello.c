@@ -9,16 +9,21 @@ int sys_hello(void)
 	return 233;
 }
 
-int sys_putchar(char c)
+int sys_print(const char *s)
 {
-	//con_setcur(0, 0);
+	printk("sys_print: %s", s);
+	return 233;
+}
+
+int sys_con_putchar(char c)
+{
 	con_putchar(c);
 	return 233;
 }
 
-int sys_print(const char *s)
+int sys_con_write(const char *s, size_t len)
 {
-	printk("sys_print: %s", s);
+	con_write(s, len);
 	return 233;
 }
 

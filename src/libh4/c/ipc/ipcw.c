@@ -1,6 +1,18 @@
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 
+void ipc_replyw(uintptr_t w)
+{
+	ipc_putw(w);
+	ipc_reply();
+}
+
+void ipc_rewindw(uintptr_t w)
+{
+	ipc_rewind();
+	ipc_putw(w);
+}
+
 uintptr_t ipc_getw(void)
 {
 	uintptr_t w;

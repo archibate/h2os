@@ -8,6 +8,7 @@
 #include <l4/system/kmm.h>
 #include <l4/misc/bug.h>
 #include <memory.h>
+#include <l4/misc/printk.h>//
 
 void pgdir_init(struct pgdir *pgdir)
 {
@@ -22,12 +23,19 @@ void pgdir_switch(struct pgdir *pgdir,
 	pa_t ipcbuf = (pa_t)ipcbuf_ptr;
 	pa_t pd = (pa_t)&pgdir->pd;
 
+	extern void _NORETURN seframe_exiter(void);
+	if (kErnelExiter == seframe_exiter) {/////
+		printk("SSSEE");
+	}
+
 	BUG_ON(!utcb || PageOffset(utcb));
+	BUG_ON(!ipcbuf || PageOffset(ipcbuf));
 
 	kPtes[PageNum(KernUTCBAddr)] = Pte(utcb, PtePerm_KernRW);
 	kPtes[PageNum(KernIPCBuffer)] = Pte(ipcbuf, PtePerm_UserRW);
 
 	if (mmu_getPgdirPaddr() == pd) {
+		printk("!!");
 		mmu_invaidatePage(KernUTCBAddr);
 		mmu_invaidatePage(KernIPCBuffer);
 
@@ -39,6 +47,8 @@ void pgdir_switch(struct pgdir *pgdir,
 
 void set_idle_task(void)
 {
+	//kPtes[PageNum(KernUTCBAddr)] = Pte(KernUTCBAddr, PtePerm_KernRW);
 	extern void _NORETURN idle_exiter(void);
+	kSavedExiter = kErnelExiter;
 	kErnelExiter = idle_exiter;
 }

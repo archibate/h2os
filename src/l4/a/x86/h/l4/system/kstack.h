@@ -6,6 +6,7 @@
 #define kIPCBuffer   ((void*)KernIPCBuffer)
 #define kUTCB        ((struct utcb*)KernUTCBAddr)
 #define kErnelExiter (kUTCB->exiter)
+#define kSavedExiter (kUTCB->saved_exiter)
 #define kIFrame      (kUTCB->iframe)
 #define kSEFrame     (kUTCB->seframe)
 

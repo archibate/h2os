@@ -18,8 +18,8 @@ KernUTCBAddr equ 0x3fd000 ; N: keep sync with l4/system/kbase.h
 
 intr_from_idle:
 	mov ecx, idle_stack
-	mov esp, KernUTCBAddr+4
-	push idle_exiter
+	mov esp, KernUTCBAddr;+4
+	;push utcb_exiter;;??TOPT
 	jmp hwintr
 
 introute:
@@ -49,6 +49,8 @@ iframe_exiter:
 	iretd
 
 idle_exiter:
+	mov eax, [KernUTCBAddr + IFrameSize + SEFrameSize]
+	mov [KernUTCBAddr], eax
 	mov esp, idle_stktop
 	sti
 	hlt
@@ -58,6 +60,7 @@ section .bss
 idle_stack:
 	resb IFrameSize-4*2
 idle_stktop:
+	resb 4*2
 
 section .data
 globl __intrents

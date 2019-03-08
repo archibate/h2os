@@ -27,7 +27,7 @@ showinfo:
 
 SRCS+=$(shell find $(SRCPATH) $(FINDFLAGS))
 OBJS=$(SRCS:%=%.o)
-LIBS+=c
+LIBS+=debug c
 
 LDSCRIPT=a/$(ARCH)/kernel.ld
 

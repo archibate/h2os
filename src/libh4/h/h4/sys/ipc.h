@@ -25,3 +25,5 @@ uint8_t ipc_get8(void);
 int ipc_put8(uint8_t w);
 void *ipc_getbadge(void);
 void ipc_setbadge(void *badge);
+void ipc_rewindw(uintptr_t w);
+void ipc_replyw(uintptr_t w);

@@ -35,6 +35,7 @@ int main(void)
 	sys_softirq_set_enable(IRQ_KEYBD, true);
 	while (1) {
 		sys_async_listen(IRQ_KEYBD);
+		//sys_con_putchar('K');
 		sys_softirq_done(IRQ_KEYBD);
 		kb_handler();
 	}

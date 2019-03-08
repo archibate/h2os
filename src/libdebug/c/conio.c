@@ -1,20 +1,17 @@
 #include <conio.h>
 #include <stdio.h>
 #include <string.h>
-#include <l4/api/hello.h>
+#include <console.h>
 
 int cputs(const char *s)
 {
-	sys_print(s);
+	con_write(s, strlen(s));
 	return 0;
 }
 
 int cputchar(int ch)
 {
-	char s[2];
-	s[0] = ch;
-	s[1] = 0;
-	sys_print(s);
+	con_putchar(ch);
 	return 0;
 }
 

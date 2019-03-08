@@ -15,7 +15,7 @@ void task_a(void)
 	sys_print("TASK_A!!!");
 
 	for (;;)
-		sys_putchar('a');
+		sys_con_putchar('a');
 }
 
 void task_b(void)
@@ -23,7 +23,7 @@ void task_b(void)
 	sys_print("TASK_B!!!");
 
 	for (;;)
-		sys_putchar('b');
+		sys_con_putchar('b');
 }
 
 static char fsf_a[2048], fsf_b[2048];
@@ -65,7 +65,7 @@ void main(void)
 
 	int i;
 	for (i = 0; i < 10000; i++)
-		sys_putchar('m');
+		sys_con_putchar('m');
 #endif//}}}
 
 	kbd_init();
@@ -73,7 +73,7 @@ void main(void)
 	int ch;
 	for (;;) {
 		ch = kbd_getchar();
-		sys_putchar(ch);
+		sys_con_putchar(ch);
 	}
 
 	sys_exit();
