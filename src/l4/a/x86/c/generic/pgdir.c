@@ -37,8 +37,8 @@ void pgdir_switch(struct pgdir *pgdir,
 	}
 }
 
-void __pgdir_switch_halt_utcb(void)
+void set_idle_task(void)
 {
-	kPtes[PageNum(KernUTCBAddr)] = Pte(KernUTCBAddr, PtePerm_KernRW);
-	mmu_invaidatePage(KernUTCBAddr);
+	extern void _NORETURN idle_exiter(void);
+	kErnelExiter = idle_exiter;
 }

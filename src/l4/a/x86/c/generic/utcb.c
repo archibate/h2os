@@ -18,6 +18,6 @@ void utcb_init(struct utcb *utcb)
 	utcb->iframe.fs = ds;
 	utcb->iframe.gs = ds;
 
-	extern void _NORETURN utcb_iframe_exiter(void);
-	utcb->exiter = utcb_iframe_exiter;
+	extern void _NORETURN utcb_exiter(void);
+	utcb->exiter = utcb_exiter;
 }

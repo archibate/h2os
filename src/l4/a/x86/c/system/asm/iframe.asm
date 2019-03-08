@@ -1,9 +1,10 @@
 bits 32
 section .text
 
-globl utcb_iframe_exiter
+globl utcb_exiter
 globl iframe_exiter
 global movusr_iframe_exiter
+globl idle_exiter
 %ifndef _MINGW
 extrn hwintr
 %else
@@ -11,9 +12,19 @@ extern @hwintr@4
 hwintr equ @hwintr@4
 %endif
 
-SEFrameSize equ 5*4 ; N: sizeof(struct seframe): keep sync with l4/system/asm/seframe.h
+SEFrameSize equ 4*5 ; N: sizeof(struct seframe): keep sync with l4/object/seframe.h
+IFrameSize equ 4*19 ; N: sizeof(struct iframe): keep sync with l4/object/iframe.h
+KernUTCBAddr equ 0x3fd000 ; N: keep sync with l4/system/kbase.h
+
+intr_from_idle:
+	mov ecx, idle_stack
+	mov esp, KernUTCBAddr+4
+	push idle_exiter
+	jmp hwintr
 
 introute:
+	cmp esp, idle_stktop-4*5
+	je intr_from_idle
 	push ds
 	push es
 	push fs
@@ -25,7 +36,7 @@ introute:
 	mov ecx, esp
 	sub esp, SEFrameSize
 	call hwintr
-utcb_iframe_exiter:
+utcb_exiter:
 	add esp, SEFrameSize
 movusr_iframe_exiter:
 iframe_exiter:
@@ -34,8 +45,19 @@ iframe_exiter:
 	pop fs
 	pop es
 	pop ds
-	add esp, 8 ; intr_num & error_code
+	add esp, 4*2 ; intr_num & error_code
 	iretd
+
+idle_exiter:
+	mov esp, idle_stktop
+	sti
+	hlt
+	ud2
+
+section .bss
+idle_stack:
+	resb IFrameSize-4*2
+idle_stktop:
 
 section .data
 globl __intrents
@@ -60,6 +82,7 @@ ent%1:
   jmp introute
 %endmacro
 
+; NC&ECs {{{
 NC 0
 NC 1
 NC 2
@@ -316,3 +339,4 @@ NC 252
 NC 253
 NC 254
 NC 255
+; }}}

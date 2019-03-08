@@ -16,6 +16,24 @@ void _NORETURN move_to_user(void)
 	UNREACHABLE();
 }
 
+#if 0
+void _NORETURN intr_from_idle(void)
+{
+	extern void _FASTCALL hwintr(struct iframe *iframe);
+	extern void _NORETURN idle_exiter(void);
+	asm volatile (
+		"mov %0, %%esp\n"
+		"push %1\n"
+		"jmp *%2\n"
+		:: "r" (&kErnelExiter+1)
+		 , "r" (idle_exiter)
+		 , "r" (hwintr)
+		 , "c" (iframe));
+	UNREACHABLE();
+}
+#endif
+
+#if 0//{{{
 void _NORETURN sched_halt(void)
 {
 	extern void __pgdir_switch_halt_utcb(void);
@@ -26,3 +44,4 @@ void _NORETURN sched_halt(void)
 		:: "r" (&kIFrame.iframe_kern_top));
 	UNREACHABLE();
 }
+#endif//}}}

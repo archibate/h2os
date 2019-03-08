@@ -1,5 +1,5 @@
 // https://github.com/archibate/OS67/blob/master/drv/vga.c
-#include <l4/driver/console.h>
+#include <console.h>
 #include <l4/machine/asm/io.h>
 #include <memory.h>
 #include <stdlib.h>

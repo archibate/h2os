@@ -10,7 +10,7 @@ void task_switch(struct ktcb *old_task, struct ktcb *new_task)
 			new_task->ipcbuf);
 }
 
-#if 0
+#if 0//{{{
 #include <l4/generic/sched.h>
 #include <l4/system/kstack.h>
 
@@ -24,4 +24,4 @@ void user_ipc_enter(void)
 
 	memcpy(buf, kIPCBuffer, len);
 }
-#endif
+#endif//}}}
