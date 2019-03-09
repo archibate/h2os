@@ -32,9 +32,3 @@ void pgdir_switch(struct pgdir *pgdir, struct ipc_buf *ipcbuf_ptr)
 		mmu_setPgdirPaddr(pd);
 	}
 }
-
-void set_idle_task(void)
-{
-	extern void _NORETURN idle_exiter(void);
-	kErnelExiter = idle_exiter;
-}

@@ -6,6 +6,8 @@
 
 void hwirq(unsigned int irq)
 {
+	sched_enter();
+
 	switch (irq) {
 	case IRQ_TIMER:
 		sched_timer_callback();
@@ -14,4 +16,6 @@ void hwirq(unsigned int irq)
 	}
 
 	softirq_callback(irq);
+
+	sched_leave();
 }

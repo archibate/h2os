@@ -3,7 +3,10 @@
 #include <l4/system/asm/gdt.h>
 #include <l4/machine/asm/eflags.h>
 #include <l4/misc/bug.h>
+#include <l4/misc/printk.h>//
 #include <memory.h>
+
+#define DEFAULT_EFLAGS (FL_1F | FL_IF | FL_IOPL(3))
 
 void restore_context(const struct context *ctx)
 {
@@ -19,6 +22,12 @@ void restore_context(const struct context *ctx)
 	kIFrame.eflags = ctx->eflags;
 	kIFrame.cs = SEG_UCODE;
 	kIFrame.ss = SEG_UDATA;
+	kIFrame.ds = SEG_UDATA;
+	kIFrame.es = SEG_UDATA;
+	kIFrame.fs = SEG_UDATA;
+	kIFrame.gs = SEG_UDATA;
+
+	//printk("rstr pc=%p", ctx->pc);
 
 	extern void _NORETURN utcb_exiter(void);
 	kErnelExiter = utcb_exiter;
@@ -27,7 +36,7 @@ void restore_context(const struct context *ctx)
 void context_init(struct context *ctx)
 {
 	memset(ctx, 0, sizeof(*ctx));
-	ctx->eflags = FL_1F | FL_IF | FL_IOPL(3);
+	ctx->eflags = DEFAULT_EFLAGS;
 }
 
 void save_context(struct context *ctx)
@@ -52,6 +61,14 @@ void save_context(struct context *ctx)
 		ctx->eax = kSEFrame.eax;
 		ctx->sp = kSEFrame.sp;
 		ctx->pc = kSEFrame.pc;
+		//printk("save pc=%p", ctx->pc);
+		ctx->ecx = 0;
+		ctx->edx = 0;
+		ctx->ebx = 0;
+		ctx->esi = 0;
+		ctx->edi = 0;
+		ctx->ebp = 0;
+		ctx->eflags = DEFAULT_EFLAGS;
 
 	} else {
 		BUG();

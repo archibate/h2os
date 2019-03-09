@@ -1,9 +1,8 @@
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
+#include <h4/sys/ipcbuf.h>
 #include <memory.h>
 
-#include <l4/system/kbase.h>
-#define ipc_buffer ((void*)KernIPCBuffer)
 static size_t ipc_offset;
 
 void *ipc_getbuf(size_t *plen)

@@ -1,3 +1,4 @@
+GNOOBJS=1
 include $(ROOT)/tools/general.mak
 
 .PHONY: default

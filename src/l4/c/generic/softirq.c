@@ -22,8 +22,6 @@ void init_softirq_aeps(void)
 
 void softirq_callback(unsigned int irq)
 {
-	sched_enter();
 	BUG_ON(irq >= IRQ_MAX);
 	async_pulse(&softirq_aeps[irq]);
-	sched_leave();
 }

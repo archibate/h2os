@@ -1,4 +1,5 @@
 APP=$(shell cat package.ini | grep 'name=' | sed 's/name=h4-//')
+LIBS+=debug h4 l4 c
 include $(ROOT)/tools/general.mak
 
 .PHONY: default
@@ -16,10 +17,6 @@ showinfo:
 	@echo ADIRS=$(ADIRS)
 	@echo ROOT=$(ROOT)
 	@echo APP=$(APP)
-
-SRCS+=$(shell find $(SRCPATH) $(FINDFLAGS))
-OBJS=$(SRCS:%=%.o)
-LIBS+=debug h4 l4 c
 
 LDSCRIPT=user.ld
 

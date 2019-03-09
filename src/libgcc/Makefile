@@ -1,7 +1,5 @@
+GNOOBJS=1
 include $(ROOT)/tools/general.mak
-
-.PHONY: default
-default: all
 
 ALL+=out/lib/libgcc.a
 out/lib/libgcc.a: $(OBJS)

@@ -32,11 +32,11 @@ endif
 
 %.asm.d: %.asm
 	$(EC) asmdep $<
-	$(ASM) $(ASMFLAGS) -M -o $*.o $< > $@
+	$(ASM) $(ASMFLAGS) -M -MT $<.o -o $*.o $< > $@
 
 %.c.d: %.c
 	$(EC) cdep $<
-	$(CC) $(CFLAGS) -M -o $@ $<
+	$(CC) $(CFLAGS) -M -MT $<.o -o $@ $<
 
 %.d: %
 	$(EC) dep $@

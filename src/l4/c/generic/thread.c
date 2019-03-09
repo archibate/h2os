@@ -79,8 +79,6 @@ void sched_timer_callback(void)
 	printk("sched_timer (%s)...", curr_idle ? "idle" : "busy");
 #endif
 	if (!curr_idle) {
-		sched_enter();
 		sched_next();
-		sched_leave();
 	}
 }

@@ -23,7 +23,7 @@ struct ktcb *endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block,
 	} else if (block) {
 		caller->state = recv ? THREAD_ONCALL : THREAD_ONSEND;
 		thread_suspend(caller);
-		wq_add(&ep->calling, waiter);
+		wq_add(&ep->calling, caller);
 		return NULL;
 	} else {
 		return NULL;

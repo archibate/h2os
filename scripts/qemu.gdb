@@ -26,11 +26,11 @@ end
 # For kernel debugging
 # Add KERNEL file for debugging information
 define asfu
-	add-symbol-file src/$arg0/out/bin/$arg0 0x10000000
+	add-symbol-file src/h4-$arg0/out/bin/$arg0 0x10000000
 end
 
 define asfk
-	add-symbol-file src/kern/vmlinux.elf 0x100000
+	add-symbol-file src/l4/vmlinux.elf 0x100000
 end
 
 define qq
@@ -55,6 +55,6 @@ end
 
 qemu
 asfk
-asfu init
+#asfu init
 
-set $utcb = (utcb_t*)0x3fd000
+set $utcb = (struct utcb*)0x3fd000

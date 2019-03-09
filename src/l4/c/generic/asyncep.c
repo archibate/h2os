@@ -26,6 +26,7 @@ void async_pulse(struct async_ep *aep)
 {
 	struct ktcb *listener = wq_pop(&aep->listening);
 	if (listener) {
+		//printk("aep have listener");
 
 		BUG_ON(listener->state != THREAD_LISTENING);
 		listener->state = THREAD_RUNNING;
@@ -34,6 +35,7 @@ void async_pulse(struct async_ep *aep)
 		//printk("%p", sched_get_curr());
 
 	} else {
+		//printk("aep++");
 		aep->count++;
 	}
 }
@@ -53,9 +55,11 @@ void async_listen(struct async_ep *aep, struct ktcb *listener)
 {
 	BUG_ON(listener->state != THREAD_RUNNING);
 	if (aep->count > 0) {
+		//printk("aep--");
 		aep->count--;
 
 	} else {
+		//printk("aep sleep");
 		current->state = THREAD_LISTENING;
 		thread_suspend(listener);
 		wq_add(&aep->listening, listener);

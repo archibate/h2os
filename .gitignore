@@ -1,6 +1,7 @@
 # Prerequisites
 *.d
 *.i
+dep.out
 
 # Object files
 *.o

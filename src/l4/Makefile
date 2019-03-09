@@ -8,10 +8,8 @@ DEFINES+=CONFIG_CONSOLE_CLEAR=1 \
 	 #CONFIG_LOG_SCHED_TIMER=1 \
 	 CONFIG_LOG_EXTRA_SWI=1
 INCLUDES+=h/l4/stdafx.h
+LIBS+=debug c
 include $(ROOT)/tools/general.mak
-
-.PHONY: default
-default: all
 
 .PHONY: showinfo
 showinfo:
@@ -24,10 +22,6 @@ showinfo:
 	@echo LIBPATH=$(LIBPATH)
 	@echo ADIRS=$(ADIRS)
 	@echo ROOT=$(ROOT)
-
-SRCS+=$(shell find $(SRCPATH) $(FINDFLAGS))
-OBJS=$(SRCS:%=%.o)
-LIBS+=debug c
 
 LDSCRIPT=a/$(ARCH)/kernel.ld
 
@@ -48,7 +42,7 @@ out/include/l4: $(ADIRS:%=%/h/l4)
 	@rm -rf $@
 	cp -r $^ $(@D)
 
-c/sys/systab.c h/l4/sys/sysnr.h: $(wildcard h/l4/api/*.h)
+c/sys/systab.c: $(wildcard h/l4/api/*.h)
 	$(EL) gen $@
 	./update-api.sh
 

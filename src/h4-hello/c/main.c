@@ -1,61 +1,65 @@
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 #include <h4/servers.h>
-#include <h4/fs/sysnr.h>
+#include <h4/file/sysnr.h>
 #include <memory.h>
 #include <errno.h>
 #include <bug.h>
+#include <printk.h>
 
-static int fss;
+static int hello;
 
-void fss_init(void)
+void hello_init(void)
 {
-	fss = ipc_open(SVID_HELLO, IPC_CREAT | IPC_SERVER);
-	BUG_ON(fss < 0);
+	hello = ipc_open(SVID_HELLO, IPC_CREAT | IPC_SERVER);
+	BUG_ON(hello < 0);
 }
 
 char data[] = "Hello, World!\n";
 
 #define CLMAX(x, max) do { if ((x) >= (max)) (x) = (max); } while (0)
 
-ssize_t fss_pread(void *badge, size_t off, void *buf, size_t len)
+ssize_t hello_pread(void *badge, void *buf, size_t len, off_t off)
 {
 	CLMAX(len, sizeof(data) - off);
 	memcpy(buf, data + off, len);
+	//for (int i = 0; i < 10009000; i++);
+	//printk("hello: pread %s %d %d", buf, len, off);
 	return len;
 }
 
-ssize_t fss_pwrite(void *badge, size_t off, const void *buf, size_t len)
+ssize_t hello_pwrite(void *badge, const void *buf, size_t len, off_t off)
 {
 	CLMAX(len, sizeof(data) - off);
 	memcpy(data + off, buf, len);
 	return len;
 }
 
-void fss_serve_ipc(void)
+void hello_serve_ipc(void)
 {
-	ipc_recv(fss);
+	ipc_recv(hello);
 	unsigned int nr = ipc_getw();
 	switch (nr) {
 
-	case _FS_pread:
+	case _FILE_pread:
 	{
-		size_t off = ipc_getw();
 		size_t len = ipc_getw();
+		off_t off = ipc_getw();
+		ipc_seek_set(sizeof(ssize_t));
 		void *buf = ipc_getbuf(&len);
 		void *badge = ipc_getbadge();
-		ssize_t ret = fss_pread(badge, off, buf, len);
-		ipc_putw(ret);
+		ssize_t ret = hello_pread(badge, buf, len, off);
+		ipc_rewindw(ret);
 	} break;
 
-	case _FS_pwrite:
+	case _FILE_pwrite:
 	{
-		size_t off = ipc_getw();
 		size_t len = ipc_getw();
+		off_t off = ipc_getw();
 		const void *buf = ipc_getbuf(&len);
 		void *badge = ipc_getbadge();
-		ssize_t ret = fss_pwrite(badge, off, buf, len);
-		ipc_putw(ret);
+		ssize_t ret = hello_pwrite(badge, buf, len, off);
+		ipc_rewindw(ret);
 	} break;
 
 	default:
@@ -66,8 +70,8 @@ void fss_serve_ipc(void)
 
 int main(void)
 {
-	fss_init();
+	hello_init();
 	while (1) {
-		fss_serve_ipc();
+		hello_serve_ipc();
 	}
 }

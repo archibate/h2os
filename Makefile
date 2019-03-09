@@ -57,8 +57,9 @@ os.img:
 
 
 MEGS=256
-QEMUFLAGS+=-m $(MEGS) $(if $(DEBUG),-S -s,)
-BOCHSFLAGS+='megs:$(MEGS)'
+HDA_IMG=hda.img
+QEMUFLAGS+=-m $(MEGS) $(if $(DEBUG),-S -s,) -hda $(HDA_IMG)
+BOCHSFLAGS+='megs:$(MEGS)' 'ata0-master: type=disk, path="$(HDA_IMG)", mode=flat'
 
 H4_MODS=$(shell cat src/h4/package.ini | grep deps= | sed 's/deps=//' | sed 's/h4-//g')
 QINITRD=$(shell echo $(H4_MODS:%=out/bin/%) | awk '{for (i=1;i<=NF;i++)printf "%s%s",$$i,(i!=NF?",":"");}')

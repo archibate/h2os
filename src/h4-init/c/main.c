@@ -8,6 +8,8 @@
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 #include <h4/servers.h>
+#include <h4/file/api.h>
+#include <printk.h>
 
 #if 0//{{{
 void task_a(void)
@@ -30,13 +32,22 @@ static char fsf_a[2048], fsf_b[2048];
 #endif//}}}
 
 //
-static int kbd;
+static int kbd, hello;
 
 void kbd_init(void)
 {
 	kbd = ipc_open(SVID_KEYBD, IPC_CREAT | IPC_RECV);
 	if (kbd < 0) {
 		sys_print("error in open keyboard server");
+		sys_halt();
+	}
+}
+
+void hello_init(void)
+{
+	hello = ipc_open(SVID_HELLO, IPC_CREAT | IPC_CLIENT);
+	if (hello < 0) {
+		sys_print("error in open hello server");
 		sys_halt();
 	}
 }
@@ -69,10 +80,17 @@ void main(void)
 #endif//}}}
 
 	kbd_init();
+	hello_init();
 
 	int ch;
 	for (;;) {
 		ch = kbd_getchar();
+		if (ch == 'z') {
+			char buf[128];
+			ssize_t ret = pread(hello, buf, sizeof(buf), 0);
+			if (ret > 0)
+				sys_con_write(buf, ret);
+		}
 		sys_con_putchar(ch);
 	}
 

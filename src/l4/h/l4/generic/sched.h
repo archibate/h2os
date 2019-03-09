@@ -15,3 +15,5 @@ void sched_enter(void);
 void sched_leave(void);
 void sched_next(void);
 void sched_timer_callback(void);
+
+//#define sched_enter() do { printk("se from %s", __FUNCTION__); sched_enter(); } while (0)

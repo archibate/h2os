@@ -1,12 +1,6 @@
 MAKE_A_LIB=1
 include $(ROOT)/tools/general.mak
 
-.PHONY: default
-default: all
-
-SRCS+=$(shell find $(SRCPATH) $(FINDFLAGS))
-OBJS=$(SRCS:%=%.o)
-
 CLEAN+=$(OBJS)
 ALL+=out/lib/libc.a
 out/lib/libc.a: $(OBJS)

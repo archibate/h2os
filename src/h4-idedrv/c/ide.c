@@ -1,10 +1,11 @@
 /* https://github.com/archibate/OS67/blob/master/drv/ide.c */
 #include <inttypes.h>
 #include <l4/machine/asm/io.h>
-#include <h4/misc/bug.h>
+#include "ide.h"
 #include "ideports.h"
+#include <bug.h>
 
-static bool ide_wait(void)
+static int ide_wait(void)
 {
 	int timeout = 20000;
 	int r;
@@ -16,14 +17,13 @@ static bool ide_wait(void)
 	return (r & (IDE_DF|IDE_ERR)) == 0;
 }
 
-static bool ide_seek(dev_t dev, blkno_t blkno)
+static void ide_seek(dev_t dev, blkno_t blkno)
 {
-	if (!ide_wait())
-		return false;
+	BUG_ON(!ide_wait());
 
-	uint32_t lba = blkno * SPB;
+	uint32_t lba = blkno * PBPB;
 
-	outb(IDE_SECTNR, SPB);
+	outb(IDE_SECTNR, PBPB);
 
 	outb(IDE_LBA0, lba         & 0xff);
 	outb(IDE_LBA1, (lba >> 8)  & 0xff);
@@ -35,27 +35,18 @@ static bool ide_seek(dev_t dev, blkno_t blkno)
 	outb(IDE_CURR, cur);
 }
 
-static void ide_wrblk(const char *buf)
+void ide_wrblk(dev_t dev, blkno_t blkno, const void *buf)
 {
+	ide_seek(dev, blkno);
+
 	outb(IDE_CMD, IDE_CMD_WRITE);
-	outsl(IDE_DAT, buf, BLKSIZE/4);
+	outsl(IDE_DAT, buf, BSIZE/4);
 }
 
-static void ide_rdblk(char *buf)
+void ide_rdblk(dev_t dev, blkno_t blkno, void *buf)
 {
+	ide_seek(dev, blkno);
+
 	outb(IDE_CMD, IDE_CMD_READ);
-	insl(IDE_DAT, buf, BLKSIZE/4);
-}
-
-static char bcache[BLKSIZE];
-static blkno_t bc_blkno;
-static blkno_t bc_dev;
-struct buf *buf;
-
-ssize_t ide_serv_bsread1(dev_t dev, blkno_t blkno,
-		char *buf, size_t size, size_t skip)
-{
-	if (buf->blkno == blkno && buf->dev == dev) {
-		memcpy(buf, bcache, BLKSIZE);
-	}
+	insl(IDE_DAT, buf, BSIZE/4);
 }

@@ -4,7 +4,7 @@ set -e
 ipm_src=src
 ipm_pub=pub
 ipm_dest=out
-ipm_makeflags=-sBj4
+ipm_makeflags=-sj4
 
 read_ini_deps()
 {

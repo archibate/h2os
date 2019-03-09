@@ -137,3 +137,4 @@
 // L4 specific errors:
 #define ENOCAP	134	// No such capability
 #define ENOTSUP 125     // Not supported service number
+#define EBADSVC 126     // Bad server result
