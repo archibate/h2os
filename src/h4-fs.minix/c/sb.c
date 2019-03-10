@@ -1,7 +1,10 @@
 // https://github.com/archibate/OS67/blob/master/fs/sb.c
 #include "minix.h"
+#include "sb.h"
+#include "bcache.h"
 #include <h4/blk/api.h>
 #include <printk.h>
+#include <memory.h>
 
 static void print_sb(struct super_block *sb)
 {
@@ -17,8 +20,12 @@ static void print_sb(struct super_block *sb)
 	printk("state %d", sb->state);
 }
 
-void read_sb(int hd, struct super_block *sb)
+void read_sb(struct super_block *sb)
 {
-	blkread(hd, sb, 1, 1);
+	struct buf *bp;
+	bp = bread(1);
+
+	memcpy(sb, bp->data, sizeof(*sb));
+	brelse(bp);
 	print_sb(sb);
 }

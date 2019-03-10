@@ -5,6 +5,13 @@
 #include <h4/fs/types.h>
 #include <h4/blk/types.h>
 #include <h4/blk/defines.h>
+#include <h4/fs/types.h>
+
+#define ROOT_DEV 0
+#define MAX_DEV  8
+
+#define ROOT_INO 1
+#define MAX_INO  32768
 
 struct super_block
 {
@@ -21,7 +28,7 @@ struct super_block
 };
 
 /* in-disk minix inode */
-struct d_inode
+struct d_inode // 32-bytes
 {
 	uint16_t mode;  // file type and RWX(unused) bit
 	uint16_t uid;   // identifies the user who owns the file (unused)
@@ -47,7 +54,6 @@ struct d_inode
 /* in-memorty inode */
 struct inode
 {
-	uint16_t dev;   // be 0 forever
 	uint32_t ino;
 	uint16_t ref;
 	uint16_t flags;
@@ -65,10 +71,10 @@ struct inode
 	//}
 };
 
-#define NDIRECT 7 // 一个 i 节点直接管辖的块数目
-#define NINDIRECT (BSIZE/sizeof(uint16_t))  // 1024/2 = 512
+#define NDIRECT        7                 // 一个 i 节点直接管辖的块数目
+#define NINDIRECT      (BSIZE/sizeof(uint16_t))       // 1024/2 = 512
 #define NDUAL_INDIRECT (BSIZE*BSIZE/sizeof(uint16_t)) // (unused)
-#define MAXFILE (NDIRECT + NINDIRECT)       // 512 + 7 kb
+#define MAXFILEBLK     (NDIRECT + NINDIRECT)
 
 #define NAME_LEN 14
 /* minix directroy entry */
@@ -78,14 +84,13 @@ struct dir_entry
 	char name[NAME_LEN];
 };
 
+#define IPB             (BSIZE/sizeof(struct d_inode))
+
 /* block contain inode i
  * NB: inode number starts at 1 */
-#define IBLK(sb, i) (2 + (sb).imap_blk + (sb).zmap_blk + ((i)-1)/IPB)
+#define IBLK(sb, i)     (2 + (sb).imap_blk + (sb).zmap_blk + ((i)-1)/IPB)
 
 /* bitmap contain inode i */
 #define IMAP_BLK(sb, i) (2 + ((i)-1)/BPB)
 /* bitmap contain block z */
 #define ZMAP_BLK(sb, b) (2 + (sb).imap_blk + (b)/BPB)
-
-/* minix fs methods */
-void read_sb(int hd, struct super_block *sb);

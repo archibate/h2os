@@ -5,7 +5,7 @@
 #include "ideports.h"
 #include <bug.h>
 
-static int ide_wait(void)
+static bool ide_wait(void)
 {
 	int timeout = 20000;
 	int r;

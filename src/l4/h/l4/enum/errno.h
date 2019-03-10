@@ -138,3 +138,4 @@
 #define ENOCAP	134	// No such capability
 #define ENOTSUP 125     // Not supported service number
 #define EBADSVC 126     // Bad server result
+#define ESVRERR 127     // Server error

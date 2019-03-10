@@ -3,31 +3,26 @@
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 #include <h4/servers.h>
+#include <h4/proc.h>
 #include <printk.h>
+#include <bug.h>
 #include "minix.h"
-#include "bug.h"
+#include "bcache.h"
+#include "hd.h"
 
-static int fs, hd;
+static int fs;
 
-void fs_init(void)
+void fs_server_init(void)
 {
-	fs = ipc_open(SVID_ROOTFS, IPC_CREAT | IPC_RECV);
+	fs = ipc_open(SVID_ROOTFS, IPC_CREAT | IPC_SERVER);
 	BUG_ON(fs < 0);
-}
-
-void hd_init(void)
-{
-	hd = ipc_open(SVID_IDEHD, IPC_CREAT | IPC_CLIENT);
-	BUG_ON(hd < 0);
 }
 
 void main(void)
 {
+	fs_server_init();
 	hd_init();
-	fs_init();
+	bcache_init();
 
-	struct super_block sb;
-	read_sb(hd, &sb);
-
-	sys_exit();
+	_exit(0);
 }

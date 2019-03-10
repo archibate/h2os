@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stddef.h>
-#include <ccutils.h>
 
 #define list_entry(ptr, type, member) container_of(ptr, type, member)
 #define list_first_entry(ptr, type, member) list_entry((ptr)->next, type, member)
@@ -14,7 +13,7 @@ struct list_head {
 
 #define LIST_HEAD(name) struct list_head name = INIT_LIST_HEAD(name)
 #define INIT_LIST_HEAD(head) { &(head), &(head) }
-#define HOLE_LIST ((struct list_head *)0xffffffff)
+#define HOLE_LIST ((struct list_head *)INVALID_PTR)
 #define list_empty(l) ((l)->next == (l))
 
 static inline void list_init(struct list_head *head)
@@ -148,6 +147,14 @@ static inline void hlist_del(struct hlist_node *n)
 	n->pprev = NULL;
 }
 
+static inline struct hlist_node *__hlist_pop(struct hlist_head *h)
+{
+	struct hlist_node *r = h->first;
+	h->first = r->next;
+	hlist_del(r);
+	return r;
+}
+
 static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 {
 	n->next = h->first;
@@ -155,6 +162,12 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 	if (h->first)
 		h->first->pprev = &n->next;
 	h->first = n;
+}
+
+static inline void hlist_move(struct hlist_node *n, struct hlist_head *h)
+{
+	__hlist_del(n);
+	hlist_add_head(n, h);
 }
 
 /* add @n before @next */

@@ -1,3 +1,5 @@
+#include <stddef.h>
+
 static
 const char *err_msgs[] = {
 	"success",
@@ -137,13 +139,19 @@ const char *err_msgs[] = {
 	"No such capability",
 	"Too many messages",
 	"Capability required",
+	"Not supported service number",
+	"Bad server result",
+	"Server error",
 };
 
 char *strerror(int err)
 {
 	if (err < 0)
 		err = -err;
-	if (err >= sizeof(err_msgs))
-		return "error";
-	return (char *)err_msgs[err];
+	if (err >= array_sizeof(err_msgs)) {
+		static char buf[32];
+		sprintf(buf, "Error %d", err);
+		return (char*)buf;
+	}
+	return (char*)err_msgs[err];
 }
