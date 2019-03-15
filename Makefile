@@ -30,7 +30,7 @@ endif
 CLEAN+=out
 .PHONY: out
 out:
-	rm -rf $@
+	rm -rf $@ src/*/out
 	mkdir -p out
 	$(IPM) install $(BASE_PKGNAME)
 	rm -rf out/include out/lib

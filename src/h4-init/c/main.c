@@ -9,7 +9,9 @@
 #include <h4/sys/ipc.h>
 #include <h4/servers.h>
 #include <h4/file/api.h>
+#include <h4/fs/api.h>
 #include <printk.h>
+#include <bug.h>
 
 #if 0//{{{
 void task_a(void)
@@ -32,24 +34,21 @@ static char fsf_a[2048], fsf_b[2048];
 #endif//}}}
 
 //
-static int kbd, hello;
+static int fs, kbd, hello;
 
 void kbd_init(void)
 {
-	kbd = ipc_open(SVID_KEYBD, IPC_CREAT | IPC_RECV);
-	if (kbd < 0) {
-		sys_print("error in open keyboard server");
-		sys_halt();
-	}
+	kbd = ipc_accept(SVID_KEYBD);
+	BUG_ON(kbd < 0);
 }
 
 void hello_init(void)
 {
-	hello = ipc_open(SVID_HELLO, IPC_CREAT | IPC_CLIENT);
-	if (hello < 0) {
-		sys_print("error in open hello server");
-		sys_halt();
-	}
+	fs = ipc_connect(SVID_ROOTFS);
+	BUG_ON(fs < 0);
+	//hello = fs_open(fs, "/dev/hello", O_RDONLY);
+	hello = ipc_connect(SVID_HELLO);
+	BUG_ON(hello < 0);
 }
 
 int kbd_getchar(void)

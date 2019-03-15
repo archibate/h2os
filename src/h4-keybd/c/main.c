@@ -13,7 +13,7 @@ static int kbds;
 
 void kbds_init(void)
 {
-	kbds = ipc_open(SVID_KEYBD, IPC_CREAT | IPC_SEND);
+	kbds = ipc_connect(SVID_KEYBD);
 	if (kbds < 0) {
 		sys_print("error in opening kb endpoint");
 		sys_halt();

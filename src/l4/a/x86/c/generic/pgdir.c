@@ -25,6 +25,7 @@ void pgdir_switch(struct pgdir *pgdir, struct ipc_buf *ipcbuf_ptr)
 	kPtes[PageNum(KernIPCBuffer)] = Pte(ipcbuf, PtePerm_UserRW);
 
 	if (mmu_getPgdirPaddr() == pd) {
+		//printk("!!set ipcbuf to %d", ipcbuf);
 		mmu_invaidatePage(KernIPCBuffer);
 
 	} else {

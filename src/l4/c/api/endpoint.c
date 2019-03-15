@@ -16,7 +16,7 @@ static int fd_verify(l4fd_t fd, unsigned int access)
 	struct fd_entry *fde = &current->fds[fd];
 
 	if (fde->ptr == NULL)
-		return -ENFILE;
+		return -EBADF;
 
 	BUG_ON(fde->rtype != RTYPE_ENDPOINT);//
 
@@ -40,8 +40,10 @@ static int do_sys_send(l4fd_t fd, bool block, bool recv)
 		return err;
 	struct endpoint *ep = fd_get_ep(fd);
 	struct ktcb *target = endpoint_call(ep, current, block, recv);
-	if (target != NULL)
+	if (target != NULL) {
+		//printk("do_sys_send: %d", *(int*)current->ipcbuf);
 		SWAP(current->ipcbuf, target->ipcbuf);
+	}
 	return 0;
 }
 
@@ -52,16 +54,25 @@ int sys_recv(l4fd_t fd)
 		return err;
 	struct endpoint *ep = fd_get_ep(fd);
 	struct ktcb *target = endpoint_wait(ep, current);
-	if (target != NULL)
+	if (target != NULL) {
+		//printk("%p", target);
+//#include <l4/system/kbase.h>
+		//*(int*)KernIPCBuffer = 12345;
+		//printk("sys_recv: %d", *(int*)target->ipcbuf);
 		SWAP(current->ipcbuf, target->ipcbuf);
+		//printk("sys_recv to curr: %d", *(int*)current->ipcbuf);
+	}
 	return 0;
 }
 
 int sys_reply(void)
 {
+	//printk("!!!!");
 	struct ktcb *target = endpoint_reply(NULL, current); // T,ep
-	if (target != NULL)
+	if (target != NULL) {
+		//printk("sys_reply: %d", *(int*)current->ipcbuf);
 		SWAP(current->ipcbuf, target->ipcbuf);
+	}
 	return target == NULL ? 0 : 1;
 }
 

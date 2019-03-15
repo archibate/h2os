@@ -1,0 +1,30 @@
+#include <l4/api/endpoint.h>
+#include <l4/generic/endpoint.h>
+#include <l4/generic/idget.h>
+#include <l4/generic/gfopen.h>
+#include <l4/generic/sched.h>
+#include <l4/enum/errno.h>
+#include <l4/enum/filedes.h>
+#include <l4/enum/rflags.h>
+#include <l4/misc/bug.h>//
+#include <l4/misc/panic.h>//
+
+sl4fd_t sys_connect(l4id_t id)
+{
+	struct endpoint *ep = id_get_endpoint(id);
+	if (ep == NULL)
+		return -ENOENT;
+
+	return gf_open(ep, RTYPE_ENDPOINT, R_WRONLY);
+}
+
+sl4fd_t sys_accept(l4id_t id)
+{
+	struct endpoint *ep = id_get_endpoint(id);
+	if (ep == NULL)
+		return -ENOENT;
+
+	return gf_open(ep, RTYPE_ENDPOINT, R_RDONLY);
+}
+
+//sl4id_t sys_creat(

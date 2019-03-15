@@ -1,5 +1,5 @@
 #pragma once
 
-#include <l4/enum/errno.h>
+#include <errno-bits.h>
 
 extern int errno;

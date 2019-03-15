@@ -3,7 +3,7 @@
 #include "inode.h"
 #include "p2i.h"
 #include "dir.h"
-#include "statmode.h"
+#include "stat.h"
 #include <stddef.h>
 #include <printk.h>
 #include <string.h>
@@ -32,16 +32,15 @@ static const char *skipelem(const char *path, char *name)
 	return path;
 }
 
-static struct inode *_path2inode(const char *path, bool parent, char *name)
+static struct inode *_path2inode(struct inode *cwd,
+		const char *path, bool parent, char *name)
 {
 	struct inode *ip, *next;
 
 	if (*path == '/') {
 		ip = iget(ROOT_INO);
 	} else {
-		assert_info(0, "cwd not supported");
-		ip = NULL;
-		//ip = idup(proc->cwd);
+		ip = idup(cwd);
 	}
 
 	while ((path = skipelem(path, name))) {
@@ -78,13 +77,13 @@ static struct inode *_path2inode(const char *path, bool parent, char *name)
 	return ip;
 }
 
-struct inode *p2i(const char *path)
+struct inode *p2i(struct inode *cwd, const char *path)
 {
 	char name[NAME_LEN];
-	return _path2inode(path, 0, name);
+	return _path2inode(cwd, path, 0, name);
 }
 
-struct inode *p2ip(const char *path, char *name)
+struct inode *p2ip(struct inode *cwd, const char *path, char *name)
 {
-	return _path2inode(path, 1, name);
+	return _path2inode(cwd, path, 1, name);
 }

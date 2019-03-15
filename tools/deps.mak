@@ -8,5 +8,9 @@ dep.out: $(DEPS)
 	cat $^ > $@
 	cat $^ | sed 's/\.o:/\.d:/' >> $@
 
+ifndef NODEP
 include dep.out
+else
+#-include dep.out
+endif
 endif

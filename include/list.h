@@ -155,8 +155,10 @@ static inline struct hlist_node *__hlist_pop(struct hlist_head *h)
 	return r;
 }
 
+//#include <bug.h>//
 static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 {
+	//BUG_ON(!n);
 	n->next = h->first;
 	n->pprev = &h->first;
 	if (h->first)

@@ -7,7 +7,7 @@ int ipc_send(int fd)
 {
 	int r = sys_send(fd);
 	ipc_rewind();
-	if (r < 0) *(long*)ipc_buffer = r;
+	//if (r < 0) *(long*)ipc_buffer = r;
 	return r;
 }
 
@@ -15,7 +15,7 @@ int ipc_nbsend(int fd)
 {
 	int r = sys_nbsend(fd);
 	ipc_rewind();
-	if (r < 0) *(long*)ipc_buffer = r;
+	//if (r < 0) *(long*)ipc_buffer = r;
 	return r;
 }
 
@@ -26,6 +26,16 @@ int ipc_call(int fd)
 	if (r < 0) *(long*)ipc_buffer = r;
 	return r;
 }
+
+#if 0
+int ipc_callbfd(int fd, int bfd)
+{
+	int r = sys_callbfd(fd, bfd);
+	ipc_rewind();
+	if (r < 0) *(long*)ipc_buffer = r;
+	return r;
+}
+#endif
 
 int ipc_recv(int fd)
 {

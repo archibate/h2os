@@ -4,6 +4,5 @@
 
 void _NORETURN abort(void)
 {
-	backtrace();
 	clihlt();
 }

@@ -39,10 +39,12 @@ struct ktcb *endpoint_wait(struct endpoint *ep, struct ktcb *waiter)
 		switch (caller->state) {
 		case THREAD_ONCALL:
 			caller->state = THREAD_ONRECV;
+			waiter->replying = caller;
 			break;
 		case THREAD_ONSEND:
 			caller->state = THREAD_RUNNING;
 			thread_active(caller);
+			waiter->replying = NULL;
 			break;
 		default:
 			BUG();
@@ -62,6 +64,7 @@ struct ktcb *endpoint_reply(struct endpoint *ep, struct ktcb *waiter)
 	struct ktcb *caller = waiter->replying;
 	waiter->replying = NULL;
 	if (caller) {
+		//printk("!!rep)");
 		BUG_ON(caller->state != THREAD_ONRECV);
 		caller->state = THREAD_RUNNING;
 		thread_active(caller);

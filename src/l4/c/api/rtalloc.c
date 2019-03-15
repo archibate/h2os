@@ -43,6 +43,23 @@ sl4fd_t sys_rt_open(unsigned int rtype, l4id_t id, unsigned int flags)
 	return gf_open(p, rtype, flags);
 }
 
+int sys_rt_close(l4fd_t fd)
+{
+	return gf_close(fd);
+}
+
+#if 0
+int sys_rt_check(unsigned int rtype, l4id_t id)
+{
+	if (rtype > RTYPE_MAX)
+		return -EINVAL;
+
+	void *p = id_get_object(rtype, id);
+	if (!p) return -ESRCH;
+
+	return 0;
+}
+
 sl4id_t sys_rt_new(unsigned int rtype)
 {
 	if (rtype > RTYPE_MAX)
@@ -56,17 +73,6 @@ sl4id_t sys_rt_new(unsigned int rtype)
 	struct ids_entry *ide = p + off;
 	l4id_t id = idg_new_entry(ide, rtype);
 	return id;
-}
-
-int sys_rt_check(unsigned int rtype, l4id_t id)
-{
-	if (rtype > RTYPE_MAX)
-		return -EINVAL;
-
-	void *p = id_get_object(rtype, id);
-	if (!p) return -ESRCH;
-
-	return 0;
 }
 
 int sys_rt_delete(unsigned int rtype, l4id_t id)
@@ -95,6 +101,7 @@ int sys_rt_revoke(unsigned int rtype, l4id_t id)
 
 	return 0;
 }
+#endif
 
 /*（⊙ｖ⊙）嗯..
  * 每一个线程启动个时候给他在内核空间奉陪几个虚拟页(此所谓slab)

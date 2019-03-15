@@ -12,18 +12,6 @@ void *ipc_getbuf(size_t *plen)
 	return p;
 }
 
-void *ipc_badge;
-
-void *ipc_getbadge(void)
-{
-	return ipc_badge;
-}
-
-void ipc_setbadge(void *badge)
-{
-	ipc_badge = badge;
-}
-
 int ipc_write(const void *buf, size_t n)
 {
 	memcpy(ipc_buffer + ipc_offset, buf, n);
@@ -35,6 +23,18 @@ int ipc_read(void *buf, size_t n)
 {
 	memcpy(buf, ipc_buffer + ipc_offset, n);
 	ipc_offset += n;
+	return 0;
+}
+
+int ipc_seek_setw(size_t cnt)
+{
+	ipc_offset = sizeof(uintptr_t) * cnt;
+	return 0;
+}
+
+int ipc_seek_curw(ssize_t cnt)
+{
+	ipc_offset += sizeof(uintptr_t) * cnt;
 	return 0;
 }
 

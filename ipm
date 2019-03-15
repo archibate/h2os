@@ -1,1 +1,1 @@
-scripts/ipm.sh
+scripts/ipm.sh $*

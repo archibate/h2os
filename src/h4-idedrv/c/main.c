@@ -12,7 +12,7 @@ static int ide;
 
 void ide_init(void)
 {
-	ide = ipc_open(SVID_IDEHD, IPC_CREAT | IPC_SERVER);
+	ide = ipc_open(SVID_IDEDRV, IPC_CREAT | IPC_SERVER);
 	BUG_ON(ide < 0);
 }
 
@@ -22,7 +22,7 @@ static dev_t ide_dev = 0;
 char ide_buf[BSIZE];
 static blkno_t ide_blkno = -1;
 
-ssize_t ide_pread(void *badge, void *buf, size_t len, off_t off)
+ssize_t ide_pread(void *buf, size_t len, off_t off)
 {
 	blkno_t blkno = off / BSIZE;
 	size_t skip = off % BSIZE;
@@ -51,7 +51,7 @@ ssize_t ide_pread(void *badge, void *buf, size_t len, off_t off)
 	return len;
 }
 
-ssize_t ide_pwrite(void *badge, const void *buf, size_t len, off_t off)
+ssize_t ide_pwrite(const void *buf, size_t len, off_t off)
 {
 	blkno_t blkno = off / BSIZE;
 	size_t skip = off % BSIZE;
@@ -96,8 +96,7 @@ void ide_serve_ipc(void)
 		off_t off = ipc_getw();
 		ipc_seek_set(sizeof(ssize_t));
 		void *buf = ipc_getbuf(&len);
-		void *badge = ipc_getbadge();
-		ssize_t ret = ide_pread(badge, buf, len, off);
+		ssize_t ret = ide_pread(buf, len, off);
 		ipc_rewindw(ret);
 	} break;
 
@@ -106,8 +105,7 @@ void ide_serve_ipc(void)
 		size_t len = ipc_getw();
 		off_t off = ipc_getw();
 		const void *buf = ipc_getbuf(&len);
-		void *badge = ipc_getbadge();
-		ssize_t ret = ide_pwrite(badge, buf, len, off);
+		ssize_t ret = ide_pwrite(buf, len, off);
 		ipc_rewindw(ret);
 	} break;
 

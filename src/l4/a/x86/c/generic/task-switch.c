@@ -7,9 +7,11 @@ void task_switch(struct ktcb *old_task, struct ktcb *new_task)
 {
 	pgdir_switch(new_task->pgdir, new_task->ipcbuf);
 
-	if (old_task != NULL)
-		save_context(&old_task->context);
-	restore_context(&new_task->context);
+	if (old_task != new_task) {
+		if (old_task != NULL)
+			save_context(&old_task->context);
+		restore_context(&new_task->context);
+	}
 }
 
 void set_idle_task(struct ktcb *old_task)

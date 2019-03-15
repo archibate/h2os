@@ -3,7 +3,7 @@
 
 void ipc_replyw(uintptr_t w)
 {
-	ipc_putw(w);
+	ipc_rewindw(w);
 	ipc_reply();
 }
 

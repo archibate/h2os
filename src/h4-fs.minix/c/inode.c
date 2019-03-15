@@ -2,11 +2,13 @@
 #include "minix.h"
 #include "inode.h"
 #include "stat.h"
+#include "bcache.h"
 #include "sb.h"
 #include <printk.h>
 #include <stddef.h>
 #include <assert.h>
 #include <memory.h>
+#include <errno.h>
 #include <h4/proc.h>
 #include <numtools.h>
 
@@ -159,7 +161,7 @@ void iput(struct inode *ip)
 		printk("iput: free inode-%d", ip->ino);
 
 		/* can not free a locked inode */
-		assert(!(ip->flags & I_BUSY), "iput: free a locked inode");
+		assert_info(!(ip->flags & I_BUSY), "iput: free a locked inode");
 		ip->flags |= I_BUSY;
 		itrunc(ip);
 
@@ -244,7 +246,7 @@ static uint16_t bmap(struct inode *ip, blkno_t bn) {
 	uint16_t *zone2;
 	struct buf *bp;
 
-	assert(bn < NDIRECT + NINDIRECT,"bmap: out of range");
+	assert_info(bn < NDIRECT + NINDIRECT,"bmap: out of range");
 
 	if (bn < NDIRECT) {
 		if (!(zno = ip->zone[bn])) {
@@ -292,7 +294,7 @@ int iread(struct inode *ip, void *buf, size_t len, off_t off)
 
 	/* 偏移溢出 */
 	if (off + len < off) {
-		printk(KL_WARN "iread: overflow offset + length");
+		printk(KL_WARNING "iread: overflow offset + length");
 		return -E2BIG;
 	}
 	if (off > ip->size) {
@@ -300,7 +302,7 @@ int iread(struct inode *ip, void *buf, size_t len, off_t off)
 		return -ENOTSUP;
 	}
 	if (off + len > ip->size) {
-		printk(KL_WARN "iread: off + n > size, ignore");
+		printk(KL_WARNING "iread: off + n > size, ignore");
 		len = ip->size - off;
 	}
 
@@ -341,14 +343,14 @@ int iwrite(struct inode *ip, const void *buf, size_t len, off_t off)
 		return pwrite(dtable[ip->zone[0]], buf, len, off);
 	}
 
-	printk("iwrite: inode-%d offset: 0x%x len:a0x%x", ip->ino, off, n);
+	printk("iwrite: inode-%d offset: 0x%x len:a0x%x", ip->ino, off, len);
 
 	if (off + len < off) {
-		printk(KL_WARN "iwrite: overflow offset + length");
+		printk(KL_WARNING "iwrite: overflow offset + length");
 		return -E2BIG;
 	}
 	if (off + len > MAXFILEBLK*BSIZE) {
-		printk(KL_WARN "iwrite: file too big");
+		printk(KL_WARNING "iwrite: file too big");
 		return -E2BIG;
 	}
 	if (off > ip->size) {
@@ -356,10 +358,10 @@ int iwrite(struct inode *ip, const void *buf, size_t len, off_t off)
 		return -ENOTSUP;
 	}
 
-	for (tot = 0; tot < len; tot += m, src += m, off += m) {
+	for (tot = 0; tot < len; tot += m, buf += m, off += m) {
 		bp = bread(bmap(ip, off/BSIZE));
 		m = MIN(n - tot, BSIZE - off%BSIZE);
-		memcpy(bp->data + off%BSIZE, src, m);
+		memcpy(bp->data + off%BSIZE, buf, m);
 		bwrite(bp);
 		brelse(bp);
 	}
@@ -411,7 +413,7 @@ void print_i(struct inode *ip)
 	printk("  zones:");
 
 	int i;
-	for (i = 0; i < NDIRECT; i++)
+	for (i = 0; i < NDIRECT; i++) {
 		if (ip->zone[i])
 			printk("     blk-%d", ip->zone[i]);
 	}

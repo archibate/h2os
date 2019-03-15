@@ -8,8 +8,7 @@ int ipc_open(key_t key, unsigned int flags)
 	return sys_rt_open(RTYPE_ENDPOINT, key, flags);
 }
 
-int ipc_close(int epid)
+int ipc_close(int fd)
 {
-	//return sys_rt_close(epid);
-	return 0;
+	return sys_rt_close(fd);
 }

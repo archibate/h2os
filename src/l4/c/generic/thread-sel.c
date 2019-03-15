@@ -5,6 +5,7 @@
 #include <l4/misc/printk.h>
 
 static int setimes;
+static void *old_ipcbuf;
 
 #undef sched_enter
 void sched_enter(void)
@@ -20,6 +21,8 @@ void sched_enter(void)
 	BUG_ON(running_head == INVALID_PTR);
 
 	current = sched_get_curr();
+
+	old_ipcbuf = current->ipcbuf;
 }
 
 void sched_leave(void)
@@ -38,7 +41,7 @@ void sched_leave(void)
 	BUG_ON(running_head == INVALID_PTR);
 	struct ktcb *next = sched_get_curr();
 
-	if (next != current) {
+	if (next != current || old_ipcbuf != current->ipcbuf) {
 		//printk("task_switch %p->%p", current, next);
 		task_switch(current, next);
 	}
