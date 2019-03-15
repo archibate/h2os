@@ -24,7 +24,7 @@ int fs_open(int fs, const char *path, unsigned int flags)
 	//printk("ret=%d", ret);
 	if (ret < 0)
 		return ret;
-	return ipc_connect(id);
+	return ret;
 }
 
 #if 0 // {{{
