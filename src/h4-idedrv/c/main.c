@@ -12,7 +12,7 @@ static int ide;
 
 void ide_init(void)
 {
-	ide = ipc_open(SVID_IDEDRV, IPC_CREAT | IPC_SERVER);
+	ide = ipc_open(SVID_IDEDRV, IPC_CREAT|IPC_SERVER);
 	BUG_ON(ide < 0);
 }
 

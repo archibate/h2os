@@ -1,4 +1,5 @@
-#include <l4/api/endpoint.h>
+#include <l4/api/ipc.h>
+#include <l4/api/rtalloc.h>
 #include <l4/generic/endpoint.h>
 #include <l4/generic/sched.h>
 #include <l4/enum/errno.h>
@@ -7,6 +8,12 @@
 #include <l4/enum/rflags.h>
 #include <l4/misc/bug.h>//
 #include <l4/misc/panic.h>//
+
+#ifndef ctx_r1
+#error no ctx_r1
+#else
+#define t_retphase context.ctx_r1
+#endif
 
 static int fd_verify(l4fd_t fd, unsigned int access)
 {
@@ -33,8 +40,27 @@ static struct endpoint *fd_get_ep(l4fd_t fd)
 
 #define SWAP(x, y) do { typeof(y) t = y; y = x; x = t; } while (0)
 
-static int do_sys_send(l4fd_t fd, bool block, bool recv)
+static int do_sys_send(l4fd_t fd, bool block, bool recv, int phase)
 {
+	int err = fd_verify(fd, R_WRONLY);
+	if (err < 0)
+		return err;
+	struct endpoint *ep = fd_get_ep(fd);
+	struct ktcb *target = endpoint_call(ep, current, block, recv);
+	current->ipcphase = phase;
+	if (target != NULL) {
+		target->t_retphase = phase;
+		//printk("do_sys_send: %d", *(int*)current->ipcbuf);
+		SWAP(current->ipcbuf, target->ipcbuf);
+	}
+	return 0;
+}
+
+#if 0//{{{
+sl4fd_t sys_callfdat(l4fd_t fd, sl4fd_t dirfd)
+{
+	BUG_ON(dirfd != -1);
+
 	int err = fd_verify(fd, R_WRONLY);
 	if (err < 0)
 		return err;
@@ -44,8 +70,25 @@ static int do_sys_send(l4fd_t fd, bool block, bool recv)
 		//printk("do_sys_send: %d", *(int*)current->ipcbuf);
 		SWAP(current->ipcbuf, target->ipcbuf);
 	}
-	return 0;
+	l4fd_t fd = gf_open(RTYPE_ENDPOINT, R_WRONLY);
+	return fd;
 }
+#endif//}}}
+
+#if 1
+int sys_connect(l4id_t id, unsigned int flags)
+{
+	int fd = sys_rt_open(id, RTYPE_ENDPOINT, flags);
+	if (fd < 0)
+		return fd;
+	int ret = do_sys_send(fd, true, true, 1);
+	if (ret < 0) {
+		sys_rt_close(fd);
+		return ret;
+	}
+	return fd;
+}
+#endif
 
 int sys_recv(l4fd_t fd)
 {
@@ -59,6 +102,7 @@ int sys_recv(l4fd_t fd)
 //#include <l4/system/kbase.h>
 		//*(int*)KernIPCBuffer = 12345;
 		//printk("sys_recv: %d", *(int*)target->ipcbuf);
+		current->t_retphase = target->ipcphase;
 		SWAP(current->ipcbuf, target->ipcbuf);
 		//printk("sys_recv to curr: %d", *(int*)current->ipcbuf);
 	}
@@ -78,15 +122,15 @@ int sys_reply(void)
 
 int sys_nbsend(l4fd_t fd)
 {
-	return do_sys_send(fd, false, false);
+	return do_sys_send(fd, false, false, 0);
 }
 
 int sys_send(l4fd_t fd)
 {
-	return do_sys_send(fd, true, false);
+	return do_sys_send(fd, true, false, 0);
 }
 
 int sys_call(l4fd_t fd)
 {
-	return do_sys_send(fd, true, true);
+	return do_sys_send(fd, true, true, 0);
 }

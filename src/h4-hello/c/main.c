@@ -108,7 +108,7 @@ int main(void)
 {
 	liballoc_set_memory(buffer, sizeof(buffer));
 
-	int conn = ipc_accept(SVID_HELLO);
+	int conn = ipc_open(SVID_HELLO, IPC_CREAT|IPC_SERVER);
 	BUG_ON(conn < 0);
 	hello_on_open(conn);
 	while (1) {

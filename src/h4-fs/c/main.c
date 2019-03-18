@@ -9,7 +9,7 @@
 #include <bug.h>
 #include <h4/fs/oflags.h>
 
-int path_resolve(const char *path)
+int dev_path_resolve(const char *path)
 {
 	if (!strcmp(path, "/dev/hello")) 
 		return SVID_HELLO;
@@ -23,15 +23,19 @@ int do_open(const char *path, unsigned int flags)
 {
 	printk("do_open(%s, %d)", path, flags);
 
-	return path_resolve(path);
+	int id = dev_path_resolve(path);
+	if (id < 0)
+		return id;
+
+	return id;
 }
 
 int main(void)
 {
-	int conn = ipc_accept(SVID_ROOTFS);
+	int fd = ipc_open(SVID_ROOTFS, IPC_CREAT|IPC_SERVER);
 
 	while (1) {
-		ipc_recv(conn);
+		ipc_recv(fd);
 		int nr = ipc_getw();
 
 		switch (nr) {

@@ -139,3 +139,4 @@
 #define ENOTSUP 125     // Not supported service number
 #define EBADSVC 126     // Bad server result
 #define ESVRERR 127     // Server error
+#define ECLOSAT 127     // Dest file descriptor not empty

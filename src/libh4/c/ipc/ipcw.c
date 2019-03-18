@@ -1,6 +1,12 @@
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 
+int ipc_rconnect(key_t key, unsigned int flags)
+{
+	ipc_rewind();
+	ipc_rconnect(key, flags);
+}
+
 void ipc_replyw(uintptr_t w)
 {
 	ipc_rewindw(w);

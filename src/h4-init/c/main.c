@@ -38,16 +38,16 @@ static int fs, kbd, hello;
 
 void kbd_init(void)
 {
-	kbd = ipc_accept(SVID_KEYBD);
+	kbd = ipc_open(SVID_KEYBD, IPC_CREAT|IPC_RECV);
 	BUG_ON(kbd < 0);
 }
 
 void hello_init(void)
 {
-	fs = ipc_connect(SVID_ROOTFS);
+	fs = ipc_open(SVID_ROOTFS, IPC_CREAT|IPC_CLIENT);
 	BUG_ON(fs < 0);
 	//hello = fs_open(fs, "/dev/hello", O_RDONLY);
-	hello = ipc_connect(SVID_HELLO);
+	hello = ipc_open(SVID_HELLO, IPC_CREAT|IPC_CLIENT);
 	BUG_ON(hello < 0);
 }
 

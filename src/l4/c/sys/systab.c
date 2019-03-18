@@ -1,7 +1,7 @@
 #include <l4/sys/sysnr.h>
 #include <l4/api/asyncep.h>
-#include <l4/api/endpoint.h>
 #include <l4/api/hello.h>
+#include <l4/api/ipc.h>
 #include <l4/api/rtalloc.h>
 #include <l4/api/sched.h>
 #include <l4/api/softirq.h>
@@ -11,16 +11,17 @@ void *_systab[] = {
 	[_SYS_async_pulse] = sys_async_pulse,
 	[_SYS_async_poll] = sys_async_poll,
 	[_SYS_async_listen] = sys_async_listen,
-	[_SYS_nbsend] = sys_nbsend,
-	[_SYS_send] = sys_send,
-	[_SYS_call] = sys_call,
-	[_SYS_recv] = sys_recv,
-	[_SYS_reply] = sys_reply,
 	[_SYS_hello] = sys_hello,
 	[_SYS_print] = sys_print,
 	[_SYS_con_putchar] = sys_con_putchar,
 	[_SYS_con_write] = sys_con_write,
 	[_SYS_halt] = sys_halt,
+	[_SYS_nbsend] = sys_nbsend,
+	[_SYS_send] = sys_send,
+	[_SYS_call] = sys_call,
+	[_SYS_recv] = sys_recv,
+	[_SYS_reply] = sys_reply,
+	[_SYS_connect] = sys_connect,
 	[_SYS_rt_open] = sys_rt_open,
 	[_SYS_rt_close] = sys_rt_close,
 	[_SYS_exit] = sys_exit,

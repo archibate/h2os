@@ -16,8 +16,10 @@ struct ktcb
 
 	struct ids_entry ide;
 
-	unsigned char state;
 	unsigned char priority;
+	unsigned char state;
+	unsigned char ipcphase;
+	//unsigned char retphase;
 
 	struct ktcb *replying;
 
