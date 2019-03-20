@@ -15,7 +15,7 @@ sys_process() {
 	sed 's/_SYS10(\(.*\), ,/_SYS00(\1/' | sed 's/, )/)/' | sed 's/sys_//'
 }
 
-libl4=../libl4
+libl4=../lib/l4
 rm -rf $libl4/c/api.gen/
 mkdir $libl4/c/api.gen/
 for x in `find h/l4/api -type f -name '*.h'`
@@ -47,5 +47,5 @@ make_systab_c() {
 	echo '};'
 }
 
-make_sysnr_h > h/l4/sys/sysnr.h
-make_systab_c > c/sys/systab.c
+make_sysnr_h > h/l4/sys/sysnr.gen.h
+make_systab_c > c/sys/systab.gen.c

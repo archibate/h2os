@@ -9,12 +9,6 @@
 #include <l4/misc/bug.h>//
 #include <l4/misc/panic.h>//
 
-#ifndef ctx_r1
-#error no ctx_r1
-#else
-#define t_retphase context.ctx_r1
-#endif
-
 static int fd_verify(l4fd_t fd, unsigned int access)
 {
 	if (fd >= MAX_FDS)
@@ -33,9 +27,10 @@ static int fd_verify(l4fd_t fd, unsigned int access)
 	return 0;
 }
 
-static struct endpoint *fd_get_ep(l4fd_t fd)
+#define get_fde(fd) (current->fds[fd])
+static inline struct endpoint *fd_get_ep(l4fd_t fd)
 {
-	return (struct endpoint *) current->fds[fd].ptr;
+	return (struct endpoint *) get_fde(fd).ptr;
 }
 
 #define SWAP(x, y) do { typeof(y) t = y; y = x; x = t; } while (0)
@@ -47,11 +42,18 @@ static int do_sys_send(l4fd_t fd, bool block, bool recv, int phase)
 		return err;
 	struct endpoint *ep = fd_get_ep(fd);
 	struct ktcb *target = endpoint_call(ep, current, block, recv);
-	current->ipcphase = phase;
+	struct msginfo *mip = &get_fde(fd).msginfo;
+	//current->ipcphase = phase ? phase : fd_entry(fd)->phase;
+	//fd_entry(fd)->msginfo.phase = phase;
 	if (target != NULL) {
-		target->t_retphase = phase;
+		//target->msginfo.phase = fd_entry(fd)->phase;
+		target->prplmip = mip;
+		target->msginfo = *mip;
 		//printk("do_sys_send: %d", *(int*)current->ipcbuf);
 		SWAP(current->ipcbuf, target->ipcbuf);
+	} else {
+		current->psndmip = mip;
+		//current->msginfo = *current->replymsi;
 	}
 	return 0;
 }
@@ -74,8 +76,7 @@ sl4fd_t sys_callfdat(l4fd_t fd, sl4fd_t dirfd)
 	return fd;
 }
 #endif//}}}
-
-#if 1
+#if 0//{{{
 int sys_connect(l4id_t id, unsigned int flags)
 {
 	int fd = sys_rt_open(id, RTYPE_ENDPOINT, flags);
@@ -88,7 +89,7 @@ int sys_connect(l4id_t id, unsigned int flags)
 	}
 	return fd;
 }
-#endif
+#endif//}}}
 
 int sys_recv(l4fd_t fd)
 {
@@ -98,20 +99,24 @@ int sys_recv(l4fd_t fd)
 	struct endpoint *ep = fd_get_ep(fd);
 	struct ktcb *target = endpoint_wait(ep, current);
 	if (target != NULL) {
+		current->prplmip = target->psndmip;
+		current->msginfo = *target->psndmip;
 		//printk("%p", target);
 //#include <l4/system/kbase.h>
 		//*(int*)KernIPCBuffer = 12345;
 		//printk("sys_recv: %d", *(int*)target->ipcbuf);
-		current->t_retphase = target->ipcphase;
 		SWAP(current->ipcbuf, target->ipcbuf);
 		//printk("sys_recv to curr: %d", *(int*)current->ipcbuf);
 	}
 	return 0;
 }
 
-int sys_reply(void)
+int sys_reply(uintptr_t badge)
 {
-	//printk("!!!!");
+	//printk("sys_reply: badge=%p", badge);
+	if (current->prplmip != NULL)
+		current->prplmip->badge = badge;
+	current->prplmip = NULL;
 	struct ktcb *target = endpoint_reply(NULL, current); // T,ep
 	if (target != NULL) {
 		//printk("sys_reply: %d", *(int*)current->ipcbuf);

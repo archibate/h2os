@@ -22,10 +22,9 @@ all: out
 
 
 ifdef MINGW
-BASE_PKGNAME=libgcc base
-else
-BASE_PKGNAME=base
+BASE_PKGNAME+=lib/gcc
 endif
+BASE_PKGNAME+=lib l4 h4 grub
 
 CLEAN+=out
 .PHONY: out
@@ -61,7 +60,7 @@ HDA_IMG=hda.img
 QEMUFLAGS+=-m $(MEGS) $(if $(DEBUG),-S -s,) -hda $(HDA_IMG)
 BOCHSFLAGS+='megs:$(MEGS)' 'ata0-master: type=disk, path="$(HDA_IMG)", mode=flat'
 
-H4_MODS=$(shell cat src/h4/package.ini | grep deps= | sed 's/deps=//' | sed 's/h4-//g')
+H4_MODS=$(shell cat src/h4/package.ini | grep deps= | sed 's/deps=//' | sed 's/h4\///g')
 QINITRD=$(shell echo $(H4_MODS:%=out/bin/%) | awk '{for (i=1;i<=NF;i++)printf "%s%s",$$i,(i!=NF?",":"");}')
 
 .PHONY: showinfo
@@ -77,7 +76,7 @@ showinfo:
 	@echo MEGS=$(MEGS)
 
 .PHONY: run
-run: out
+run: $(if $(DRUN),,out)
 	$(QEMU) -kernel out/boot/vmlinux-l4 \
 		-initrd "$(QINITRD)" \
 		$(QEMUFLAGS)

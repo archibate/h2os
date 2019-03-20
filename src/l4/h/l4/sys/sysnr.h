@@ -1,30 +1,3 @@
 #pragma once
 
-#define _SYS_async_pulse 1
-#define _SYS_async_poll 2
-#define _SYS_async_listen 3
-#define _SYS_hello 4
-#define _SYS_print 5
-#define _SYS_con_putchar 6
-#define _SYS_con_write 7
-#define _SYS_halt 8
-#define _SYS_nbsend 9
-#define _SYS_send 10
-#define _SYS_call 11
-#define _SYS_recv 12
-#define _SYS_reply 13
-#define _SYS_connect 14
-#define _SYS_rt_open 15
-#define _SYS_rt_close 16
-#define _SYS_exit 17
-#define _SYS_getpid 18
-#define _SYS_sched_next 19
-#define _SYS_softirq_done 20
-#define _SYS_softirq_set_enable 21
-#define _SYS_thread_check 22
-#define _SYS_thread_suspend 23
-#define _SYS_thread_active 24
-#define _SYS_thread_set_register 25
-#define _SYS_thread_set_priority 26
-#define _SYS_thread_get_priority 27
-#define _SYS_thread_get_state 28
+#include "sysnr.gen.h"

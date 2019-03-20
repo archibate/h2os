@@ -11,6 +11,8 @@
 
 sl4fd_t sys_rt_open(unsigned int rtype, l4id_t id, unsigned int flags)
 {
+	//printk("sys_rt_open(%d, %d, %d)", rtype, id, flags);
+
 	if (rtype > RTYPE_MAX)
 		return -EINVAL;
 

@@ -42,7 +42,7 @@ out/include/l4: $(ADIRS:%=%/h/l4)
 	@rm -rf $@
 	cp -r $^ $(@D)
 
-c/sys/systab.c: $(wildcard h/l4/api/*.h)
+c/sys/systab.gen.c: $(wildcard h/l4/api/*.h)
 	$(EL) gen $@
 	./update-api.sh
 

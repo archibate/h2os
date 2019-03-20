@@ -7,6 +7,8 @@ void task_switch(struct ktcb *old_task, struct ktcb *new_task)
 {
 	pgdir_switch(new_task->pgdir, new_task->ipcbuf);
 
+	kUTCB->msginfo = new_task->msginfo;
+
 	if (old_task != new_task) {
 		if (old_task != NULL)
 			save_context(&old_task->context);

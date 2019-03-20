@@ -21,6 +21,7 @@ int sys_thread_suspend(l4id_t tid)
 
 int sys_thread_check(l4id_t tid)
 {
+	//printk("sys_thread_check(%d)", tid);
 	struct ktcb *tcb = id_get_thread(tid);
 	if (!tcb) return -ESRCH;
 
