@@ -59,7 +59,7 @@ struct ktcb *endpoint_wait(struct endpoint *ep, struct ktcb *waiter)
 	}
 }
 
-struct ktcb *endpoint_reply(struct endpoint *ep, struct ktcb *waiter)
+struct ktcb *endpoint_reply(struct ktcb *waiter)
 {
 	struct ktcb *caller = waiter->replying;
 	waiter->replying = NULL;

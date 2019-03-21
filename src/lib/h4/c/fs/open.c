@@ -9,9 +9,17 @@
 
 int fs_open(int fs, const char *path, unsigned int flags)
 {
-	return fs_openat(fs, -1, path, flags);
+	ipc_rewindw(_FS_open);
+	ipc_putw(flags);
+	ipc_write(path, strlen(path) + 1);
+	ipc_call(fs);
+	int key = ipc_getw();
+	if (key < 0)
+		return key;
+	return ipc_open(key);
 }
 
+#if 0//{{{
 int fs_openat(int fs, int dirfd, const char *path, unsigned int flags)
 {
 	ipc_rewindw(_FS_open);
@@ -21,3 +29,4 @@ int fs_openat(int fs, int dirfd, const char *path, unsigned int flags)
 	int ret = ipc_getw();
 	return ret < 0 ? ret : fd;
 }
+#endif//}}}

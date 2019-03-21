@@ -42,7 +42,7 @@ sl4fd_t sys_rt_open(unsigned int rtype, l4id_t id, unsigned int flags)
 		p = (void*)ide - off;
 	}
 
-	return gf_open(p, rtype, flags);
+	return gf_open(p, rtype);
 }
 
 int sys_rt_close(l4fd_t fd)
@@ -50,7 +50,7 @@ int sys_rt_close(l4fd_t fd)
 	return gf_close(fd);
 }
 
-#if 0
+#if 0//{{{
 int sys_rt_check(unsigned int rtype, l4id_t id)
 {
 	if (rtype > RTYPE_MAX)
@@ -107,4 +107,4 @@ int sys_rt_revoke(unsigned int rtype, l4id_t id)
 
 /*（⊙ｖ⊙）嗯..
  * 每一个线程启动个时候给他在内核空间奉陪几个虚拟页(此所谓slab)
- * 然后他要奉陪的时候就从这里面奉陪.?.*/
+ * 然后他要奉陪的时候就从这里面奉陪.?.*///}}}

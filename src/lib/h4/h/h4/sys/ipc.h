@@ -1,7 +1,5 @@
 #pragma once
 
-#include <h4/sys/ipcflags.h>
-
 void ipc_rewind(void);
 void *ipc_getbuf(size_t *plen);
 int ipc_write(const void *buf, size_t n);
@@ -12,10 +10,13 @@ size_t ipc_tell(void);
 int ipc_send(int fd);
 int ipc_nbsend(int fd);
 int ipc_call(int fd);
+int ipc_recv(void);
 int ipc_reply(void);
-int ipc_open(key_t key, unsigned int flags);
-int ipc_connect(key_t key, unsigned int flags);
-int ipc_rconnect(key_t key, unsigned int flags);
+int ipc_open(key_t key);
+int ipc_serve(key_t key);
+int ipc_connect(pid_t pid);
+//int ipc_connect(key_t key, unsigned int flags);
+//int ipc_rconnect(key_t key, unsigned int flags);
 int ipc_close(int fd);
 uintptr_t ipc_getw(void);
 int ipc_putw(uintptr_t w);
@@ -31,4 +32,8 @@ int ipc_seek_curw(ssize_t cnt);
 int ipc_seek_setw(size_t cnt);
 uintptr_t ipc_getbadge(void);
 void ipc_setbadge(uintptr_t badge);
+uintptr_t ipc_getoffset(void);
+void ipc_setoffset(uintptr_t offset);
 bool ipc_isclose(void);
+//void ipc_setfdreply(int fd);
+//int ipc_getreplyfd(void);

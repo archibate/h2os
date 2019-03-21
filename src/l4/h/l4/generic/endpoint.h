@@ -9,4 +9,4 @@ void endpoint_revoke(struct endpoint *ep);
 void endpoint_delete(struct endpoint *ep);
 struct ktcb *endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block, bool recv);
 struct ktcb *endpoint_wait(struct endpoint *ep, struct ktcb *waiter);
-struct ktcb *endpoint_reply(struct endpoint *ep, struct ktcb *waiter);
+struct ktcb *endpoint_reply(struct ktcb *waiter);

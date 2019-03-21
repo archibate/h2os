@@ -2,6 +2,7 @@
 #include <l4/generic/sched.h>
 #include <l4/enum/errno.h>
 #include <l4/misc/bug.h>
+#include <memory.h>
 
 static int alloc_fd(void)
 {
@@ -15,7 +16,15 @@ found:
 	return i;
 }
 
-sl4fd_t gf_open(void *p, unsigned int rtype, unsigned int flags)
+static void free_fd(int fd)
+{
+	if (fd < current->fdtop)
+		current->fdtop = fd;
+
+	memset(&current->fds[fd], 0, sizeof(struct fd_entry));
+}
+
+sl4fd_t gf_open(void *p, unsigned int rtype)
 {
 	BUG_ON(p == NULL);
 
@@ -26,7 +35,6 @@ sl4fd_t gf_open(void *p, unsigned int rtype, unsigned int flags)
 	struct fd_entry *fde = &current->fds[fd];
 
 	fde->rtype = rtype;
-	fde->flags = flags;
 	fde->ptr = p;
 
 	return fd;
@@ -37,14 +45,9 @@ int gf_close(l4fd_t fd)
 	if (fd >= MAX_FDS)
 		return -ENFILE;
 
-	if (fd < current->fdtop)
-		current->fdtop = fd;
+	free_fd(fd);
 
 	struct fd_entry *fde = &current->fds[fd];
-
-	fde->rtype = 0;
-	fde->flags = 0;
-	fde->ptr = NULL;
 
 	return 0;
 }

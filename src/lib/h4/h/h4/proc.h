@@ -1,8 +1,7 @@
 #pragma once
 
 #include <compiler.h>
-
-typedef int pid_t;
+#include <h4/sys/types.h>
 
 void _NORETURN _exit(int status);
 int pause(void);

@@ -14,6 +14,11 @@ int ipc_connect(key_t key, unsigned int flags)
 #endif
 
 static uintptr_t ipc_badge;
+static uintptr_t ipc_offset;
+#if 0
+static int ipc_fdreply;
+static int ipc_replyfd;
+#endif
 
 uintptr_t ipc_getbadge(void)
 {
@@ -25,10 +30,32 @@ void ipc_setbadge(uintptr_t badge)
 	ipc_badge = badge;
 }
 
+uintptr_t ipc_getoffset(void)
+{
+	return ipc_offset;
+}
+
+void ipc_setoffset(uintptr_t offset)
+{
+	ipc_offset = offset;
+}
+
 bool ipc_isclose(void)
 {
-	return false;
+	return false;//TOD
 }
+
+#if 0//{{{
+void ipc_setfdreply(int fd)
+{
+	ipc_fdreply = fd;
+}
+
+int ipc_getreplyfd(void)
+{
+	return ipc_replyfd;
+}
+#endif//}}}
 
 int ipc_send(int fd)
 {
@@ -51,21 +78,24 @@ int ipc_call(int fd)
 	int r = sys_call(fd);
 	ipc_rewind();
 	if (r < 0) *(long*)ipc_buffer = r;
+	//ipc_replyfd = ipc_msginfo.rplfd;
 	return r;
 }
 
-int ipc_recv(int fd)
+int ipc_recv(void)
 {
-	int r = sys_recv(fd);
+	int r = sys_recv();
 	ipc_rewind();
 	if (r < 0) *(long*)ipc_buffer = r;
 	ipc_badge = ipc_msginfo.badge;
+	ipc_offset = ipc_msginfo.offset;
+	//ipc_fdreply = -1;
 	return r;
 }
 
 int ipc_reply(void)
 {
-	return sys_reply(ipc_badge);
+	return sys_reply(ipc_badge, ipc_offset);
 }
 
 #if 0//{{{

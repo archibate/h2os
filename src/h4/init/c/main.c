@@ -1,15 +1,16 @@
 #include <l4/types.h>
+#include <l4/api/hello.h>
+/*#include <l4/api/rtalloc.h>
 #include <l4/enum/rtype.h>
 #include <l4/enum/thread-registers.h>
-#include <l4/api/hello.h>
-#include <l4/api/rtalloc.h>
 #include <l4/api/thread.h>
-#include <l4/api/sched.h>
+#include <l4/api/sched.h>*/
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 #include <h4/servers.h>
 #include <h4/file/api.h>
 #include <h4/fs/api.h>
+#include <h4/proc.h>
 #include <printk.h>
 #include <bug.h>
 
@@ -36,26 +37,10 @@ static char fsf_a[2048], fsf_b[2048];
 //
 static int fs, kbd, hello;
 
-void kbd_init(void)
-{
-	kbd = ipc_open(SVID_KEYBD, IPC_CREAT|IPC_RECV);
-	BUG_ON(kbd < 0);
-	//printk("kbd=%d", kbd);
-}
-
-void hello_init(void)
-{
-	//fs = ipc_open(SVID_ROOTFS, IPC_CREAT|IPC_CLIENT);
-	//BUG_ON(fs < 0);
-	//hello = fs_open(fs, "/dev/hello", O_RDONLY);
-	hello = ipc_open(SVID_HELLO, IPC_CREAT|IPC_CLIENT);
-	BUG_ON(hello < 0);
-}
-
 int kbd_getchar(void)
 {
-	ipc_recv(kbd);
-	return ipc_get32();
+	ipc_call(kbd);
+	return ipc_getw();
 }
 //
 
@@ -79,8 +64,16 @@ void main(void)
 		sys_con_putchar('m');
 #endif//}}}
 
-	kbd_init();
-	hello_init();
+	pause();
+	pause();
+	pause();
+
+	fs = ipc_open(SVID_ROOTFS);
+	BUG_ON(fs < 0);
+	kbd = fs_open(fs, "/dev/keybd", O_RDONLY);
+	BUG_ON(kbd < 0);
+	hello = fs_open(fs, "/dev/hello", O_RDONLY);
+	BUG_ON(hello < 0);
 
 	int ch;
 	for (;;) {

@@ -1,15 +1,15 @@
 #include <l4/api/ipc.h>
-#include <l4/api/rtalloc.h>
 #include <l4/generic/endpoint.h>
 #include <l4/generic/sched.h>
 #include <l4/enum/errno.h>
 #include <l4/enum/filedes.h>
 #include <l4/generic/sched.h>
 #include <l4/enum/rflags.h>
+#include <l4/generic/msginfo.h>
 #include <l4/misc/bug.h>//
 #include <l4/misc/panic.h>//
 
-static int fd_verify(l4fd_t fd, unsigned int access)
+static int fd_verify(l4fd_t fd, bool isrecv)
 {
 	if (fd >= MAX_FDS)
 		return -ENFILE;
@@ -21,8 +21,8 @@ static int fd_verify(l4fd_t fd, unsigned int access)
 
 	BUG_ON(fde->rtype != RTYPE_ENDPOINT);//
 
-	if (~fde->flags & access)
-		return -EPERM;
+	/*if (~fde->isrecv != isrecv)
+		return -EPERM;*/
 
 	return 0;
 }
@@ -37,7 +37,7 @@ static inline struct endpoint *fd_get_ep(l4fd_t fd)
 
 static int do_sys_send(l4fd_t fd, bool block, bool recv, int phase)
 {
-	int err = fd_verify(fd, R_WRONLY);
+	int err = fd_verify(fd, false);
 	if (err < 0)
 		return err;
 	struct endpoint *ep = fd_get_ep(fd);
@@ -48,7 +48,7 @@ static int do_sys_send(l4fd_t fd, bool block, bool recv, int phase)
 	if (target != NULL) {
 		//target->msginfo.phase = fd_entry(fd)->phase;
 		target->prplmip = mip;
-		target->msginfo = *mip;
+		msginfo_copy(&target->msginfo, mip);
 		//printk("do_sys_send: %d", *(int*)current->ipcbuf);
 		SWAP(current->ipcbuf, target->ipcbuf);
 	} else {
@@ -91,16 +91,13 @@ int sys_connect(l4id_t id, unsigned int flags)
 }
 #endif//}}}
 
-int sys_recv(l4fd_t fd)
+int sys_recv(void)
 {
-	int err = fd_verify(fd, R_RDONLY);
-	if (err < 0)
-		return err;
-	struct endpoint *ep = fd_get_ep(fd);
+	struct endpoint *ep = &current->ep;//TOD
 	struct ktcb *target = endpoint_wait(ep, current);
 	if (target != NULL) {
 		current->prplmip = target->psndmip;
-		current->msginfo = *target->psndmip;
+		msginfo_copy(&current->msginfo, target->psndmip);
 		//printk("%p", target);
 //#include <l4/system/kbase.h>
 		//*(int*)KernIPCBuffer = 12345;
@@ -111,13 +108,15 @@ int sys_recv(l4fd_t fd)
 	return 0;
 }
 
-int sys_reply(uintptr_t badge)
+int sys_reply(uintptr_t badge, uintptr_t offset)
 {
 	//printk("sys_reply: badge=%p", badge);
-	if (current->prplmip != NULL)
+	if (current->prplmip != NULL) {
 		current->prplmip->badge = badge;
+		current->prplmip->offset = offset;
+	}
 	current->prplmip = NULL;
-	struct ktcb *target = endpoint_reply(NULL, current); // T,ep
+	struct ktcb *target = endpoint_reply(current); // T,ep
 	if (target != NULL) {
 		//printk("sys_reply: %d", *(int*)current->ipcbuf);
 		SWAP(current->ipcbuf, target->ipcbuf);

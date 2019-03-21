@@ -13,6 +13,8 @@ int dev_path_resolve(const char *path)
 {
 	if (!strcmp(path, "/dev/hello")) 
 		return SVID_HELLO;
+	else if (!strcmp(path, "/dev/keybd")) 
+		return SVID_KEYBD;
 	else if (!strcmp(path, "/dev/hda")) 
 		return SVID_IDEDRV;
 	else 
@@ -26,16 +28,15 @@ int do_open(const char *path, unsigned int flags)
 	int id = dev_path_resolve(path);
 	if (id < 0)
 		return id;
-
 	return id;
 }
 
 int main(void)
 {
-	int fd = ipc_open(SVID_ROOTFS, IPC_CREAT|IPC_SERVER);
+	ipc_serve(SVID_ROOTFS);
 
 	while (1) {
-		ipc_recv(fd);
+		ipc_recv();
 		int nr = ipc_getw();
 
 		switch (nr) {

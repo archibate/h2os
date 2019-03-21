@@ -7,18 +7,9 @@
 #include <errno.h>
 #include "ide.h"
 #include <bug.h>
+#include <numtools.h>
 
-static int ide;
-
-void ide_init(void)
-{
-	ide = ipc_open(SVID_IDEDRV, IPC_CREAT|IPC_SERVER);
-	BUG_ON(ide < 0);
-}
-
-#define CLMAX(x, max) do { if ((x) >= (max)) (x) = (max); } while (0)
-
-static dev_t ide_dev = 0;
+static const dev_t ide_dev = 0;
 char ide_buf[BSIZE];
 static blkno_t ide_blkno = -1;
 
@@ -84,9 +75,20 @@ ssize_t ide_pwrite(const void *buf, size_t len, off_t off)
 	return len;
 }
 
+off_t ide_lseek(off_t now_off, off_t off, int whence)
+{
+	switch (whence) {
+	case 0: break;
+	case 1: off += now_off; break;
+	case 2: return -ENOTSUP;
+	default: return -ENOTSUP;
+	};
+	CLMIN(off, 0);
+	return off;
+}
+
 void ide_serve_ipc(void)
 {
-	ipc_recv(ide);
 	unsigned int nr = ipc_getw();
 	switch (nr) {
 
@@ -94,7 +96,8 @@ void ide_serve_ipc(void)
 	{
 		size_t len = ipc_getw();
 		off_t off = ipc_getw();
-		ipc_seek_set(sizeof(ssize_t));
+		printk("ide_pread(%d, %d)", len, off);
+		ipc_seek_setw(1);
 		void *buf = ipc_getbuf(&len);
 		ssize_t ret = ide_pread(buf, len, off);
 		ipc_rewindw(ret);
@@ -104,8 +107,47 @@ void ide_serve_ipc(void)
 	{
 		size_t len = ipc_getw();
 		off_t off = ipc_getw();
+		printk("ide_pwrite(%d, %d)", len, off);
 		const void *buf = ipc_getbuf(&len);
 		ssize_t ret = ide_pwrite(buf, len, off);
+		ipc_rewindw(ret);
+	} break;
+
+	case _FILE_read:
+	{
+		size_t len = ipc_getw();
+		printk("ide_read(%d)", len);
+		ipc_seek_setw(1);
+		void *buf = ipc_getbuf(&len);
+		off_t off = ipc_getoffset();
+		ssize_t ret = ide_pread(buf, len, off);
+		if (ret > 0)
+			off += ret;
+		ipc_setoffset(off);
+		ipc_rewindw(ret);
+	} break;
+
+	case _FILE_write:
+	{
+		size_t len = ipc_getw();
+		printk("ide_write(%d)", len);
+		const void *buf = ipc_getbuf(&len);
+		off_t off = ipc_getoffset();
+		ssize_t ret = ide_pwrite(buf, len, off);
+		if (ret > 0)
+			off += ret;
+		ipc_setoffset(off);
+		ipc_rewindw(ret);
+	} break;
+
+	case _FILE_lseek:
+	{
+		off_t off = ipc_getw();
+		int whence = ipc_getw();
+		off_t now_off = ipc_getoffset();
+		off_t ret = ide_lseek(now_off, off, whence);
+		if (ret > 0)
+			ipc_setoffset(ret);
 		ipc_rewindw(ret);
 	} break;
 
@@ -117,9 +159,11 @@ void ide_serve_ipc(void)
 
 int main(void)
 {
-	ide_init();
+	ipc_serve(SVID_IDEDRV);
+	ipc_recv();
 	while (1) {
-		ide_serve_ipc();
+		if (!ipc_isclose())
+			ide_serve_ipc();
 	}
 }
 

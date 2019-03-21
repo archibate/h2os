@@ -11,27 +11,18 @@
 
 static int kbds;
 
-void kbds_init(void)
-{
-	kbds = ipc_open(SVID_KEYBD, IPC_CREAT|IPC_SEND);
-	if (kbds < 0) {
-		sys_print("error in opening kb endpoint");
-		sys_halt();
-	}
-}
-
 void kbds_putchar(int ch)
 {
-	ipc_rewind();
-	ipc_put32(ch);
-	ipc_send(kbds);//todo: impl an fifo buffer inside this server process
+	ipc_recv();
+	ipc_rewindw(ch);
+	ipc_reply();//todo: impl an fifo buffer inside this server process
 	//t!: use two threads in this server, one for intrhand, one for sendbuf
 }
 
 void kb_handler(void);
 int main(void)
 {
-	kbds_init();
+	ipc_serve(SVID_KEYBD);
 	sys_softirq_set_enable(IRQ_KEYBD, true);
 	while (1) {
 		sys_async_listen(IRQ_KEYBD);
