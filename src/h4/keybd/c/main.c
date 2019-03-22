@@ -66,15 +66,21 @@ int main(void)
 	sys_softirq_set_enable(IRQ_KEYBD, true);
 	while (1) {
 		while (fifo_empty(&tin)) {
-			sys_async_listen(IRQ_KEYBD);
-			do {
+listen:			sys_async_listen(IRQ_KEYBD);
+handle:			do {
 				kb_handler();
 				sys_softirq_done(IRQ_KEYBD);
 			} while (sys_async_poll(IRQ_KEYBD));
 		}
-		while (ipc_poll() >= 0 && !fifo_empty(&tin)) {
+		while (ipc_poll() >= 0) {
 			kbd_serve_ipc();
+			if (fifo_empty(&tin))
+				goto listen;
 		}
+		if (sys_async_poll(IRQ_KEYBD))
+			goto handle;
+		pause();
+#if 0
 		while (!fifo_empty(&tin)) {
 			ipc_recv();
 			while (sys_async_poll(IRQ_KEYBD)) {
@@ -90,5 +96,6 @@ int main(void)
 			}
 			kbd_serve_ipc();
 		}
+#endif
 	}
 }

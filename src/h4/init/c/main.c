@@ -45,7 +45,7 @@ static char fsf_a[2048], fsf_b[2048];
 int getchar(int fd)
 {
 	char ch;
-	return read(fd, &ch, 1) != 1 ? EOF : 0;
+	return read(fd, &ch, 1) != 1 ? EOF : ch;
 }
 
 int putchar(int fd, int ch)
@@ -96,7 +96,6 @@ void main(void)
 		ch = getchar(kbd);
 		BUG_ON(ch <= 0);
 		if (ch == 'z') {
-			BUG();
 			char buf[128];
 			ssize_t ret = pread(hello, buf, sizeof(buf), 0);
 			if (ret > 0)
@@ -111,5 +110,5 @@ void main(void)
 			BUG_ON(0 > sys_con_putchar(ch));
 	}
 
-	_exit();
+	_exit(0);
 }
