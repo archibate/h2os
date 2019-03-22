@@ -91,10 +91,10 @@ int sys_connect(l4id_t id, unsigned int flags)
 }
 #endif//}}}
 
-int sys_recv(void)
+int do_sys_recv(bool block)
 {
 	struct endpoint *ep = &current->ep;//TOD
-	struct ktcb *target = endpoint_wait(ep, current);
+	struct ktcb *target = endpoint_wait(ep, current, block);
 	if (target != NULL) {
 		current->prplmip = target->psndmip;
 		msginfo_copy(&current->msginfo, target->psndmip);
@@ -104,8 +104,21 @@ int sys_recv(void)
 		//printk("sys_recv: %d", *(int*)target->ipcbuf);
 		SWAP(current->ipcbuf, target->ipcbuf);
 		//printk("sys_recv to curr: %d", *(int*)current->ipcbuf);
+	} else {
+		if (!block)
+			return -EAGAIN;
 	}
 	return 0;
+}
+
+int sys_recv(void)
+{
+	return do_sys_recv(true);
+}
+
+int sys_poll(void)
+{
+	return do_sys_recv(false);
 }
 
 int sys_reply(uintptr_t badge, uintptr_t offset)

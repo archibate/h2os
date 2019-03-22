@@ -11,6 +11,7 @@ int ipc_send(int fd);
 int ipc_nbsend(int fd);
 int ipc_call(int fd);
 int ipc_recv(void);
+int ipc_poll(void);
 int ipc_reply(void);
 int ipc_open(key_t key);
 int ipc_serve(key_t key);

@@ -30,7 +30,7 @@ struct ktcb *endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block,
 	}
 }
 
-struct ktcb *endpoint_wait(struct endpoint *ep, struct ktcb *waiter)
+struct ktcb *endpoint_wait(struct endpoint *ep, struct ktcb *waiter, bool block)
 {
 	BUG_ON(waiter->state != THREAD_RUNNING);
 	struct ktcb *caller = wq_pop(&ep->calling);
@@ -51,10 +51,12 @@ struct ktcb *endpoint_wait(struct endpoint *ep, struct ktcb *waiter)
 		}
 		return caller;
 	} else {
-		waiter->state = THREAD_WAITING;
-		BUG_ON(waiter->list.next == NULL);
-		thread_suspend(waiter);
-		wq_add(&ep->waiting, waiter);
+		if (block) {
+			waiter->state = THREAD_WAITING;
+			BUG_ON(waiter->list.next == NULL);
+			thread_suspend(waiter);
+			wq_add(&ep->waiting, waiter);
+		}
 		return NULL;
 	}
 }

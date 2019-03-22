@@ -148,6 +148,7 @@ int main(void)
 			if (!fp) {
 				unsigned int flags = 0;//TOD
 				fp = hello_new_open(flags);
+				printk("fp=%p", fp);
 				ipc_setbadge((uintptr_t)fp);
 			}
 			hello_serve_ipc(fp);

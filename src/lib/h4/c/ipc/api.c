@@ -87,9 +87,24 @@ int ipc_recv(void)
 	int r = sys_recv();
 	ipc_rewind();
 	if (r < 0) *(long*)ipc_buffer = r;
-	ipc_badge = ipc_msginfo.badge;
-	ipc_offset = ipc_msginfo.offset;
-	//ipc_fdreply = -1;
+	else {
+		ipc_badge = ipc_msginfo.badge;
+		ipc_offset = ipc_msginfo.offset;
+		//ipc_fdreply = -1;
+	}
+	return r;
+}
+
+int ipc_poll(void)
+{
+	int r = sys_poll();
+	ipc_rewind();
+	if (r < 0) *(long*)ipc_buffer = r;
+	else {
+		ipc_badge = ipc_msginfo.badge;
+		ipc_offset = ipc_msginfo.offset;
+		//ipc_fdreply = -1;
+	}
 	return r;
 }
 

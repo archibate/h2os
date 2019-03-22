@@ -9,13 +9,13 @@
 #include <bug.h>
 #include <h4/fs/oflags.h>
 
-int dev_path_resolve(const char *path)
+int dev_resolve(const char *name)
 {
-	if (!strcmp(path, "/dev/hello")) 
+	if (!strcmp(name, "hello")) 
 		return SVID_HELLO;
-	else if (!strcmp(path, "/dev/keybd")) 
+	else if (!strcmp(name, "keybd")) 
 		return SVID_KEYBD;
-	else if (!strcmp(path, "/dev/hda")) 
+	else if (!strcmp(name, "hda")) 
 		return SVID_IDEDRV;
 	else 
 		return -ENOENT;
@@ -25,10 +25,10 @@ int do_open(const char *path, unsigned int flags)
 {
 	printk("do_open(%s, %d)", path, flags);
 
-	int id = dev_path_resolve(path);
-	if (id < 0)
-		return id;
-	return id;
+	if (!strncmp(path, "/dev/", strlen("/dev/")))
+		return dev_resolve(path + strlen("/dev/"));
+
+	return -ENOENT;
 }
 
 int main(void)

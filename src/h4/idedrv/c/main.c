@@ -162,8 +162,7 @@ int main(void)
 	ipc_serve(SVID_IDEDRV);
 	ipc_recv();
 	while (1) {
-		if (!ipc_isclose())
-			ide_serve_ipc();
+		ide_serve_ipc();
 	}
 }
 

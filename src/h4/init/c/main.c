@@ -12,6 +12,7 @@
 #include <h4/fs/api.h>
 #include <h4/proc.h>
 #include <printk.h>
+#include <stddef.h>
 #include <bug.h>
 
 #if 0//{{{
@@ -35,12 +36,12 @@ static char fsf_a[2048], fsf_b[2048];
 #endif//}}}
 
 //
-static int fs, kbd, hello;
-
-int kbd_getchar(void)
+int getchar(int fd)
 {
-	ipc_call(kbd);
-	return ipc_getw();
+	char ch;
+	if (read(fd, &ch, 1) != 1)
+		return EOF;
+	return ch;
 }
 //
 
@@ -68,6 +69,8 @@ void main(void)
 	pause();
 	pause();
 
+	int fs, kbd, hello;
+
 	fs = ipc_open(SVID_ROOTFS);
 	BUG_ON(fs < 0);
 	kbd = fs_open(fs, "/dev/keybd", O_RDONLY);
@@ -77,7 +80,7 @@ void main(void)
 
 	int ch;
 	for (;;) {
-		ch = kbd_getchar();
+		ch = getchar(kbd);
 		if (ch == 'z') {
 			char buf[128];
 			ssize_t ret = pread(hello, buf, sizeof(buf), 0);
