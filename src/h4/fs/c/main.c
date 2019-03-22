@@ -13,6 +13,8 @@ int dev_resolve(const char *name)
 {
 	if (!strcmp(name, "hello")) 
 		return SVID_HELLO;
+	else if (!strcmp(name, "cons")) 
+		return SVID_CONS;
 	else if (!strcmp(name, "keybd")) 
 		return SVID_KEYBD;
 	else if (!strcmp(name, "hda")) 

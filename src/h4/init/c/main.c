@@ -1,5 +1,10 @@
+#if 1
 #include <l4/types.h>
 #include <l4/api/hello.h>
+#else
+#define sys_con_write(y,z) write(cons, y, z)
+#define sys_con_putchar(y) putchar(cons, y)
+#endif
 /*#include <l4/api/rtalloc.h>
 #include <l4/enum/rtype.h>
 #include <l4/enum/thread-registers.h>
@@ -10,6 +15,7 @@
 #include <h4/servers.h>
 #include <h4/file/api.h>
 #include <h4/fs/api.h>
+#include <h4/proc.h>
 #include <h4/proc.h>
 #include <printk.h>
 #include <stddef.h>
@@ -39,9 +45,12 @@ static char fsf_a[2048], fsf_b[2048];
 int getchar(int fd)
 {
 	char ch;
-	if (read(fd, &ch, 1) != 1)
-		return EOF;
-	return ch;
+	return read(fd, &ch, 1) != 1 ? EOF : 0;
+}
+
+int putchar(int fd, int ch)
+{
+	return write(fd, &ch, 1) != 1 ? EOF : 0;
 }
 //
 
@@ -68,11 +77,15 @@ void main(void)
 	pause();
 	pause();
 	pause();
+	pause();
+	pause();
 
-	int fs, kbd, hello;
+	int fs, kbd, hello, cons;
 
 	fs = ipc_open(SVID_ROOTFS);
 	BUG_ON(fs < 0);
+	/*cons = fs_open(fs, "/dev/cons", O_WRONLY);
+	BUG_ON(cons < 0);*/
 	kbd = fs_open(fs, "/dev/keybd", O_RDONLY);
 	BUG_ON(kbd < 0);
 	hello = fs_open(fs, "/dev/hello", O_RDONLY);
@@ -81,7 +94,9 @@ void main(void)
 	int ch;
 	for (;;) {
 		ch = getchar(kbd);
+		BUG_ON(ch <= 0);
 		if (ch == 'z') {
+			BUG();
 			char buf[128];
 			ssize_t ret = pread(hello, buf, sizeof(buf), 0);
 			if (ret > 0)
@@ -93,8 +108,8 @@ void main(void)
 				sys_con_write(buf, ret);
 			lseek(hello, -7, 2);
 		} else if (ch > 0)
-			sys_con_putchar(ch);
+			BUG_ON(0 > sys_con_putchar(ch));
 	}
 
-	sys_exit();
+	_exit();
 }

@@ -16,7 +16,7 @@ struct fifo tin;
 
 void kb_handler(void);
 
-ssize_t tty_read(void *buf, size_t len)
+ssize_t kbd_read(void *buf, size_t len)
 {
 	int i;
 	char *b = buf;
@@ -27,7 +27,7 @@ ssize_t tty_read(void *buf, size_t len)
 	return len;
 }
 
-void tty_serve_ipc(void)
+void kbd_serve_ipc(void)
 {
 	unsigned int nr = ipc_getw();
 	switch (nr) {
@@ -35,10 +35,10 @@ void tty_serve_ipc(void)
 	case _FILE_read:
 	{
 		size_t len = ipc_getw();
-		printk("tty_read(%d)", len);
+		printk("kbd_read(%d)", len);
 		ipc_seek_setw(1);
 		void *buf = ipc_getbuf(&len);
-		ssize_t ret = tty_read(buf, len);
+		ssize_t ret = kbd_read(buf, len);
 		ipc_rewindw(ret);
 	} break;
 
@@ -72,8 +72,8 @@ int main(void)
 				sys_softirq_done(IRQ_KEYBD);
 			} while (sys_async_poll(IRQ_KEYBD));
 		}
-		while (ipc_poll() >= 0) {
-			tty_serve_ipc();
+		while (ipc_poll() >= 0 && !fifo_empty(&tin)) {
+			kbd_serve_ipc();
 		}
 		while (!fifo_empty(&tin)) {
 			ipc_recv();
@@ -81,7 +81,14 @@ int main(void)
 				kb_handler();
 				sys_softirq_done(IRQ_KEYBD);
 			}
-			tty_serve_ipc();
+			while (fifo_empty(&tin)) {
+				sys_async_listen(IRQ_KEYBD);
+				do {
+					kb_handler();
+					sys_softirq_done(IRQ_KEYBD);
+				} while (sys_async_poll(IRQ_KEYBD));
+			}
+			kbd_serve_ipc();
 		}
 	}
 }

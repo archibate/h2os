@@ -2,8 +2,15 @@
 #include <l4/stdafx.h>
 #include <l4/machine/asm/io.h>
 #include <fifo.h>
+#include <conio.h>
 
 extern struct fifo tin;
+
+void kb_putchar(int ch)
+{
+	fifo_put(&tin, ch);
+	cputchar(ch);
+}
 
 // Keyboard Map {{{
 /* maybe scancode set 1 ?*/
@@ -188,5 +195,5 @@ void kb_handler(void)
 		kb_mode &= ~E0ESC;
 
 	else if (ch)
-		fifo_put(&tin, ch);
+		kb_putchar(ch);
 }
