@@ -24,3 +24,8 @@ int ipc_close(int fd)
 {
 	return sys_close(fd);
 }
+
+int ipc_dup(int fd)
+{
+	return sys_dup(fd);
+}

@@ -1,4 +1,5 @@
 MAKE_A_LIB=1
+DEFINES+=FRAG_SIZE=2048
 include $(ROOT)/tools/general.mak
 
 CLEAN+=$(OBJS)

@@ -51,3 +51,24 @@ int gf_close(l4fd_t fd)
 
 	return 0;
 }
+
+int gf_dup(int fd)
+{
+	if (fd >= MAX_FDS)
+		return -ENFILE;
+
+	struct fd_entry *fde = &current->fds[fd];
+	//BUG_ON(fde->ptr == NULL);////
+	if (fde->ptr == NULL)
+		return -EBADF;
+
+	int nfd = alloc_fd();
+	if (nfd < 0)
+		return -EMFILE;
+
+	struct fd_entry *nfde = &current->fds[nfd];
+
+	memcpy(nfde, fde, sizeof(struct fd_entry));
+
+	return nfd;
+}

@@ -9,6 +9,8 @@
 /* Command */
 #define IDE_CMD_READ  0x20
 #define IDE_CMD_WRITE 0x30
+#define IDE_CMD_RDMUL 0xc4
+#define IDE_CMD_WRMUL 0xc5
 
 /* Port */
 #define IDE_DAT      0x1f0   // word data register (Read-Write)

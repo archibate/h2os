@@ -1,8 +1,9 @@
 #pragma once
 
-#include <h4/blk/defines.h>
-#include <h4/blk/types.h>
+typedef uint8_t dev_t;
+typedef uint32_t blkno_t;
 
+#define BSIZE   512
 #define PBSIZE  512
 #define PBPB    (BSIZE/PBSIZE)
 

@@ -7,6 +7,7 @@
 #include <errno.h>
 #include "ide.h"
 #include <bug.h>
+#include <printk.h>
 #include <numtools.h>
 
 static const dev_t ide_dev = 0;
@@ -20,25 +21,31 @@ ssize_t ide_pread(void *buf, size_t len, off_t off)
 	size_t rlen = len;
 	CLMAX(rlen, BSIZE - skip);
 
+	//printk("!!!!buf=%p", buf);//
 	if (ide_blkno != blkno) {
 		ide_rdblk(ide_dev, blkno, &ide_buf);
 	}
 	ide_blkno = blkno++;
+	//printk("!!!buf=%p", buf);//
 	memcpy(buf, ide_buf + skip, rlen);
 	buf += rlen;
 
+	//printk("!!buf=%p", buf);//
 	while (rlen + BSIZE < len) {
 		ide_rdblk(ide_dev, blkno++, buf);
 		buf += BSIZE;
 		rlen += BSIZE;
 	}
+	//printk("!buf=%p", buf);//
 
 	size_t rest = len - rlen;
 	if (rest != 0) {
 		ide_rdblk(ide_dev, blkno, &ide_buf);
+	//printk("buf=%p", buf);//
 		memcpy(buf, ide_buf, rest);
 		ide_blkno = blkno++;
 	}
+	//printk("buf copyin done");//
 	return len;
 }
 
@@ -99,8 +106,10 @@ void ide_serve_ipc(void)
 		printk("ide_pread(%d, %d)", len, off);
 		ipc_seek_setw(1);
 		void *buf = ipc_getbuf(&len);
+		//printk("buf=%p", buf);
 		ssize_t ret = ide_pread(buf, len, off);
 		ipc_rewindw(ret);
+		//printk("!!!ret=%d", ret);
 	} break;
 
 	case _FILE_pwrite:
@@ -154,14 +163,14 @@ void ide_serve_ipc(void)
 	default:
 		ipc_putw(-ENOTSUP);
 	}
-	ipc_reply();
+	int r = ipc_reply();
 }
 
 int main(void)
 {
 	ipc_serve(SVID_IDEDRV);
-	ipc_recv();
 	while (1) {
+		ipc_recv();
 		ide_serve_ipc();
 	}
 }

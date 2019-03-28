@@ -3,7 +3,7 @@
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 
-int close(int fd)
+int dup(int fd)
 {
-	ipc_close(fd);
+	ipc_dup(fd);
 }

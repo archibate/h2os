@@ -5,7 +5,7 @@
 #include <compiler.h>
 #include <errno.h>
 
-ssize_t pread(int fd, void *buf, size_t len, off_t off)
+static ssize_t frag_pread(int fd, void *buf, size_t len, off_t off)
 {
 	ipc_rewindw(_FILE_pread);
 	ipc_putw(len);
@@ -19,3 +19,34 @@ ssize_t pread(int fd, void *buf, size_t len, off_t off)
 	}
 	return ret;
 }
+
+#ifdef FRAG_SIZE
+#include <numtools.h>
+//#include <printk.h>//
+ssize_t pread(int fd, void *buf, size_t len, off_t off)
+{
+	size_t lened = 0;
+	//printk("!!len=%d", len);//
+	while (lened < len) {
+		//printk("!!lened=%d", lened);//
+		size_t m = len - lened;
+		CLMAX(m, FRAG_SIZE);
+		//printk("!!m=%d", m);//
+		ssize_t ret = frag_pread(fd, buf, m, off);
+		//printk("!!ret=%d", ret);//
+		if (ret < 0)
+			return !lened ? ret : lened;
+		lened += ret;
+		off += ret;
+		if (ret != m)
+			break;
+	}
+	//printk("!!lened=%d", lened);//
+	return lened;
+}
+#else
+ssize_t pread(int fd, void *buf, size_t len, off_t off)
+{
+	return frag_pread(fd, buf, len, off);
+}
+#endif

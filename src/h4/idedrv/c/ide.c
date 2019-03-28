@@ -4,6 +4,7 @@
 #include "ide.h"
 #include "ideports.h"
 #include <bug.h>
+#include <printk.h>//
 
 static bool ide_wait(void)
 {
@@ -39,7 +40,8 @@ void ide_wrblk(dev_t dev, blkno_t blkno, const void *buf)
 {
 	ide_seek(dev, blkno);
 
-	outb(IDE_CMD, IDE_CMD_WRITE);
+	outb(IDE_CMD, PBPB == 1 ? IDE_CMD_WRITE : IDE_CMD_WRMUL);
+	BUG_ON(!ide_wait());
 	outsl(IDE_DAT, buf, BSIZE/4);
 }
 
@@ -47,6 +49,9 @@ void ide_rdblk(dev_t dev, blkno_t blkno, void *buf)
 {
 	ide_seek(dev, blkno);
 
-	outb(IDE_CMD, IDE_CMD_READ);
+	outb(IDE_CMD, PBPB == 1 ? IDE_CMD_READ : IDE_CMD_RDMUL);
+	BUG_ON(!ide_wait());
 	insl(IDE_DAT, buf, BSIZE/4);
+	//printk("!!!!!!!!!!!%#x", ((short*)buf)[0x10]);//
+	//BUG();//
 }

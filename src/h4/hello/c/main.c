@@ -132,10 +132,9 @@ void hello_serve_ipc(struct hello_file *fp)
 	ipc_reply();
 }
 
-static char buffer[4096*4];
-
 int main(void)
 {
+	static char buffer[4096*4];
 	liballoc_set_memory(buffer, sizeof(buffer));
 
 	ipc_serve(SVID_HELLO);
@@ -148,7 +147,7 @@ int main(void)
 			if (!fp) {
 				unsigned int flags = 0;//TOD
 				fp = hello_new_open(flags);
-				printk("fp=%p", fp);
+				//printk("fp=%p", fp);
 				ipc_setbadge((uintptr_t)fp);
 			}
 			hello_serve_ipc(fp);

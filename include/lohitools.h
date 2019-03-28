@@ -1,0 +1,28 @@
+#pragma once
+
+#define GB1(x) ((x) & 0xff)
+#define GB2(x) (((x) >> 8) & 0xff)
+#define GB3(x) (((x) >> 16) & 0xff)
+#define GB4(x) (((x) >> 24) & 0xff)
+#define GB5(x) (((x) >> 32) & 0xff)
+#define GB6(x) (((x) >> 40) & 0xff)
+#define GB7(x) (((x) >> 48) & 0xff)
+#define GB8(x) (((x) >> 56) & 0xff)
+#define GH1(x) ((x) & 0xffff)
+#define GH2(x) (((x) >> 16) & 0xffff)
+#define GH3(x) (((x) >> 32) & 0xffff)
+#define GH4(x) (((x) >> 48) & 0xffff)
+#define GL1(x) ((x) & 0xffffffff)
+#define GL2(x) (((x) >> 32) & 0xffffffff)
+
+#define MH2(b1,b2) (GB1(b1) | (GB1(b2) << 8))
+#define ML2(w1,w2) (GH1(w1) | (GH1(w2) << 16))
+#define ML4(b1,b2,b3,b4) (GB1(b1) | (GB1(b2) << 8) | (GB1(b3) << 16) | (GB1(b4) << 24))
+#define MG2(l1,l2) (GL1(l1) | (GL1(l2) << 32))
+
+#define LOBYTE(x) GB1(x)
+#define HIBYTE(x) GB2(x)
+#define LOWORD(x) GH1(x)
+#define HIWORD(x) GH2(x)
+#define MKWORD(x,y) MH2(x,y)
+#define MKDWORD(x,y) ML2(x,y)

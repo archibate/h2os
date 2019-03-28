@@ -12,11 +12,17 @@ int fs_open(int fs, const char *path, unsigned int flags)
 	ipc_rewindw(_FS_open);
 	ipc_putw(flags);
 	ipc_write(path, strlen(path) + 1);
-	ipc_call(fs);
-	int key = ipc_getw();
-	if (key < 0)
-		return key;
-	return ipc_open(key);
+	int fd = ipc_dup(fs);
+	if (fd < 0)
+		return fd;
+	ipc_call(fd);
+	int ret = ipc_getw();
+	if (ret < 0)
+		return ret;
+	else if (ret == 0)
+		return fd;
+	ipc_close(fd);
+	return ipc_open(ret);
 }
 
 #if 0//{{{

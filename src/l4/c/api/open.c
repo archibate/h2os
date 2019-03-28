@@ -17,3 +17,8 @@ int sys_close(l4fd_t fd)
 {
 	return gf_close(fd);
 }
+
+int sys_dup(int fd)
+{
+	return gf_dup(fd);
+}

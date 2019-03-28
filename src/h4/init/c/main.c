@@ -79,13 +79,28 @@ void main(void)
 	pause();
 	pause();
 	pause();
+	pause();
+	pause();
+	pause();
+	pause();
+	pause();
+	pause();
+	pause();
+	pause();
 
-	int fs, kbd, hello, cons;
+	int fs, kbd, hello, cons, hda;
 
+again:
 	fs = ipc_open(SVID_ROOTFS);
+	if (fs < 0)
+		goto again;
 	BUG_ON(fs < 0);
-	/*cons = fs_open(fs, "/dev/cons", O_WRONLY);
-	BUG_ON(cons < 0);*/
+#ifdef sys_con_write
+	cons = fs_open(fs, "/dev/cons", O_WRONLY);
+	BUG_ON(cons < 0);
+#endif
+	hda = fs_open(fs, "/dev/hda", O_RDONLY);
+	BUG_ON(hda < 0);
 	kbd = fs_open(fs, "/dev/keybd", O_RDONLY);
 	BUG_ON(kbd < 0);
 	hello = fs_open(fs, "/dev/hello", O_RDONLY);
@@ -106,6 +121,11 @@ void main(void)
 			if (ret > 0)
 				sys_con_write(buf, ret);
 			lseek(hello, -7, 2);
+		} else if (ch == 'c') {
+			char buf[128];
+			ssize_t ret = pread(hda, buf, sizeof(buf), 0);
+			if (ret > 0)
+				sys_con_write(buf, ret);
 		} else if (ch > 0)
 			BUG_ON(0 > sys_con_putchar(ch));
 	}
