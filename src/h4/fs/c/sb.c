@@ -59,8 +59,9 @@ sb_t *load_sb(int hd)
 	printk("Drive No.: %#x", bs.drv_num);
 	printk("OEMName: %s", bpb.oemname);
 	printk("Hidden Secs: %d", bpb.hid_secs);
-	printk("Media Type: %d", bpb.media);
+	printk("Media Type: %#x", bpb.media);
 	printk("Reserved Secs: %d", bpb.resv_secs);
+	printk("FAT12/16 Secs: %d", bpb.fat_secs16);
 	printk("Sector size: %d", bpb.bps);
 	printk("Sec per Cluster: %d", bpb.spc);
 	printk("Total Secs: %d", bpb.tot_secs16 ? bpb.tot_secs16 : bpb.tot_secs32);
@@ -71,9 +72,12 @@ sb_t *load_sb(int hd)
 	sb->root_ents = bpb.root_ents;
 	sb->rofs = true; // rwfs not supported yet
 
-	off_t fat_base = bpb.bps * (bpb.hid_secs + bpb.resv_secs);
-	size_t fat_size = bpb.bps * bpb.fat_secs16 * bpb.num_fats;
-	sb->begin = fat_base + fat_size;// + sb->root_ents * DESIZE;
+	off_t fat_base = bpb.bps * bpb.resv_secs;
+	size_t fat_size = bpb.bps * bpb.fat_secs16;
+
+	sb->root_beg = fat_base + fat_size * bpb.num_fats;
+	sb->begin = sb->root_beg + sb->root_ents * DESIZE - 2 * sb->bsize;
+
 	uint8_t *fat12 = malloc(fat_size);
 	BUG_ON(pread(hd, fat12, fat_size, fat_base) != fat_size);
 	fat_size = fat_size * 3 / 2;
@@ -91,6 +95,7 @@ void sb_print(const sb_t *sb)
 {
 	printk("bsize %d", sb->bsize);
 	printk("begin %#x", sb->begin);
+	printk("root_beg %#x", sb->root_beg);
 	printk("fat_size %#x", sb->fat_size);
 	printk("root_ents %d", sb->root_ents);
 }

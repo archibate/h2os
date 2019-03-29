@@ -17,8 +17,11 @@
 #include <h4/fs/api.h>
 #include <h4/proc.h>
 #include <h4/proc.h>
+#include <c4/liballoc.h>
 #include <printk.h>
+#include <string.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <bug.h>
 
 #if 0//{{{
@@ -41,19 +44,6 @@ void task_b(void)
 static char fsf_a[2048], fsf_b[2048];
 #endif//}}}
 
-//
-int getchar(int fd)
-{
-	char ch;
-	return read(fd, &ch, 1) != 1 ? EOF : ch;
-}
-
-int putchar(int fd, int ch)
-{
-	return write(fd, &ch, 1) != 1 ? EOF : 0;
-}
-//
-
 void main(void)
 {
 #if 0//{{{
@@ -74,22 +64,12 @@ void main(void)
 		sys_con_putchar('m');
 #endif//}}}
 
-	pause();
-	pause();
-	pause();
-	pause();
-	pause();
-	pause();
-	pause();
-	pause();
-	pause();
-	pause();
-	pause();
+	static char heap[4096*32];
+	liballoc_set_memory(&heap, sizeof(heap));
 	pause();
 	pause();
 
-	int fs, kbd, hello, cons, hda;
-
+	int fs, kbd, hello, cons, hda, fd;
 again:
 	fs = ipc_open(SVID_ROOTFS);
 	if (fs < 0)
@@ -105,29 +85,38 @@ again:
 	BUG_ON(kbd < 0);
 	hello = fs_open(fs, "/dev/hello", O_RDONLY);
 	BUG_ON(hello < 0);
+	fd = fs_open(fs, "README.md", O_RDONLY);
+	BUG_ON(fd < 0);
+	FILE *fp = fdopen(fd, "r");
+	BUG_ON(fp == NULL);
+	FILE *kb = fdopen(kbd, "r");
+	BUG_ON(kb == NULL);
 
+	char buf[128];
 	int ch;
 	for (;;) {
-		ch = getchar(kbd);
+		ch = fgetc(kb);
 		BUG_ON(ch <= 0);
 		if (ch == 'z') {
-			char buf[128];
 			ssize_t ret = pread(hello, buf, sizeof(buf), 0);
 			if (ret > 0)
 				sys_con_write(buf, ret);
 		} else if (ch == 'x') {
-			char buf[128];
 			ssize_t ret = read(hello, buf, sizeof(buf));
 			if (ret > 0)
 				sys_con_write(buf, ret);
 			lseek(hello, -7, 2);
+		} else if (ch == 'r') {
+			if (NULL == fgets(buf, sizeof(buf), fp)) {
+				BUG_ON(0 > rewind(fp));
+				BUG_ON(NULL == fgets(buf, sizeof(buf), fp));
+			}
+			sys_con_write(buf, strlen(buf));
 		} else if (ch == 'c') {
-			char buf[128];
 			ssize_t ret = pread(hda, buf, sizeof(buf), 0);
 			if (ret > 0)
 				sys_con_write(buf, ret);
-		} else if (ch > 0)
-			BUG_ON(0 > sys_con_putchar(ch));
+		}
 	}
 
 	_exit(0);

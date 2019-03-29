@@ -1,10 +1,19 @@
 #include "vn.h"
+#include "sb.h"
+#include "vn.h"
+#include "de.h"
 #include <errno.h>
 #include <malloc.h>
 #include <numtools.h>
 #include <h4/file/api.h>
 #include "error.h"
 #include <bug.h>
+//#include <printk.h>//
+
+vn_t *vdup(vn_t *v)
+{
+	return v;
+}
 
 vn_t *__vopen(sb_t *sb, de_t *e)
 {
@@ -19,14 +28,25 @@ vn_t *__vopen(sb_t *sb, de_t *e)
 	v->attr = e->attr;
 	v->size = e->size;
 	v->sb = sb;
+	v->type = VN_REGFAT;
 
 	uint32_t clus = egetclus(e);
 	int i;
+	printk("vopen: clus=%d", clus);
 	for (i = 0; i < CBUFMAX; i++) {
 		v->clus[i] = clus;
 		v->blkn[i] = 0;
 	}
 
+	return v;
+}
+
+vn_t *sb_openroot(sb_t *sb)
+{
+	vn_t *v = malloc(sizeof(vn_t));
+	v->sb = sb;
+	v->size = sb->root_ents * DESIZE;
+	v->type = VN_ROOTDIR;
 	return v;
 }
 
@@ -52,20 +72,30 @@ vn_t *vopendir(sb_t *sb, de_t *e)
 	return __vopen(sb, e);
 }
 
-static ssize_t __vrw(vn_t *v, void *buf, size_t len, off_t off, bool wr)
+static ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 {
-	int i;
+	//printk("!!vvvvv=%p", v);//
+
+	int i, mi = -1;
+	uint32_t min = v->size;
 	size_t bsize = v->sb->bsize;
 	uint32_t blkn = off / bsize;
 	uint32_t ioff = off % bsize;
 	for (i = 0; i < CBUFMAX; i++) {
-		if (v->blkn[i] <= blkn)
+		int32_t m = v->blkn[i] - blkn;
+		if (m == 0) {
+			mi = i;
 			break;
+
+		} else if (m > 0 && m < min) {
+			mi = i;
+			min = m;
+		}
 	}
-	BUG_ON(i == CBUFMAX);
-	uint32_t clus = v->clus[i];
-	v->blkn[0] = v->blkn[i];
-	for (; v->blkn[0] < blkn; v->blkn[0]++) {
+	BUG_ON(mi == -1);
+	uint32_t clus = v->clus[mi];
+	//printk("clus=%d", clus);//
+	for (; v->blkn[mi] < blkn; v->blkn[mi]++) {
 		clus = v->sb->fat[clus];
 		if (clus >= 0xfffffff0)
 			return -EIO;
@@ -77,24 +107,58 @@ static ssize_t __vrw(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 		size_t m = n;
 		CLMAX(m, bsize - ioff);
 		off_t cbase = v->sb->begin + bsize * clus;
+
 		if (wr)
-			pwrite(v->sb->hd, buf, len, cbase + m);
+			pwrite(v->sb->hd, buf, m, cbase + ioff);
 		else
-			pread(v->sb->hd, buf, len, cbase + m);
+			pread(v->sb->hd, buf, m, cbase + ioff);
+
+		//printk("hdrw(%#x, %#x)", m, cbase + ioff);//
+		//printk("buf[0] = %c", ((char*)buf)[0]);//
+
 		n -= m;
 		if (m + ioff == bsize) {
 			clus = v->sb->fat[clus];
-			v->blkn[0]++;
+			//printk("clus new=%d", clus);//
+			blkn++;
 		}
+		ioff = 0;
 	}
 
-	v->clus[0] = clus;
+	v->blkn[mi] = blkn;
+	v->clus[mi] = clus;
 
-	return 0;
+	return len - n;
+}
+
+static ssize_t __vrw_rootdir(vn_t *v, void *buf, size_t len, off_t off, bool wr)
+{
+	if (wr)
+		return pwrite(v->sb->hd, buf, len, v->sb->root_beg + off);
+	else
+		return pread(v->sb->hd, buf, len, v->sb->root_beg + off);
+}
+
+static ssize_t __vrw(vn_t *v, void *buf, size_t len, off_t off, bool wr)
+{
+	if (off < 0 || off > v->size)
+		return -EINVAL;
+
+	CLMAX(len, v->size);
+
+	switch (v->type) {
+	case VN_REGFAT:
+		return __vrw_regfat(v, buf, len, off, wr);
+	case VN_ROOTDIR:
+		return __vrw_rootdir(v, buf, len, off, wr);
+	default:
+		BUG();
+	};
 }
 
 ssize_t vread(vn_t *v, void *buf, size_t len, off_t off)
 {
+	//printk("vread(%p, %p, %d, %d)", v, buf, len, off);//
 	return __vrw(v, buf, len, off, false);
 }
 

@@ -3,25 +3,37 @@
 #include <errno.h>
 #include <bug.h>
 #include "error.h"
+#include <printk.h>//
 
-static bool dir_lookup(vn_t *dir, const char *name, de_t *e)
+static int dir_lookup(vn_t *dir, const char *name, de_t *e)
 {
+	//printk("dir_lookup(%s)", name);//
 	int n;
 	for (n = 0; n < dir->size / DESIZE; n++) {
+		//printk("!!");//
 		if (DESIZE != vread(dir, e, DESIZE, n * DESIZE))
 			return -EIO;
+		//if (e->name[0]) printk("dir_lookup: %.11s", e->name);//
+		//printk("!!!");//
 		if (!ecmpname(e, name))
 			return 0;
 	}
+	//printk("!!!!");//
 	return -ENOENT;
 }
 
 static char *cutpath(const char *path, char *name)
 {
+	path = strskipin(path, "/");
 	char *end = strchrl(path, '/');
+	//printk("cputpath(%s, %s)", path, end);//
+
 	if (end - path > NAME_MAX)
 		return NULL;
+
 	strncpy(name, path, end - path);
+	//printk("cputpath: name=%s", name);//
+
 	return end;
 }
 
@@ -34,34 +46,38 @@ static int __dir_getve(vn_t *dir, const char *path, de_t *e,
 	bool runned = false;
 	
 	while (1) {
-		path = cutpath(path, name);
 		if (*path == 0) {
 			if (parent) {
-				*ppv = dir;
+				*ppv = vdup(dir);
 				*endp = (char*)path;
+				if (runned)
+					free(dir);
 				return 0;
 			}
-			BUG_ON(!runned);
-			goto out;
+			if (!runned)
+				return -EINVAL;
 		}
+		path = cutpath(path, name);
+		if (path == NULL)
+			return -ENAMETOOLONG;
 
 		ret = dir_lookup(dir, name, e);
 		if (ret < 0)
 			return ret;
 
+		sb_t *sb = dir->sb;
 		if (runned)
 			free(dir);
-		dir = vopendir(dir->sb, e);
+
+		if (*path == 0 && !parent)
+			return 0;
+
+		dir = vopendir(sb, e);
 		if (dir == NULL)
 			return -errno;
 
 		runned = true;
 	}
-
-out:
-	if (runned)
-		free(dir);
-	return 0;
 }
 
 int dir_gete(vn_t *dir, const char *path, de_t *e)

@@ -71,7 +71,7 @@ void hello_serve_ipc(struct hello_file *fp)
 	{
 		size_t len = ipc_getw();
 		off_t off = ipc_getw();
-		printk("hello_pread(%d, %d)", len, off);
+		//printk("hello_pread(%d, %d)", len, off);
 		ipc_seek_setw(1);
 		void *buf = ipc_getbuf(&len);
 		ssize_t ret = hello_pread(fp, buf, len, off);
@@ -82,7 +82,7 @@ void hello_serve_ipc(struct hello_file *fp)
 	{
 		size_t len = ipc_getw();
 		off_t off = ipc_getw();
-		printk("hello_pwrite(%d, %d)", len, off);
+		//printk("hello_pwrite(%d, %d)", len, off);
 		const void *buf = ipc_getbuf(&len);
 		ssize_t ret = hello_pwrite(fp, buf, len, off);
 		ipc_rewindw(ret);
@@ -91,7 +91,7 @@ void hello_serve_ipc(struct hello_file *fp)
 	case _FILE_read:
 	{
 		size_t len = ipc_getw();
-		printk("hello_read(%d)", len);
+		//printk("hello_read(%d)", len);
 		ipc_seek_setw(1);
 		void *buf = ipc_getbuf(&len);
 		off_t off = ipc_getoffset();
@@ -105,7 +105,7 @@ void hello_serve_ipc(struct hello_file *fp)
 	case _FILE_write:
 	{
 		size_t len = ipc_getw();
-		printk("hello_write(%d)", len);
+		//printk("hello_write(%d)", len);
 		const void *buf = ipc_getbuf(&len);
 		off_t off = ipc_getoffset();
 		ssize_t ret = hello_pwrite(fp, buf, len, off);

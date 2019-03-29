@@ -35,7 +35,7 @@ void kbd_serve_ipc(void)
 	case _FILE_read:
 	{
 		size_t len = ipc_getw();
-		printk("kbd_read(%d)", len);
+		//printk("kbd_read(%d)", len);
 		ipc_seek_setw(1);
 		void *buf = ipc_getbuf(&len);
 		ssize_t ret = kbd_read(buf, len);

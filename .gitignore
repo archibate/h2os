@@ -72,8 +72,7 @@ CMakeFiles/
 CMakeCache.txt
 
 # Automaticaly Generated Results
-*.gen.c
-*.gen.h
+*.gen.*
 
 # Doxygen Generated Results
 docs

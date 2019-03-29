@@ -88,13 +88,14 @@ void file_close(vn_t *v)
 void file_serve_ipc(vn_t *v)
 {
 	unsigned int nr = ipc_getw();
+	//printk("!!!nr=%d", nr);
 	switch (nr) {
 
 	case _FILE_pread:
 	{
 		size_t len = ipc_getw();
 		off_t off = ipc_getw();
-		printk("file_pread(%d, %d)", len, off);
+		//printk("file_pread(%d, %d)", len, off);
 		ipc_seek_setw(1);
 		void *buf = ipc_getbuf(&len);
 		ssize_t ret = file_read(v, buf, len, off);
@@ -105,7 +106,7 @@ void file_serve_ipc(vn_t *v)
 	{
 		size_t len = ipc_getw();
 		off_t off = ipc_getw();
-		printk("file_pwrite(%d, %d)", len, off);
+		//printk("file_pwrite(%d, %d)", len, off);
 		const void *buf = ipc_getbuf(&len);
 		ssize_t ret = file_write(v, buf, len, off);
 		ipc_rewindw(ret);
@@ -114,7 +115,7 @@ void file_serve_ipc(vn_t *v)
 	case _FILE_read:
 	{
 		size_t len = ipc_getw();
-		printk("file_read(%d)", len);
+		//printk("file_read(%d)", len);
 		ipc_seek_setw(1);
 		void *buf = ipc_getbuf(&len);
 		off_t off = ipc_getoffset();
@@ -128,7 +129,7 @@ void file_serve_ipc(vn_t *v)
 	case _FILE_write:
 	{
 		size_t len = ipc_getw();
-		printk("file_write(%d)", len);
+		//printk("file_write(%d)", len);
 		const void *buf = ipc_getbuf(&len);
 		off_t off = ipc_getoffset();
 		ssize_t ret = file_write(v, buf, len, off);
@@ -170,7 +171,6 @@ int main(void)
 
 	while (1) {
 		ipc_recv();
-		int nr = ipc_getw();
 
 #ifdef USEFAT
 		vn_t *v = (void*)ipc_getbadge();
@@ -181,6 +181,7 @@ int main(void)
 		}
 #endif
 
+		int nr = ipc_getw();
 		switch (nr) {
 		CASE(_FS_open) {
 			size_t len = MAXPATH;

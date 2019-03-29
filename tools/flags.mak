@@ -10,6 +10,8 @@ WARNINGS+=error all no-unused-function error=implicit-function-declaration no-ma
           no-format no-error=unused-variable no-error=unused-but-set-variable \
           error=incompatible-pointer-types error=int-conversion no-enum-compare
 FUNCTIONS+=no-stack-protector
+else
+MODES+=no-stack-arg-probe
 ifdef DEBUG
 DBGFLAGS+=stabs+ gdb
 endif

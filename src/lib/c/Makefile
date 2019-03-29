@@ -8,6 +8,11 @@ out/lib/libc.a: $(OBJS)
 	$(EL) ar $@
 	$(AR) cqs $@ $(OBJS)
 
+c/str/strerr.c.o: h/errmsgs.gen.inl
+h/errmsgs.gen.inl: $(ROOT)/include/errno-bits.h
+	$(EC) gen $@
+	grep '#define\s\+E' $< | sed 's/\#define\s\+\(\w\+\).*\/\/\s*\(.*\)/\[\1\] = "\2",/' > $@
+
 .PHONY: all
 all: $(ALL)
 

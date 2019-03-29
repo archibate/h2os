@@ -10,6 +10,10 @@ typedef struct virfile
 {
 	uint32_t clus[CBUFMAX];
 	uint32_t blkn[CBUFMAX];
+	enum {
+		VN_REGFAT,
+		VN_ROOTDIR,
+	} type;
 	uint32_t attr;
 	size_t size;
 	sb_t *sb;
@@ -21,4 +25,5 @@ ssize_t vwrite(vn_t *v, const void *buf, size_t len, off_t off);
 vn_t *__vopen(sb_t *sb, de_t *e);
 vn_t *vopenfile(sb_t *sb, de_t *e);
 vn_t *vopendir(sb_t *sb, de_t *e);
+vn_t *vdup(vn_t *v);
 int vclose(vn_t *v);

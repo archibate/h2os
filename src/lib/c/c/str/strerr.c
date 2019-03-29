@@ -1,7 +1,7 @@
 #include <stddef.h>
+#include <errno.h>
 
-static
-const char *err_msgs[] = {
+static const char *err_msgs[] = {
 #include "errmsgs.gen.inl"
 };
 

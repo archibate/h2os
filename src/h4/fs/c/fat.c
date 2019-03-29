@@ -16,7 +16,5 @@ void fat_init(void)
 	sb = load_sb(hd);
 	BUG_ON(sb == NULL);
 
-	sb_print(sb);
-
 	fat_root = sb_openroot(sb);
 }

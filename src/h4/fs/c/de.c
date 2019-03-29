@@ -3,6 +3,7 @@
 #include <panic.h>
 #include <lohitools.h>
 #include <bug.h>
+#include <printk.h>//
 
 uint32_t egetclus(const de_t *e)
 {
@@ -17,7 +18,7 @@ void esetclus(de_t *e, uint32_t clus)
 
 void egetname(const de_t *e, char *buf)
 {
-#define ISBLANK(c) (!strchr(" \t\n\r", (c)))
+#define ISBLANK(c) (strchr(" \t\n\r", (c)))
 
 	int i;
 	for (i = 0; i < 8; i++) {
@@ -46,5 +47,5 @@ int ecmpname(const de_t *e, const char *name)
 {
 	char ent_name[NAME_MAX+1];
 	egetname(e, ent_name);
-	return strcmp(ent_name, name);
+	return stricmp(ent_name, name);
 }

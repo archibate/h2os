@@ -1,7 +1,7 @@
 // vim: ts=4 sts=4 sw=4 fdm=marker
 // reference: http://wiki.0xffffff.org/posts/hurlex-11.html
 #include <malloc.h> // impelementation
-#include <liballoc.h> // impelementation
+#include <c4/liballoc.h> // impelementation
 #include <memory.h> // memcpy in realloc
 #define PGSIZE 4096 // machi
 #define PGMASK (-PGSIZE)
@@ -17,7 +17,7 @@ typedef struct HNODE {
 
 static HNODE *heap_head;
 
-#if 0
+#ifdef LIBC4_UNISTD
 #include <unistd.h> // brk
 static void *get_break(void)
 {
