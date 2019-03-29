@@ -3,13 +3,18 @@
 
 char *fgets(char *buf, size_t size, FILE *fp)
 {
-	int c = EOF;
+	int c;
 	char *p = buf;
-	while (p - buf < size - 1 && !feof(fp)) {
-		*p++ = c = fgetc(fp);
+	while (p - buf < size - 1) {
+		c = fgetc(fp);
+		if (feof(fp)) {
+			buf = NULL;
+			break;
+		}
+		*p++ = c;
 		if (c == '\n')
 			break;
 	}
 	*p++ = 0;
-	return c == EOF ? NULL : buf;
+	return buf;
 }

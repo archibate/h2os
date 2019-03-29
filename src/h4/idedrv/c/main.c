@@ -155,7 +155,7 @@ void ide_serve_ipc(void)
 		int whence = ipc_getw();
 		off_t now_off = ipc_getoffset();
 		off_t ret = ide_lseek(now_off, off, whence);
-		if (ret > 0)
+		if (ret >= 0)
 			ipc_setoffset(ret);
 		ipc_rewindw(ret);
 	} break;

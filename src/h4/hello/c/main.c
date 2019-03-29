@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <bug.h>
 #include <printk.h>
-#include <liballoc.h>
+#include <c4/liballoc.h>
 #include <malloc.h>
 #include <numtools.h>
 
@@ -121,7 +121,7 @@ void hello_serve_ipc(struct hello_file *fp)
 		int whence = ipc_getw();
 		off_t now_off = ipc_getoffset();
 		off_t ret = hello_lseek(fp, now_off, off, whence);
-		if (ret > 0)
+		if (ret >= 0)
 			ipc_setoffset(ret);
 		ipc_rewindw(ret);
 	} break;
