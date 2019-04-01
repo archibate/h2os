@@ -147,6 +147,7 @@ void file_serve_ipc(vn_t *v)
 		off_t ret = file_lseek(v, now_off, off, whence);
 		if (ret >= 0)
 			ipc_setoffset(ret);
+		//printk("file_setoffset(%d)", ret);
 		ipc_rewindw(ret);
 	} break;
 

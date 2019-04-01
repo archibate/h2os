@@ -106,6 +106,7 @@ again:
 			if (ret > 0)
 				sys_con_write(buf, ret);
 			lseek(hello, -7, 2);
+			//if (!ret) lseek(hello, 0, 0);
 		} else if (ch == 'r') {
 			if (NULL == fgets(buf, sizeof(buf), fp)) {
 				BUG_ON(0 > rewind(fp));

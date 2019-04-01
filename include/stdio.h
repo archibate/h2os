@@ -42,10 +42,15 @@ FILE *fdopen(int fd, const char *mode);
 FILE *fopen(const char *name, const char *mode);
 FILE *freopen(const char *name, const char *mode, FILE *fp);
 int fgetc(FILE *fp);
+int fgetwc(FILE *fp);
 int ungetc(int c, FILE *fp);
+int ungetwc(int c, FILE *fp);
 int fputc(int ch, FILE *fp);
+int fputwc(int ch, FILE *fp);
 #define getc fgetc
 #define putc fputc
+#define getwc fgetwc
+#define putwc fputwc
 int fputs(const char *s, FILE *fp);
 char *fgets(char *s, size_t size, FILE *fp);
 off_t fseek(FILE *fp, off_t off, int whence);
