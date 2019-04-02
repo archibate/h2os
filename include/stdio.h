@@ -5,11 +5,17 @@
 #include <stdarg.h>
 #include <compiler.h>
 
+#define BUFSIZ 256
+
 typedef struct iobuf
 {
 	int fd;
+	char *p;
+	size_t n;
+	char b[BUFSIZ];
 	int err;
-	int eof;
+	unsigned eof : 1;
+	unsigned wr : 1;
 } FILE;
 
 #define SEEK_SET 0

@@ -26,9 +26,11 @@ void con_serve_ipc(void)
 	case _FILE_write:
 	{
 		size_t len = ipc_getw();
-		printk("con_write(%d)", len);
+		//printk("con_write(%d)", len);
 		const void *buf = ipc_getbuf(&len);
+		//printk("buf=%p!!!!", buf);
 		ssize_t ret = con_write(buf, len);
+		//printk("ret=%d!!!!", ret);
 		ipc_rewindw(ret);
 	} break;
 
@@ -48,8 +50,8 @@ void con_serve_ipc(void)
 int main(void)
 {
 	ipc_serve(SVID_CONS);
-	ipc_recv();
 	while (1) {
+		ipc_recv();
 		con_serve_ipc();
 	}
 }

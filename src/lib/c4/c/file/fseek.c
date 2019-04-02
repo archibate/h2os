@@ -4,7 +4,9 @@
 
 off_t fseek(FILE *fp, off_t off, int whence)
 { // arguments on wheather to satat POSIX ret value!
-	fflush(fp);
+	int fl_ret = fflush(fp);
+	if (fl_ret < 0)
+		return fl_ret;
 	off_t ret = lseek(fp->fd, off, whence);
 	if (ret < 0) {
 		errno = fp->err = -ret;

@@ -75,10 +75,8 @@ again:
 	if (fs < 0)
 		goto again;
 	BUG_ON(fs < 0);
-#ifdef sys_con_write
 	cons = fs_open(fs, "/dev/cons", O_WRONLY);
 	BUG_ON(cons < 0);
-#endif
 	hda = fs_open(fs, "/dev/hda", O_RDONLY);
 	BUG_ON(hda < 0);
 	kbd = fs_open(fs, "/dev/keybd", O_RDONLY);
@@ -87,6 +85,8 @@ again:
 	BUG_ON(hello < 0);
 	fd = fs_open(fs, "README.md", O_RDONLY);
 	BUG_ON(fd < 0);
+	FILE *out = fdopen(cons, "w");
+	BUG_ON(out == NULL);
 	FILE *fp = fdopen(fd, "r");
 	BUG_ON(fp == NULL);
 	FILE *kb = fdopen(kbd, "r");
@@ -112,7 +112,8 @@ again:
 				BUG_ON(0 > rewind(fp));
 				BUG_ON(NULL == fgets(buf, sizeof(buf), fp));
 			}
-			sys_con_write(buf, strlen(buf));
+			fputs(buf, out);
+			//write(cons, buf, strlen(buf));
 		} else if (ch == 'c') {
 			ssize_t ret = pread(hda, buf, sizeof(buf), 0);
 			if (ret > 0)

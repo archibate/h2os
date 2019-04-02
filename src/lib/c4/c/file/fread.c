@@ -1,16 +1,53 @@
 #include <stdio.h>
 #include <h4/file/api.h>
 #include <errno.h>
-#include <bug.h>//
+#include <numtools.h>
 
 ssize_t fread(void *buf, size_t size, size_t nmemb, FILE *fp)
 {
-	ssize_t ret = read(fp->fd, buf, size * nmemb);
-	if (ret == 0) {
-		fp->eof = 1;
-	} else if (ret < 0) {
-		errno = fp->err = -ret;
-		ret = 0;
+	if (fp->wr)
+		return -EPERM;
+
+	size_t len = size * nmemb;
+	size_t m = fp->n;
+	ssize_t r;
+	CLMAX(m, len);
+	memcpy(buf, fp->p, m);
+	fp->p += m;
+	fp->n -= m;
+	if (m == len) {
+		//printk("LE!!!!");
+		return nmemb;
 	}
-	return ret / size;
+	buf += m;
+	len -= m;
+
+	if (len > BUFSIZ) {
+		//printk("BB!!!!");
+		r = read(fp->fd, buf, len);
+		if (r < 0) {
+			errno = fp->err = -r;
+			return r;
+		} else if (r == 0) {
+			fp->eof = 1;
+		}
+		r += m;
+
+	} else {
+		//printk("RD!!!!");
+		r = read(fp->fd, fp->b, BUFSIZ);
+		if (r < 0) {
+			errno = fp->err = -r;
+			return r;
+		} else if (r == 0) {
+			fp->eof = 1;
+		}
+		CLMAX(len, r);
+		memcpy(buf, fp->b, len);
+		fp->p = fp->b + len;
+		fp->n = r - len;
+		r = len + m;
+	}
+
+	return r / size;
 }
