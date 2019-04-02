@@ -19,6 +19,7 @@ int ipc_connect(pid_t pid);
 //int ipc_connect(key_t key, unsigned int flags);
 //int ipc_rconnect(key_t key, unsigned int flags);
 int ipc_dup(int fd);
+int ipc_dup2(int fd, int dirfd);
 int ipc_close(int fd);
 uintptr_t ipc_getw(void);
 int ipc_putw(uintptr_t w);

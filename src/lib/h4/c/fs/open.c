@@ -25,14 +25,21 @@ int fs_open(int fs, const char *path, unsigned int flags)
 	return ipc_open(ret);
 }
 
-#if 0//{{{
 int fs_openat(int fs, int dirfd, const char *path, unsigned int flags)
 {
 	ipc_rewindw(_FS_open);
 	ipc_putw(flags);
 	ipc_write(path, strlen(path) + 1);
-	int fd = ipc_callfdat(fs, dirfd);
-	int ret = ipc_getw();
-	return ret < 0 ? ret : fd;
+	int ret = ipc_dup2(fs, dirfd);
+	if (ret < 0)
+		return ret;
+	ipc_call(dirfd);
+	ret = ipc_getw();
+	if (ret <= 0)
+		return ret;
+	ipc_close(dirfd);
+	int fd = ipc_open(ret);
+	if (fd < 0)
+		return fd;
+	return ipc_dup2(fd, dirfd);
 }
-#endif//}}}

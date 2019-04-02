@@ -29,3 +29,8 @@ int ipc_dup(int fd)
 {
 	return sys_dup(fd);
 }
+
+int ipc_dup2(int fd, int dirfd)
+{
+	return sys_dup2(fd, dirfd);
+}

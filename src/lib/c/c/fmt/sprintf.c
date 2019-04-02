@@ -1,12 +1,8 @@
 #include <gprintf.h>
 
-
-static char *my_buf;
-static int i;
-
-static void my_buf_putc(char c)
+static void mystrputc(char c, char **p)
 {
-	my_buf[i++] = c;
+	*(*p)++ = c;
 }
 
 int vsprintf
@@ -15,13 +11,8 @@ int vsprintf
 	, va_list ap
 	)
 {
-	my_buf = buf;
-	i = 0;
-
-	int ret = vgprintf(my_buf_putc, fmt, ap);
-
-	my_buf_putc(0);
-
+	int ret = vgprintf(mystrputc, &buf, fmt, ap);
+	mystrputc(0, &buf);
 	return ret;
 }
 

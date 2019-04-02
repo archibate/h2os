@@ -11,7 +11,8 @@
 
 static
 void _geutoa
-	( void (*putch)(char)
+	( void (*putch)(char, void *)
+	, void *arg
 	, const char *digsel
 	, unsigned long u
 	, unsigned int base
@@ -29,7 +30,7 @@ void _geutoa
 		u /= base;
 	} while (p > buf);
 	while (p < buf + len)
-		putch(*p++);
+		putch(*p++, arg);
 }
 
 
@@ -62,19 +63,21 @@ long get_lon_arg
 
 static
 void gputtimes
-	( void (*putch)(char)
+	( void (*putch)(char, void *)
+	, void *arg
 	, int times
 	, char ch
 	)
 {
 	while (times-- > 0)
-		putch(ch);
+		putch(ch, arg);
 }
 
 
 // reference: https://baike.so.com/doc/5432134-5670428.html
 int vgprintf
-	( void (*putch)(char)
+	( void (*putch)(char, void *)
+	, void *arg
 	, const char *fmt
 	, va_list ap
 	)
@@ -84,7 +87,7 @@ int vgprintf
 
 	while ((c = *fmt++)) {
 		if (c != '%') {
-			putch(c);
+			putch(c, arg);
 			continue;
 		}
 
@@ -112,7 +115,7 @@ again:
 				len = strtoul(fmt - 1, &fmt, 10);
 				goto setalg;
 			}
-			putch(c);
+			putch(c, arg);
 			break;
 
 		case '*':
@@ -125,7 +128,7 @@ setalg:
 			goto again;
 
 		case '%':
-			putch(c);
+			putch(c, arg);
 			break;
 
 		case 'l':
@@ -155,7 +158,7 @@ setalg:
 
 		case 'c':
 			c = va_arg(ap, int);
-			putch(c);
+			putch(c, arg);
 			break;
 
 		case 'm':
@@ -168,13 +171,13 @@ setalg:
 prstr:
 			if (algnr && !rightalg) {
 				len = strlen(s);
-				gputtimes(putch, algnr - len, prefill);
+				gputtimes(putch, arg, algnr - len, prefill);
 			}
 			len = 0;
 			while (maxlen-- && (c = *s++))
-				putch(c), len++;
+				putch(c, arg), len++;
 			if (algnr && rightalg) {
-				gputtimes(putch, algnr - len, prefill);
+				gputtimes(putch, arg, algnr - len, prefill);
 			}
 			break;
 
@@ -182,13 +185,13 @@ prstr:
 			ws = va_arg(ap, const wchar_t *);
 			if (algnr && !rightalg) {
 				len = wcslen(ws);
-				gputtimes(putch, algnr - len, prefill);
+				gputtimes(putch, arg, algnr - len, prefill);
 			}
 			len = 0;
 			while (maxlen-- && (wc = *ws++))
-				putch(wc & 0xff), len++;
+				putch(wc & 0xff, arg), len++;
 			if (algnr && rightalg) {
-				gputtimes(putch, algnr - len, prefill);
+				gputtimes(putch, arg, algnr - len, prefill);
 			}
 			break;
 
@@ -197,9 +200,9 @@ prstr:
 			l = get_lon_arg(&ap, lon);
 			if (l < 0) {
 				l = -l;
-				putch('-');
+				putch('-', arg);
 			} else if (possign) {
-				putch(possign);
+				putch(possign, arg);
 			}
 			x = l;
 			goto utos;
@@ -220,17 +223,17 @@ prstr:
 			x = get_lon_arg(&ap, lon);
 		utos:
 			if (sharp) {
-				putch('0');
+				putch('0', arg);
 				if (c != 'o')
-					putch(c);
+					putch(c, arg);
 			}
 			len = geusslen(x, base);
 			if (algnr && !rightalg) {
-				gputtimes(putch, algnr - len, prefill);
+				gputtimes(putch, arg, algnr - len, prefill);
 			}
-			_geutoa(putch, digsel, x, base, len);
+			_geutoa(putch, arg, digsel, x, base, len);
 			if (algnr && rightalg) {
-				gputtimes(putch, algnr - len, prefill);
+				gputtimes(putch, arg, algnr - len, prefill);
 			} // TODO: consider another algl??
 			break;
 		}
@@ -241,14 +244,15 @@ break_while:
 
 
 int gprintf
-	( void (*putch)(char)
+	( void (*putch)(char, void *)
+	, void *arg
 	, const char *fmt
 	, ...
 	)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	int res = vgprintf(putch, fmt, ap);
+	int res = vgprintf(putch, arg, fmt, ap);
 	va_end(ap);
 	return res;
 }

@@ -32,7 +32,7 @@ int dev_resolve(const char *name)
 
 int do_open(const char *path, unsigned int flags)
 {
-	printk("do_open(%s, %d)", path, flags);
+	//printk("do_open(%s, %d)", path, flags);
 
 	if (!strncmp(path, "/dev/", strlen("/dev/")))
 		return dev_resolve(path + strlen("/dev/"));
@@ -196,7 +196,6 @@ int main(void)
 			ipc_rewindw(ret);
 		}
 		DEFAULT {
-			BUG();
 			ipc_rewindw(-ENOTSUP);
 		}
 		}

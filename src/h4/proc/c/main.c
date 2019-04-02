@@ -1,7 +1,6 @@
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 #include <h4/proc/sysnr.h>
-#include <h4/proc/signr.h>
 #include <h4/servers.h>
 #include <errno.h>
 #include <case.h>
@@ -10,24 +9,27 @@
 
 struct proc
 {
-	struct sigaction sigacts[SIGMAX];
+	uintptr_t ebss;
 };
 
-struct proc *get_proc(pid_t pid)
+uintptr_t do_sbrk(ptrdiff_t incptr)
 {
-	return &procs[pid];
+	if (incptr > 0) {
+		printk("heap grow %#x", incptr);
+		curr->ebss += incptr;
+	} else if (incptr < 0) {
+		incptr = -incptr;
+		printk("heap shrink %#x", incptr);
+		curr->ebss -= incptr;
+	}
+	return curr->ebss;
 }
 
-int do_kill(pid_t pid, unsigned int sig)
+struct proc *new_proc(uintptr_t ebss)
 {
-	if (sig < SIGMAX)
-		return -EINVAL;
-
-	struct proc *proc = get_proc(pid);
-	if (!proc)
-		return -ESRCH;
-
-	struct sigaction *sa = &proc->sigacts[sig];
+	struct proc *proc = malloc(sizeof(struct proc));
+	proc->ebss = ebss;
+	return proc;
 }
 
 int main(void)
@@ -38,25 +40,30 @@ int main(void)
 		ipc_recv();
 		int nr = ipc_getw();
 
+		struct proc *curr = (void*)ipc_getbadge();
+		if (curr == NULL && nr == _PROC_rootclinit) {
+			uintptr_t ebss = ipc_getw();
+			struct proc *proc = new_proc(ebss);
+			ipc_setbadge(proc);
+			ipc_rewindw(proc == NULL ? -errno : 0);
+			ipc_reply();
+			continue;
+		}
+
+		if (curr == NULL)
+			ipc_rewindw(-EINVAL);
+
 		switch (nr) {
-		CASE(_PROC_kill) {
-			pid_t pid = ipc_getw();
-			unsigned int sig = ipc_getw();
-			int ret = do_kill(pid, sig);
-			ipc_rewindw(ret);
-		}
-		CASE(_PROC_sbrk) {
-			ptrdiff_t incptr = ipc_getw();
-			int ret = do_sbrk(incptr);
-			ipc_rewindw(ret);
-		}
-		/*CASE(_PROC_raise) {
-			int sig = ipc_getw();
-			int ret = do_raise(sig);
+		/*CASE(_PROC_execve) {
+			int ret = do_execve(path, argv, envp);
 			ipc_rewindw(ret);
 		}*/
+		CASE(_PROC_sbrk) {
+			ptrdiff_t incptr = ipc_getw();
+			uintptr_t ret = do_sbrk(curr, incptr);
+			ipc_rewindw(ret);
+		}
 		DEFAULT {
-			BUG();
 			ipc_rewindw(-ENOTSUP);
 		}
 		}
