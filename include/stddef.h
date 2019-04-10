@@ -25,3 +25,4 @@
 	})
 #define ARRAY_SIZEOF(a) (sizeof(a) / sizeof((a)[0]))
 #define array_sizeof(a) (sizeof(a) / sizeof((a)[0]))
+#define static_assert(x) switch (0) { case 0: case (x): break; }
