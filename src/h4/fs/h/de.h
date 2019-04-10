@@ -5,10 +5,10 @@
 #define T_HID    (1<<1)
 #define T_SYS    (1<<2)
 #define T_VOL    (1<<3)
-#define T_NOD    (1<<4)
-#define T_DIR    (1<<5)
-#define T_REG    (1<<6)
-#define T_LNK    (1<<7)
+#define T_DIR    (1<<4)
+#define T_REG    (1<<5)
+#define T_LNK    (1<<6)
+#define T_NOD    (1<<7)
 
 typedef struct dirent
 {

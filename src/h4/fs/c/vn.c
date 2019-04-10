@@ -9,6 +9,8 @@
 #include "error.h"
 #include <bug.h>
 //#include <printk.h>//
+// TODO: check http://blog.chinaunix.net/uid-23141914-id-211775.html for more
+// details about FAT cluster cache (LRU)!!!!!!!!!
 
 vn_t *vdup(vn_t *v)
 {

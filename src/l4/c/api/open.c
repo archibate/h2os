@@ -22,3 +22,8 @@ int sys_dup(int fd)
 {
 	return gf_dup(fd);
 }
+
+int sys_dup2(int fd, int dirfd)
+{
+	return gf_dup2(fd, dirfd);
+}

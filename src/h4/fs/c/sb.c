@@ -76,7 +76,7 @@ sb_t *load_sb(int hd)
 	size_t fat_size = bpb.bps * bpb.fat_secs16;
 
 	sb->root_beg = fat_base + fat_size * bpb.num_fats;
-	sb->begin = sb->root_beg + sb->root_ents * DESIZE - 2 * sb->bsize;
+	sb->begin = sb->root_beg + sb->root_ents * DESIZE - 2 * sb->bsize;//??
 
 	uint8_t *fat12 = malloc(fat_size);
 	BUG_ON(pread(hd, fat12, fat_size, fat_base) != fat_size);

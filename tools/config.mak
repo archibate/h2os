@@ -2,7 +2,7 @@
 PLAT=i386
 ARCH=x86
 BITS=32
-ROOT="C:\Users\Lenovo\Intel\OSD\Cygwin\home\Lenovo\dev\h2os"
-QEMU="C:\Users\Lenovo\Intel\OSD\QEMU\qemu-system-i386w.exe"
+ROOT=/e/h2os
+QEMU=/e/qemu/qemu-system-i386w.exe
 MINGW=1
 NODEP=1

@@ -14,7 +14,7 @@ static int dir_lookup(vn_t *dir, const char *name, de_t *e)
 		if (DESIZE != vread(dir, e, DESIZE, n * DESIZE))
 			return -EIO;
 		//if (e->name[0]) printk("dir_lookup: %.11s", e->name);//
-		//printk("!!!");//
+		//printk("!!!%d", e->attr);//
 		if (!ecmpname(e, name))
 			return 0;
 	}
@@ -112,6 +112,7 @@ vn_t *dir_vopen(vn_t *dir, const char *path, unsigned int flags)
 
 		if (v != NULL)
 			v->exflags = flags;
+		//else printk("!!!!!!!!!!!%s", strerror(errno));
 
 		return v;
 

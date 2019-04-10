@@ -6,3 +6,5 @@ A hobby Operating System
 /// TODO: src/fs.minix/c/inode.c
 //// TODO: src/l4/h/l4/object/idspace.h includes <idmap.h>
 ///// TODO: ipc_getbuf(&len) no &
+////// TODO: rm pub/lib/h4.pkg
+/////// TODO: src/h4/fs/c/vn.c LRU cluster cache

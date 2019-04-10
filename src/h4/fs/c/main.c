@@ -6,6 +6,7 @@
 #include <h4/file/sysnr.h>
 #include <h4/servers.h>
 #include <errno.h>
+#include <string.h>
 #include <case.h>
 #include <printk.h>
 #include <bug.h>

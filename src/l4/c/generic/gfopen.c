@@ -52,13 +52,12 @@ int gf_close(l4fd_t fd)
 	return 0;
 }
 
-int gf_dup(int fd)
+sl4fd_t gf_dup(l4fd_t fd)
 {
 	if (fd >= MAX_FDS)
 		return -ENFILE;
 
 	struct fd_entry *fde = &current->fds[fd];
-	//BUG_ON(fde->ptr == NULL);////
 	if (fde->ptr == NULL)
 		return -EBADF;
 
@@ -71,4 +70,22 @@ int gf_dup(int fd)
 	memcpy(nfde, fde, sizeof(struct fd_entry));
 
 	return nfd;
+}
+
+int gf_dup2(l4fd_t fd, l4fd_t dirfd)
+{
+	if (fd >= MAX_FDS)
+		return -ENFILE;
+
+	struct fd_entry *fde = &current->fds[fd];
+	if (fde->ptr == NULL)
+		return -EBADF;
+
+	struct fd_entry *nfde = &current->fds[dirfd];
+	if (nfde->ptr != NULL)
+		return -ECLOSAT;
+
+	memcpy(nfde, fde, sizeof(struct fd_entry));
+
+	return 0;
 }
