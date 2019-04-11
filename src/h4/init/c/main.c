@@ -73,6 +73,7 @@ void main(void)
 	int fs, kbd, hello, cons, hda, fd;
 again:
 	cons = open("/dev/cons", O_WRONLY);
+	printk("cons=%d", cons);
 	BUG_ON(cons < 0);
 	hda = open("/dev/hda", O_RDONLY);
 	BUG_ON(hda < 0);
