@@ -8,13 +8,18 @@
 #include <l4/generic/msginfo.h>
 #include <l4/misc/bug.h>//
 #include <l4/misc/panic.h>//
+// for sys_mmap!!!!!!!!
+#include <l4/generic/mman.h>
+#include <memory.h>//??gf_copy
 
-static int fd_verify(l4fd_t fd, bool isrecv)
+#define get_fde(fd) (current->fds[fd])
+
+static int fd_verify(l4fd_t fd)
 {
 	if (fd >= MAX_FDS)
 		return -ENFILE;
 
-	struct fd_entry *fde = &current->fds[fd];
+	struct fd_entry *fde = &get_fde(fd);
 
 	if (fde->ptr == NULL)
 		return -EBADF;
@@ -27,7 +32,6 @@ static int fd_verify(l4fd_t fd, bool isrecv)
 	return 0;
 }
 
-#define get_fde(fd) (current->fds[fd])
 static inline struct endpoint *fd_get_ep(l4fd_t fd)
 {
 	return (struct endpoint *) get_fde(fd).ptr;
@@ -37,7 +41,7 @@ static inline struct endpoint *fd_get_ep(l4fd_t fd)
 
 static int do_sys_send(l4fd_t fd, bool block, bool recv, int phase)
 {
-	int err = fd_verify(fd, false);
+	int err = fd_verify(fd);
 	if (err < 0)
 		return err;
 	struct endpoint *ep = fd_get_ep(fd);
@@ -63,7 +67,7 @@ sl4fd_t sys_callfdat(l4fd_t fd, sl4fd_t dirfd)
 {
 	BUG_ON(dirfd != -1);
 
-	int err = fd_verify(fd, R_WRONLY);
+	int err = fd_verify(fd);
 	if (err < 0)
 		return err;
 	struct endpoint *ep = fd_get_ep(fd);
@@ -150,4 +154,21 @@ int sys_send(l4fd_t fd)
 int sys_call(l4fd_t fd)
 {
 	return do_sys_send(fd, true, true, 0);
+}
+
+int sys_mmap(l4fd_t fd, void *p, size_t size, unsigned int mattr)
+//TODO: add into api/ipc.h!!!
+{
+	int err = fd_verify(fd);
+	if (err < 0)
+		return err;
+
+	struct fd_entry *fde = &get_fde(fd);
+
+	struct mregion *mreg = mm_new(current->mm, (word_t)p, (word_t)p + size);
+	if (mreg == NULL)
+		return -EFAULT;
+
+	memcpy(&mreg->fde, fde, sizeof(struct fd_entry));
+	return 0;
 }

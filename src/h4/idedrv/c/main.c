@@ -166,9 +166,10 @@ void ide_serve_ipc(void)
 	int r = ipc_reply();
 }
 
+const int libh4_serve_id = SVID_IDEDRV;
+
 int main(void)
 {
-	ipc_serve(SVID_IDEDRV);
 	while (1) {
 		ipc_recv();
 		ide_serve_ipc();

@@ -13,10 +13,9 @@
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 #include <h4/servers.h>
-#include <h4/file/api.h>
-#include <h4/fs/api.h>
-#include <h4/proc.h>
-#include <h4/proc.h>
+#include <h4/fs.h>
+#include <h4/file.h>
+#include <h4/sys/sched.h>
 #include <c4/liballoc.h>
 #include <printk.h>
 #include <string.h>
@@ -43,6 +42,8 @@ void task_b(void)
 
 static char fsf_a[2048], fsf_b[2048];
 #endif//}}}
+
+const int libh4_serve_id = -1;
 
 void main(void)
 {
@@ -71,19 +72,15 @@ void main(void)
 
 	int fs, kbd, hello, cons, hda, fd;
 again:
-	fs = ipc_open(SVID_ROOTFS);
-	if (fs < 0)
-		goto again;
-	BUG_ON(fs < 0);
-	cons = fs_open(fs, "/dev/cons", O_WRONLY);
+	cons = open("/dev/cons", O_WRONLY);
 	BUG_ON(cons < 0);
-	hda = fs_open(fs, "/dev/hda", O_RDONLY);
+	hda = open("/dev/hda", O_RDONLY);
 	BUG_ON(hda < 0);
-	kbd = fs_open(fs, "/dev/keybd", O_RDONLY);
+	kbd = open("/dev/keybd", O_RDONLY);
 	BUG_ON(kbd < 0);
-	hello = fs_open(fs, "/dev/hello", O_RDONLY);
+	hello = open("/dev/hello", O_RDONLY);
 	BUG_ON(hello < 0);
-	fd = fs_open(fs, "README.md", O_RDONLY);
+	fd = open("README.md", O_RDONLY);
 	BUG_ON(fd < 0);
 	FILE *out = fdopen(cons, "w");
 	BUG_ON(out == NULL);

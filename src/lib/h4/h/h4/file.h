@@ -1,5 +1,4 @@
 #pragma once
 
-int dup(int fd);
-int dup2(int fd, int dirfd);
-int close(int fd);
+#include <h4/file/types.h>
+#include <h4/file/api.h>

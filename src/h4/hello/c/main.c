@@ -132,12 +132,13 @@ void hello_serve_ipc(struct hello_file *fp)
 	ipc_reply();
 }
 
+const int libh4_serve_id = SVID_HELLO;
+
 int main(void)
 {
 	static char buffer[4096*4];
 	liballoc_set_memory(buffer, sizeof(buffer));
 
-	ipc_serve(SVID_HELLO);
 	while (1) {
 		ipc_recv();
 		struct hello_file *fp = (void*)ipc_getbadge();

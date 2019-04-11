@@ -47,9 +47,10 @@ void con_serve_ipc(void)
 	ipc_reply();
 }
 
+const int libh4_serve_id = SVID_CONS;
+
 int main(void)
 {
-	ipc_serve(SVID_CONS);
 	while (1) {
 		ipc_recv();
 		con_serve_ipc();

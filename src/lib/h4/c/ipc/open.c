@@ -2,8 +2,6 @@
 #include <h4/sys/ipc.h>
 #include <l4/api/keier.h>
 #include <l4/api/open.h>
-#include <l4/enum/rtype.h>
-#include <printk.h>
 
 int ipc_open(key_t key)
 {

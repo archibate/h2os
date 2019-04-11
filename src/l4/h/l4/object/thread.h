@@ -35,6 +35,7 @@ struct ktcb
 	struct ipc_buf *ipcbuf;
 	// T: below move to kpcb
 	struct pgdir *pgdir;
+	struct mm *mm;
 
 	l4fd_t fdtop;
 	struct fd_entry fds[MAX_FDS]; // T: maybe use hash table better?

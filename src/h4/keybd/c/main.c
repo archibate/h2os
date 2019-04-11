@@ -60,9 +60,10 @@ void kbd_serve_ipc(void)
 	ipc_reply();
 }
 
+const int libh4_serve_id = SVID_KEYBD;
+
 int main(void)
 {
-	ipc_serve(SVID_KEYBD);
 	sys_softirq_set_enable(IRQ_KEYBD, true);
 	while (1) {
 		while (fifo_empty(&tin)) {

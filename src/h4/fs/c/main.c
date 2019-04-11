@@ -159,6 +159,8 @@ void file_serve_ipc(vn_t *v)
 }
 #endif
 
+const int libh4_serve_id = SVID_FS;
+
 int main(void)
 {
 	static char buffer[4096*32];
@@ -168,8 +170,6 @@ int main(void)
 	extern void fat_init(void);
 	fat_init();
 #endif
-
-	ipc_serve(SVID_ROOTFS);
 
 	while (1) {
 		ipc_recv();

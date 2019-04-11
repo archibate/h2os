@@ -8,6 +8,8 @@
 
 sl4id_t sys_kopen(l4id_t key)
 {
+	//printk("sys_kopen(%d)", key);//
+
 	struct endpoint *ep = id_get_endpoint(key);
 	if (ep == NULL)
 		return -ENOENT;
@@ -17,6 +19,8 @@ sl4id_t sys_kopen(l4id_t key)
 
 int sys_kserve(l4id_t key)
 {
+	//printk("sys_kserve(%d)", key);//
+
 	struct endpoint *ep = &current->ep;
 
 	ep->ide.id = key;

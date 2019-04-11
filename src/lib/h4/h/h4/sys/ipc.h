@@ -14,6 +14,7 @@ int ipc_recv(void);
 int ipc_poll(void);
 int ipc_reply(void);
 int ipc_open(key_t key);
+int ipc_openat(key_t key, int dirfd);
 int ipc_serve(key_t key);
 int ipc_connect(pid_t pid);
 //int ipc_connect(key_t key, unsigned int flags);
