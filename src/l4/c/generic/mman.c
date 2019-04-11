@@ -14,7 +14,7 @@ void mm_init(void)
 struct mregion *mm_new(struct mm *mm, word_t start, word_t end)
 {
 	struct mregion *mreg;
-	hlist_for_each_entry2(&mm->mregs, mreg, hlist) {
+	hlist_for_each_entry2(mreg, &mm->mregs, hlist) {
 		if (mreg_hasisect(mreg, start, end))
 			return NULL;
 	}
@@ -33,7 +33,7 @@ struct mregion *mm_new(struct mm *mm, word_t start, word_t end)
 struct mregion *mm_lookup(struct mm *mm, word_t addr)
 {
 	struct mregion *mreg;
-	hlist_for_each_entry2(&mm->mregs, mreg, hlist) {
+	hlist_for_each_entry2(mreg, &mm->mregs, hlist) {
 		if (mreg_inside(mm, addr, addr + 1))
 			return mreg;
 	}
