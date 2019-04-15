@@ -15,6 +15,7 @@
 l4id_t load_module(const void *begin, const void *end)
 {
 	struct pgdir *pgdir = alloc_page();
+	//printk("%p", pgdir);
 	struct ipc_buf *ipcbuf = alloc_page();
 
 	memset(ipcbuf, 0, sizeof(*ipcbuf));
@@ -27,8 +28,10 @@ l4id_t load_module(const void *begin, const void *end)
 		panic("bad module ELF format");
 	struct ktcb *tcb = calloc(1, sizeof(struct ktcb));
 	__thread_init(tcb);
+	struct mm *mm = calloc(1, sizeof(struct mm));
 	tcb->context.pc = (word_t)pc;
-	tcb->pgdir = pgdir;
+	mm->pgdir = pgdir;
+	tcb->mm = mm;
 	tcb->ipcbuf = ipcbuf;
 
 	l4id_t id = idg_new_entry(&tcb->ide, RTYPE_THREAD);

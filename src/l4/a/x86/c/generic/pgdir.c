@@ -19,6 +19,7 @@ void pgdir_switch(struct pgdir *pgdir, struct ipc_buf *ipcbuf_ptr)
 {
 	pa_t ipcbuf = (pa_t)ipcbuf_ptr;
 	pa_t pd = (pa_t)&pgdir->pd;
+	//printk("pd=%p, ipcbuf=%p", pd, ipcbuf);
 
 	BUG_ON(!ipcbuf || PageOffset(ipcbuf));
 

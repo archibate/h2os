@@ -5,11 +5,12 @@
 #include <l4/misc/printk.h>
 #include <l4/misc/panic.h>
 #include <l4/misc/assert.h>
+#include <l4/misc/bug.h>
 #include <l4/machine/asm/cregs.h>
 
 void hwirq(uint irq);
 void hwsysintr(void);
-//void hwpgfault(ulong vaddr, uint errcd);
+void hwpgfault(ulong vaddr, uint errcd);
 
 void _FASTCALL hwintr(struct iframe *iframe)
 {
@@ -31,9 +32,11 @@ void _FASTCALL hwintr(struct iframe *iframe)
 		return;
 	} else switch (nr) {
 	case ExceptionPageFault:
-		panic("#PF from %#04x:%p at %#p (%d)",
+		printk("#PF from %#04x:%p at %#p (%d)",
 				iframe->cs, iframe->pc,
 				getcr2(), iframe->error_code);
+		BUG_ON((iframe->cs & 3) == 0);
+		hwpgfault(getcr2(), iframe->error_code);
 	case ExceptionGeneralProtection:
 		panic("#GP from %#04x:%p of instruction %02X",
 				iframe->cs, iframe->pc,

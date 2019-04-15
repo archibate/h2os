@@ -6,7 +6,7 @@
 
 void task_switch(struct ktcb *old_task, struct ktcb *new_task)
 {
-	pgdir_switch(new_task->pgdir, new_task->ipcbuf);
+	pgdir_switch(new_task->mm->pgdir, new_task->ipcbuf);
 
 	msginfo_copy(&kUTCB->msginfo, &new_task->msginfo);
 

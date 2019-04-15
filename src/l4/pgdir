@@ -1,0 +1,5 @@
+c/generic/mman.c:	hlist_for_each_entry2(mreg, &mm->mregs, hlist) {
+c/generic/mman.c:	hlist_add_head(&mreg->hlist, &mm->mregs);
+c/generic/mman.c:	hlist_for_each_entry2(mreg, &mm->mregs, hlist) {
+a/x86/c/boot/ldmod.c:	mm->pgdir = pgdir;
+a/x86/c/generic/task-switch.c:	pgdir_switch(new_task->mm->pgdir, new_task->ipcbuf);

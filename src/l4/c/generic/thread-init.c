@@ -15,7 +15,7 @@ void thread_init(struct ktcb *tcb)
 {
 	__thread_init(tcb);
 
-	tcb->pgdir = current->pgdir;
+	tcb->mm = current->mm;
 	tcb->ipcbuf = current->ipcbuf;
 }
 

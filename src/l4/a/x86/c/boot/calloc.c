@@ -13,6 +13,6 @@ void *calloc(size_t nmemb, size_t size)
 	pa0 += size * nmemb;
 	assert(pa0 < pa1);
 	void *p = (void*)pa;//P2V?
-	memset(p, 0, size);
+	memset(p, 0, size * nmemb);
 	return p;
 }

@@ -59,6 +59,7 @@ void *kcache_alloc(struct kcache *kc)
 		hlist_move(node, &kc->slab_partial);
 
 	} else {
+		//BUG();
 		return NULL;
 	}
 

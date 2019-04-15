@@ -9,6 +9,7 @@
 #include <l4/object/context.h>
 #include <l4/object/msginfo.h>
 #include <l4/object/endpoint.h>
+#include <l4/object/mman.h>
 #include <l4/enum/filedes.h>
 
 struct ktcb
@@ -33,8 +34,8 @@ struct ktcb
 	struct endpoint ep;
 
 	struct ipc_buf *ipcbuf;
-	// T: below move to kpcb
-	struct pgdir *pgdir;
+
+	// T: below move to kpcb and mm mm
 	struct mm *mm;
 
 	l4fd_t fdtop;

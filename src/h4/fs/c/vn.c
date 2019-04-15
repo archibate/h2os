@@ -34,7 +34,7 @@ vn_t *__vopen(sb_t *sb, de_t *e)
 
 	uint32_t clus = egetclus(e);
 	int i;
-	printk("vopen: clus=%d", clus);
+	//printk("vopen: clus=%d", clus);
 	for (i = 0; i < CBUFMAX; i++) {
 		v->clus[i] = clus;
 		v->blkn[i] = 0;

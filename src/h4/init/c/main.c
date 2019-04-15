@@ -10,6 +10,9 @@
 #include <l4/enum/thread-registers.h>
 #include <l4/api/thread.h>
 #include <l4/api/sched.h>*/
+#include <l4/api/mmap.h>
+#include <l4/stdafx.h>
+#include <l4/machine/mmu/page.h>
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 #include <h4/servers.h>
@@ -88,6 +91,9 @@ again:
 	BUG_ON(fp == NULL);
 	FILE *kb = fdopen(kbd, "r");
 	BUG_ON(kb == NULL);
+
+	void *page = (void*)0xd000000;
+	sys_mmap(hda, page, PageSize, 0);
 
 	char buf[128];
 	int ch;
