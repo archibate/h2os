@@ -31,6 +31,10 @@ struct ktcb
 	struct msginfo *psndmip;
 	struct msginfo msginfo;
 
+	word_t fault_vaddr;
+	unsigned int fault_errcd;
+	bool isfault;
+
 	struct endpoint ep;
 
 	struct ipc_buf *ipcbuf;

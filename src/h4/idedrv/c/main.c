@@ -98,6 +98,14 @@ void ide_serve_ipc(void)
 {
 	unsigned int nr = ipc_getw();
 	switch (nr) {
+	
+	case _FILE_fault:
+	{
+		off_t off = ipc_getoffset();
+		off += ipc_getw();
+		int errcd = ipc_getw();
+		printk("idedrv: fault(%d, %d)", off, errcd);
+	} break;
 
 	case _FILE_pread:
 	{
@@ -171,6 +179,7 @@ const int libh4_serve_id = SVID_IDEDRV;
 int main(void)
 {
 	while (1) {
+		printk("!!!idedrv_recv!!!");
 		ipc_recv();
 		ide_serve_ipc();
 	}

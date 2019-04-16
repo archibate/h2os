@@ -9,6 +9,7 @@ void hwpgfault(ulong vaddr, uint errcd)
 {
 	if (errcd & PageFaultErrorCode_Protect) {
 		panic("hwpgfault: protection violated %p (%d)", vaddr, errcd);
+		// TOD: SIGSEGF
 	}
 
 	sched_enter();

@@ -1,10 +1,10 @@
 #include <l4/generic/ipc.h>
+#include <l4/generic/softfault.h>
 #include <l4/generic/endpoint.h>
 #include <l4/generic/msginfo.h>
 #include <l4/generic/sched.h>
 #include <l4/enum/errno.h>
-
-#define SWAP(x, y) do { typeof(y) t = y; y = x; x = t; } while (0)
+#include <l4/lib/swapval.h>
 
 int endp_recv(struct endpoint *ep, bool block)
 {
@@ -48,6 +48,8 @@ int endp_reply(uintptr_t badge, uintptr_t offset)
 	current->prplmip = NULL;
 	struct ktcb *target = endpoint_reply(current); // T,ep
 	if (target != NULL) {
+		if (target->isfault)
+			softfault_onreply(target);
 		SWAP(current->ipcbuf, target->ipcbuf);
 	}
 	return target == NULL ? 0 : 1;

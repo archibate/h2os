@@ -92,9 +92,6 @@ again:
 	FILE *kb = fdopen(kbd, "r");
 	BUG_ON(kb == NULL);
 
-	void *page = (void*)0xd000000;
-	sys_mmap(hda, page, PageSize, 0);
-
 	char buf[128];
 	int ch;
 	for (;;) {
@@ -121,6 +118,10 @@ again:
 			ssize_t ret = pread(hda, buf, sizeof(buf), 0);
 			if (ret > 0)
 				sys_con_write(buf, ret);
+		} else if (ch == 'm') {
+			char *page = (void*)0xd000000;
+			sys_mmap(hda, page, PageSize, 0);
+			fputc(page[19], out);
 		}
 	}
 

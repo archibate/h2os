@@ -117,7 +117,6 @@ int sys_call(l4fd_t fd)
 }
 
 int sys_mmap(l4fd_t fd, void *p, size_t size, unsigned int mattr)
-//TODO: add into api/ipc.h!!!
 {
 	int err = fd_verify(fd);
 	if (err < 0)

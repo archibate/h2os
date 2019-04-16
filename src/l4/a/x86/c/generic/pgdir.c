@@ -27,7 +27,7 @@ void pgdir_switch(struct pgdir *pgdir, struct ipc_buf *ipcbuf_ptr)
 
 	if (mmu_getPgdirPaddr() == pd) {
 		//printk("!!set ipcbuf to %d", ipcbuf);
-		mmu_invaidatePage(KernIPCBuffer);
+		mmu_invalidatePage(KernIPCBuffer);
 
 	} else {
 		BUG_ON(!pd || PgdirOffset(pd));

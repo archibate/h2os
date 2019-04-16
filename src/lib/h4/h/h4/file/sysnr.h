@@ -1,5 +1,6 @@
 #pragma once
 
+#define _FILE_fault  (-1)
 #define _FILE_pread  1
 #define _FILE_pwrite 2
 #define _FILE_read   3
