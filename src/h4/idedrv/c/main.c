@@ -9,9 +9,11 @@
 #include <errno.h>
 #include "ide.h"
 #include <bug.h>
+#include <panic.h>
 #include <printk.h>
 #include <numtools.h>
 #include <c4/liballoc.h>
+#include <l4/machine/mmu/page.h>
 
 static const dev_t ide_dev = 0;
 char ide_buf[BSIZE];
@@ -97,9 +99,6 @@ off_t ide_lseek(off_t now_off, off_t off, int whence)
 	return off;
 }
 
-#include <l4/machine/mmu/page.h>
-#include <compiler.h>
-
 int ide_msync(off_t off, size_t size)
 {
 	panic("ide_msync not supported yet");
@@ -124,7 +123,7 @@ void ide_serve_ipc(void)
 		off_t off = ipc_getoffset();
 		off += ipc_getw();
 		size_t size = ipc_getw();
-		printk("idedrv: msync(%d, %d)", off, size);
+		printk("ide_msync(%d, %d)", off, size);
 		int succ = ide_msync(off, size);
 		ipc_rewindw(succ);
 	} break;
@@ -134,7 +133,7 @@ void ide_serve_ipc(void)
 		off_t off = ipc_getoffset();
 		off += ipc_getw();
 		int errcd = ipc_getw();
-		printk("idedrv: fault(%d, %d)", off, errcd);
+		printk("ide_fault(%d, %d)", off, errcd);
 		void *page = NULL;
 		int succ = ide_fault(off, errcd, &page);
 		ipc_rewindw(succ);

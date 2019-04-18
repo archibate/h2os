@@ -6,10 +6,12 @@
 #include <errno.h>
 #include <stddef.h>
 #include <bug.h>
+#include <panic.h>
 #include <printk.h>
 #include <c4/liballoc.h>
 #include <malloc.h>
 #include <numtools.h>
+#include <l4/machine/mmu/page.h>
 
 struct hello_file
 {
@@ -62,10 +64,50 @@ void hello_close(struct hello_file *fp)
 	free(fp);
 }
 
+static void *mmmy_page = NULL;
+
+int hello_msync(struct hello_file *fp, off_t off, size_t size)
+{
+	hello_pwrite(fp, mmmy_page + off, size, off);
+	return 0;
+}
+
+int hello_fault(struct hello_file *fp, off_t off, int errcd, void **ppage)
+{
+	void *page = amalloc(PageSize, PageSize);
+	mmmy_page = page;
+	BUG_ON((uintptr_t)page & PageLomask);
+	hello_pread(fp, page, PageSize, off);
+	*ppage = page;
+	return 0;
+}
+
 void hello_serve_ipc(struct hello_file *fp)
 {
 	unsigned int nr = ipc_getw();
 	switch (nr) {
+
+	case _FILE_msync:
+	{
+		off_t off = ipc_getoffset();
+		off += ipc_getw();
+		size_t size = ipc_getw();
+		printk("hello_msync(%d, %d)", off, size);
+		int succ = hello_msync(fp, off, size);
+		ipc_rewindw(succ);
+	} break;
+	
+	case _FILE_fault:
+	{
+		off_t off = ipc_getoffset();
+		off += ipc_getw();
+		int errcd = ipc_getw();
+		printk("hello_fault(%d, %d)", off, errcd);
+		void *page = NULL;
+		int succ = hello_fault(fp, off, errcd, &page);
+		ipc_rewindw(succ);
+		ipc_putw((uintptr_t)page);
+	} break;
 
 	case _FILE_pread:
 	{

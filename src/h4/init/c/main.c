@@ -94,7 +94,7 @@ again:
 	BUG_ON(kb == NULL);
 
 	char *page = (void*)0xd000000;
-	sys_mmap(hda, page, PageSize, 0);
+	sys_mmap(hello, page, PageSize, 0);
 
 	char buf[128];
 	int ch;
@@ -129,8 +129,11 @@ again:
 				foo = true;
 				sys_test_fault(page, 0);
 			}
-			int ch = page[19];
+			//int ch = page[19];
+			int ch = page[1];
 			fprintf(out, "got ch: [%c](%d/%#x)\n", ch, ch, ch);
+			page[1] = 'z';
+			sys_msync(page, 2);
 		}
 	}
 
