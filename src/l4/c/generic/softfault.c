@@ -2,6 +2,8 @@
 #include <l4/generic/mman.h>
 #include <l4/generic/ipc.h>
 #include <l4/generic/sched.h>
+#include <l4/generic/thread.h>//
+#include <l4/enum/thread-states.h>//
 #include <l4/generic/softfault.h>
 #include <l4/machine/mmu/pagefault.h>
 #include <l4/generic/archmappage.h>
@@ -31,6 +33,9 @@ void user_bad_fault(struct ktcb *proc)
 void softfault_callback(word_t vaddr, unsigned int errcd)
 {
 	printk("softfault_callback(%p, %d)", vaddr, errcd);
+	//current->state = THREAD_SUSPEND;
+	//thread_suspend(current);
+	//return;
 
 	current->fault_vaddr = vaddr;
 	current->fault_errcd = errcd;
@@ -49,13 +54,13 @@ void softfault_callback(word_t vaddr, unsigned int errcd)
 
 void softfault_onreply(struct ktcb *target)
 {
-	printk("onreply: %p->%p", current, target);
+	printk("softfault_onreply: %p->%p", current, target);
 
 	word_t page;
 	int succ;
 	ipcbuf_read_faultres(current->ipcbuf, &succ, &page);
-	BUG_ON(!current->isfault);
-	current->isfault = false;
+	BUG_ON(!target->isfault);
+	target->isfault = false;
 	if (succ < 0) {
 bad:		user_bad_fault(target);
 		return;

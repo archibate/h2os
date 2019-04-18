@@ -86,8 +86,10 @@ int do_sys_recv(bool block)
 	return endp_recv(ep, block);
 }
 
+//#include <l4/system/kstack.h>//
 int sys_recv(void)
 {
+	//printk("(sys_recv sp=%p)", kSEFrame.sp);
 	return do_sys_recv(true);
 }
 
@@ -129,5 +131,12 @@ int sys_mmap(l4fd_t fd, void *p, size_t size, unsigned int mattr)
 		return -EFAULT;
 
 	memcpy(&mreg->fde, fde, sizeof(struct fd_entry));
+	return 0;
+}
+
+#include <l4/generic/softfault.h>//
+int sys_test_fault(void *p, unsigned int errcd)
+{
+	softfault_callback((word_t)p, errcd);
 	return 0;
 }

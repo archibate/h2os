@@ -34,7 +34,7 @@ static int pgdir_map_entry(pde_t *src_pd, pde_t *dst_pd,
 	} else {
 		pt = (pte_t *)PdePgtabAddr(pde);
 	}
-	pt[PteIndex(dst_addr)] = pte & permask;
+	pt[PteIndex(dst_addr)] = pte;// & permask;
 	return 0;
 }
 

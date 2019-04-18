@@ -7,7 +7,7 @@
 static int setimes;
 static void *old_ipcbuf;
 
-#undef sched_enter
+//#undef sched_enter
 void sched_enter(void)
 {
 	BUG_ON(setimes++);
@@ -32,7 +32,7 @@ void sched_leave(void)
 	if (curr_idle) {
 		BUG_ON(sched_get_curr() != NULL);
 		set_idle_task(current);
-		//if (current) printk("task_switch %p->%p", current, NULL);
+		//if (current) printk("task_switch %p->%p", current, NULL);//
 		current = NULL;
 		return;
 	}
@@ -42,7 +42,7 @@ void sched_leave(void)
 	struct ktcb *next = sched_get_curr();
 
 	if (next != current || old_ipcbuf != current->ipcbuf) {
-		//printk("task_switch %p->%p", current, next);
+		//printk("task_switch %p->%p", current, next);//
 		task_switch(current, next);
 	}
 

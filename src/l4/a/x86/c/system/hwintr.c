@@ -38,10 +38,11 @@ void _FASTCALL hwintr(struct iframe *iframe)
 		BUG_ON((iframe->cs & 3) == 0);
 		hwpgfault(getcr2(), iframe->error_code);
 	case ExceptionGeneralProtection:
-		panic("#GP from %#04x:%p of instruction %02X",
+		printk("(sp=%p)", iframe->sp);
+		panic("#GP from %#04x:%p of instruction %02X (%d)",
 				iframe->cs, iframe->pc,
-				*(volatile uchar*)iframe->pc
-				);
+				*(volatile uchar*)iframe->pc,
+				iframe->error_code);
 	case ExceptionInvaidOpcode:
 		panic("#UD from %#04x:%p of instruction %02X",
 				iframe->cs, iframe->pc,
