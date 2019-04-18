@@ -4,11 +4,14 @@
 #include <h4/servers.h>
 #include <h4/file/sysnr.h>
 #include <memory.h>
+#include <malloc.h>
+#include <stddef.h>
 #include <errno.h>
 #include "ide.h"
 #include <bug.h>
 #include <printk.h>
 #include <numtools.h>
+#include <c4/liballoc.h>
 
 static const dev_t ide_dev = 0;
 char ide_buf[BSIZE];
@@ -94,6 +97,18 @@ off_t ide_lseek(off_t now_off, off_t off, int whence)
 	return off;
 }
 
+#include <l4/machine/mmu/page.h>
+#include <compiler.h>
+
+int ide_fault(off_t off, int errcd, void **ppage)
+{
+	void *page = amalloc(PageSize, PageSize);
+	BUG_ON((uintptr_t)page & PageLomask);
+	ide_pread(page, PageSize, off);
+	*ppage = page;
+	return 0;
+}
+
 void ide_serve_ipc(void)
 {
 	unsigned int nr = ipc_getw();
@@ -105,6 +120,10 @@ void ide_serve_ipc(void)
 		off += ipc_getw();
 		int errcd = ipc_getw();
 		printk("idedrv: fault(%d, %d)", off, errcd);
+		void *page = NULL;
+		int succ = ide_fault(off, errcd, &page);
+		ipc_rewindw(succ);
+		ipc_putw((uintptr_t)page);
 	} break;
 
 	case _FILE_pread:
@@ -178,8 +197,11 @@ const int libh4_serve_id = SVID_IDEDRV;
 
 int main(void)
 {
+	static char heap[4096*32];
+	liballoc_set_memory(&heap, sizeof(heap));
+
 	while (1) {
-		printk("!!!idedrv_recv!!!");
+		//printk("!!!idedrv_recv!!!");
 		ipc_recv();
 		ide_serve_ipc();
 	}

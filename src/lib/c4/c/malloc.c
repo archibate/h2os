@@ -5,6 +5,7 @@
 #include <memory.h> // memcpy in realloc
 #define PGSIZE 4096 // machi
 #define PGMASK (-PGSIZE)
+#include <roundtools.h> // RoundUp in amalloc
 #include <inttypes.h> // size_t
 typedef size_t addr_t;
 
@@ -76,17 +77,39 @@ void print_heap_status(void)
 #define print_heap_status()
 #endif // }}}
 
-void *malloc(size_t len)
+static HNODE *get_aligned(HNODE *curr, size_t align)
+{
+	HNODE *icurr = (HNODE*)RoundUp(align, (uintptr_t)(curr + 1)) - 1;
+	printk("curr:%p->%p for align=%d", curr, icurr, align);//
+	return icurr;
+}
+
+static void cope2_new_node(HNODE **pprev, HNODE *icurr, HNODE *curr)
+{
+	if (icurr != curr) {
+		memrcpy(icurr, curr, sizeof(HNODE));
+		*pprev = icurr;
+	}
+}
+
+void *amalloc(size_t len, size_t align)
 {
 	len = (len + sizeof(int) - 1) & (~0UL ^ (sizeof(int) - 1));
 	len += sizeof(HNODE);
 
-	HNODE *curr;
+	if (align < sizeof(int))
+		align = sizeof(int);
+
+	HNODE *curr, *icurr, **pprev = &heap_head;
 	for (curr = heap_head; curr->next; curr = curr->next)
 	{
 		if (!curr->allocated) {
-			ssize_t rest_len = (void*)curr->next - (void*)curr - len;
+			icurr = get_aligned(curr, align);
+			printk("curr:%p->%p for align=%d", curr, icurr, align);//
+			ssize_t rest_len = (void*)curr->next - (void*)icurr - len;
 			if (rest_len > 0) {
+				cope2_new_node(pprev, icurr, curr);
+				curr = icurr;
 				curr->allocated = len;
 				if (rest_len > sizeof(HNODE)) {
 					HNODE *rest = (HNODE*)((void*)curr + len);
@@ -99,7 +122,12 @@ void *malloc(size_t len)
 				return curr + 1;
 			}
 		}
+		pprev = &curr->next;
 	}
+
+	icurr = get_aligned(curr, align);
+	cope2_new_node(pprev, icurr, curr);
+	curr = icurr;
 
 	HNODE *next = (HNODE*)((void*)curr + len);
 	set_break(next + 1);
@@ -115,6 +143,7 @@ void free(void *p)
 {
 	assert(p);
 	HNODE *curr = (HNODE*)p - 1;
+	assert(curr->allocated);
 
 	if (curr->next && !curr->next->allocated) {
 		HNODE *nnext = curr->next->next;
@@ -140,6 +169,11 @@ void free(void *p)
 	curr->allocated = 0;
 }
 
+void *malloc(size_t len)
+{
+	return amalloc(len, 0);
+}
+
 void *realloc(void *p, size_t size)
 {
 	assert(p);
@@ -149,4 +183,16 @@ void *realloc(void *p, size_t size)
 	memcpy(new_p, p, old_size);
 	free(p);
 	return new_p;
+}
+
+void *zalloc(size_t size)
+{
+	void *p = malloc(size);
+	memset(p, 0, size);
+	return p;
+}
+
+void *calloc(size_t nmemb, size_t size)
+{
+	return zalloc(nmemb * size);
 }

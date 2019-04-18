@@ -18,6 +18,7 @@
 #include <h4/servers.h>
 #include <h4/fs.h>
 #include <h4/file.h>
+#include <l4/api/thread.h>
 #include <h4/sys/sched.h>
 #include <c4/liballoc.h>
 #include <printk.h>
@@ -92,6 +93,9 @@ again:
 	FILE *kb = fdopen(kbd, "r");
 	BUG_ON(kb == NULL);
 
+	char *page = (void*)0xd000000;
+	sys_mmap(hda, page, PageSize, 0);
+
 	char buf[128];
 	int ch;
 	for (;;) {
@@ -119,9 +123,15 @@ again:
 			if (ret > 0)
 				sys_con_write(buf, ret);
 		} else if (ch == 'm') {
-			char *page = (void*)0xd000000;
-			sys_mmap(hda, page, PageSize, 0);
-			fputc(page[19], out);
+			//sys_thread_suspend(getpid());
+			static bool foo = false;
+			if (!foo) {
+				foo = true;
+				sys_test_fault(page, 0);
+				//asm volatile ("ud2");
+			}
+			int ch = page[19];
+			fprintf(out, "got ch: [%c](%d/%#x)\n", ch, ch, ch);
 		}
 	}
 

@@ -53,6 +53,8 @@ sb_t *load_sb(int hd)
 	struct bs16 bs;
 	BUG_ON(pread(hd, &bs, sizeof(bs), sizeof(bpb)) != sizeof(bs));
 
+#ifdef PRINT_SB_ONLOAD
+	printk("Loading MS-DOS Volume:");
 	printk("Filesys type: %s", bs.fs_type);
 	printk("Volume Label: %s", bs.vol_lab);
 	printk("Volume ID: %#x", bs.vol_id);
@@ -65,6 +67,9 @@ sb_t *load_sb(int hd)
 	printk("Sector size: %d", bpb.bps);
 	printk("Sec per Cluster: %d", bpb.spc);
 	printk("Total Secs: %d", bpb.tot_secs16 ? bpb.tot_secs16 : bpb.tot_secs32);
+#else
+	printk("Loading MS-DOS Volume %s...", bs.vol_lab);
+#endif
 
 	sb_t *sb = malloc(sizeof(sb_t));
 	sb->hd = hd;
@@ -86,8 +91,10 @@ sb_t *load_sb(int hd)
 	sb->fat = fat32;
 	sb->fat_size = fat_size;
 	free(fat12);
-	sb_print(sb);
 
+#ifdef PRINT_SB_ONLOAD
+	sb_print(sb);
+#endif
 	return sb;
 }
 
