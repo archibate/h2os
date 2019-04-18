@@ -48,7 +48,7 @@ int endp_reply(uintptr_t badge, uintptr_t offset)
 	current->prplmip = NULL;
 	struct ktcb *target = endpoint_reply(current); // T,ep
 	if (target != NULL) {
-		if (target->isfault)
+		if (target->sfipc_type)
 			softfault_onreply(target);
 		SWAP(current->ipcbuf, target->ipcbuf);
 	}

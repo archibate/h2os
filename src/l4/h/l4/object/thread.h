@@ -33,7 +33,7 @@ struct ktcb
 
 	word_t fault_vaddr;
 	unsigned int fault_errcd;
-	bool isfault;
+	unsigned int sfipc_type;
 
 	struct endpoint ep;
 

@@ -80,7 +80,7 @@ void print_heap_status(void)
 static HNODE *get_aligned(HNODE *curr, size_t align)
 {
 	HNODE *icurr = (HNODE*)RoundUp(align, (uintptr_t)(curr + 1)) - 1;
-	printk("curr:%p->%p for align=%d", curr, icurr, align);//
+	//printk("curr:%p->%p for align=%d", curr, icurr, align);//
 	return icurr;
 }
 
@@ -105,7 +105,6 @@ void *amalloc(size_t len, size_t align)
 	{
 		if (!curr->allocated) {
 			icurr = get_aligned(curr, align);
-			printk("curr:%p->%p for align=%d", curr, icurr, align);//
 			ssize_t rest_len = (void*)curr->next - (void*)icurr - len;
 			if (rest_len > 0) {
 				cope2_new_node(pprev, icurr, curr);

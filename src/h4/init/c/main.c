@@ -128,7 +128,6 @@ again:
 			if (!foo) {
 				foo = true;
 				sys_test_fault(page, 0);
-				//asm volatile ("ud2");
 			}
 			int ch = page[19];
 			fprintf(out, "got ch: [%c](%d/%#x)\n", ch, ch, ch);

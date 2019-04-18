@@ -7,5 +7,5 @@ bool mreg_inside(struct mregion *mreg, word_t start, word_t end)
 
 bool mreg_hasisect(struct mregion *mreg, word_t start, word_t end)
 {
-	return start >= end && mreg->start <= start || mreg->end >= end;
+	return start >= end && (mreg->start <= start || mreg->end >= end);
 }

@@ -100,6 +100,11 @@ off_t ide_lseek(off_t now_off, off_t off, int whence)
 #include <l4/machine/mmu/page.h>
 #include <compiler.h>
 
+int ide_msync(off_t off, size_t size)
+{
+	panic("ide_msync not supported yet");
+}
+
 int ide_fault(off_t off, int errcd, void **ppage)
 {
 	void *page = amalloc(PageSize, PageSize);
@@ -113,6 +118,16 @@ void ide_serve_ipc(void)
 {
 	unsigned int nr = ipc_getw();
 	switch (nr) {
+
+	case _FILE_msync:
+	{
+		off_t off = ipc_getoffset();
+		off += ipc_getw();
+		size_t size = ipc_getw();
+		printk("idedrv: msync(%d, %d)", off, size);
+		int succ = ide_msync(off, size);
+		ipc_rewindw(succ);
+	} break;
 	
 	case _FILE_fault:
 	{
@@ -188,6 +203,7 @@ void ide_serve_ipc(void)
 	} break;
 
 	default:
+		printk("ide_ENOTSUP: %d", nr);
 		ipc_putw(-ENOTSUP);
 	}
 	int r = ipc_reply();

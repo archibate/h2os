@@ -118,20 +118,19 @@ int sys_call(l4fd_t fd)
 	return do_sys_send(fd, true, true, 0);
 }
 
-int sys_mmap(l4fd_t fd, void *p, size_t size, unsigned int mattr)
+// https://baike.so.com/doc/6784320-7000923.html
+int sys_mmap(l4fd_t fd, void *p, size_t size, unsigned int flags)
 {
 	int err = fd_verify(fd);
 	if (err < 0)
 		return err;
 
-	struct fd_entry *fde = &get_fde(fd);
+	return softfault_mmap(&get_fde(fd), (word_t)p, size, flags);
+}
 
-	struct mregion *mreg = mm_new(current->mm, (word_t)p, (word_t)p + size);
-	if (mreg == NULL)
-		return -EFAULT;
-
-	memcpy(&mreg->fde, fde, sizeof(struct fd_entry));
-	return 0;
+int sys_msync(void *p, size_t size)
+{
+	return softfault_msync((word_t)p, size);
 }
 
 #include <l4/generic/softfault.h>//
