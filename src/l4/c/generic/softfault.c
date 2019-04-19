@@ -58,10 +58,10 @@ static int ipcbuf_read_mmapres(void *ipcbuf)
 	return succ;
 }
 
-int softfault_mmap(struct fd_entry *fde, word_t vaddr, size_t size, unsigned int flags)
+int softfault_mmap(struct fd_entry *fde, word_t vaddr, size_t size, unsigned int flags, unsigned int prot)
 {
 	//printk("sm: %p", current->mm);
-	struct mregion *mreg = mm_new(current->mm, vaddr, vaddr + size);
+	struct mregion *mreg = mm_new(current->mm, vaddr, vaddr + size, prot);
 	if (mreg == NULL)
 		return -EFAULT;
 
@@ -71,6 +71,7 @@ int softfault_mmap(struct fd_entry *fde, word_t vaddr, size_t size, unsigned int
 
 	//printk("!!!!!callsfipc_Mmap");
 	current->sfipc_type = SFIPC_MMAP;
+	current->sfipc_wilmreg = mreg;
 	endp_call(&mreg->fde, true, true, -SFIPC_MMAP);
 	return 0;
 }
@@ -82,7 +83,7 @@ void user_bad_fault(struct ktcb *proc)
 
 void softfault_callback(word_t vaddr, unsigned int errcd)
 {
-	printk("softfault_callback(%p, %d)", vaddr, errcd);
+	//printk("softfault_callback(%p, %d)", vaddr, errcd);
 	//current->state = THREAD_SUSPEND;
 	//thread_suspend(current);
 	//return;
@@ -108,7 +109,7 @@ void softfault_callback(word_t vaddr, unsigned int errcd)
 
 static void softfault_onreply_fault(struct ktcb *target)
 {
-	printk("softfault_onreply_fault: %p->%p", current, target);
+	//printk("softfault_onreply_fault: %p->%p", current, target);
 
 	word_t page;
 	int succ = ipcbuf_read_faultres(current->ipcbuf, &page);
@@ -141,7 +142,9 @@ static void softfault_onreply_mmap(struct ktcb *target)
 	target->context.eax = succ; //T: eax
 	if (succ < 0) {
 		//TOD: free that mreg
+		mm_del(target->sfipc_wilmreg);
 	}
+	target->sfipc_wilmreg = NULL;
 }
 
 void softfault_onreply(struct ktcb *target)

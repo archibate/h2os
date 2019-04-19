@@ -115,6 +115,12 @@ void hello_close(struct hello_file *fp)
 	free(fp);
 }
 
+void hello_mpt_close(struct mpage_table *mpt)
+{
+	//fput(mpt->fp);
+	free(mpt);
+}
+
 int hello_mpt_msync(struct mpage_table *mpt, size_t off, size_t size)
 {
 	void *page = mpt_lookup_mpage(mpt, off / PageSize);
@@ -180,7 +186,7 @@ void hello_mpt_serve_ipc(struct mpage_table *mpt)
 void hello_serve_ipc(struct hello_file *fp)
 {
 	switch (ipc_gettype()) {
-	case 1: return hello_mpt_serve_ipc((void*)fp);
+	case 2: return hello_mpt_serve_ipc((void*)fp);
 	}
 
 	int nr = ipc_getw();
@@ -196,7 +202,7 @@ void hello_serve_ipc(struct hello_file *fp)
 		struct mpage_table *mpt = hello_mpt_open(fp, base, size, flags);
 		if (mpt != NULL) {
 			ipc_setbadge((uintptr_t)mpt);
-			ipc_settype(1);
+			ipc_settype(2);
 			ipc_rewindw(0);
 		} else {
 			ipc_rewindw(errno);
@@ -280,10 +286,9 @@ int main(void)
 		void *p = (void*)ipc_getbadge();
 		if (ipc_isclose()) {
 			BUG();
-			/*switch (ipc_getoffset())｛
-				hello_close(p);
-			} else {
-				hello_mpt_close(p);
+			/*switch (ipc_gettype())｛
+			case 2: hello_mpt_close(p);
+			default: hello_close(p);
 			}*/
 		} else {
 			if (p == NULL) {

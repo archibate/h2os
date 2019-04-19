@@ -12,6 +12,7 @@
 // for sys_mmap!!!!!!!!
 #include <l4/generic/mman.h>
 #include <memory.h>//??gf_copy
+#include <l4/lib/lohitools.h>
 
 #define get_fde(fd) (current->fds[fd])
 
@@ -125,7 +126,9 @@ int sys_mmap(l4fd_t fd, void *p, size_t size, unsigned int flags)
 	if (err < 0)
 		return err;
 
-	return softfault_mmap(&get_fde(fd), (word_t)p, size, flags);
+	int prot = 0;
+
+	return softfault_mmap(&get_fde(fd), (word_t)p, size, flags, prot);
 }
 
 int sys_msync(void *p, size_t size)

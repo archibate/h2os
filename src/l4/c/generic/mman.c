@@ -13,7 +13,7 @@ void init_mman(void)
 	kcache_init(&mreg_kcache, sizeof(struct mregion), PageSize);
 }
 
-struct mregion *mm_new(struct mm *mm, word_t start, word_t end)
+struct mregion *mm_new(struct mm *mm, word_t start, word_t end, unsigned int prot)
 {
 	struct mregion *mreg;
 	hlist_for_each_entry2(mreg, &mm->mregs, hlist) {
@@ -32,6 +32,7 @@ struct mregion *mm_new(struct mm *mm, word_t start, word_t end)
 
 	mreg->start = start;
 	mreg->end = end;
+	mreg->prot = prot;
 
 	return mreg;
 }
@@ -45,4 +46,10 @@ struct mregion *mm_lookup(struct mm *mm, word_t addr)
 			return mreg;
 	}
 	return NULL;
+}
+
+void mm_del(struct mregion *mreg)
+{
+	hlist_del(&mreg->hlist);
+	kcache_free(&mreg_kcache, mreg);
 }

@@ -7,5 +7,6 @@ struct mregion
 {
 	struct hlist_node hlist;
 	word_t start, end;
+	unsigned int prot;
 	struct fd_entry fde;
 };

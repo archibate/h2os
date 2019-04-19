@@ -93,8 +93,10 @@ again:
 	FILE *kb = fdopen(kbd, "r");
 	BUG_ON(kb == NULL);
 
-	char *page = (void*)0xd000000;
-	sys_mmap(hello, page, PageSize, 0);
+	char *hepag = (void*)0xd000000;
+	sys_mmap(hello, hepag, PageSize, 0);
+	char *hdpag = (void*)0xd001000;
+	sys_mmap(hda, hdpag, PageSize, 0);
 
 	char buf[128];
 	int ch;
@@ -127,15 +129,23 @@ again:
 			static bool foo = false;
 			if (!foo) {
 				foo = true;
-				printk("!!!!!!!!!!!");
-				sys_test_fault(page, 0);
-				printk("!!!!!!!!!!!");
+				sys_test_fault(hepag, 0);
 			}
 			//int ch = page[19];
-			int ch = page[1];
+			int ch = hepag[1];
 			fprintf(out, "got ch: [%c](%d/%#x)\n", ch, ch, ch);
-			page[1] = 'z';
-			sys_msync(page, 2);
+			hepag[1] = 'z';
+			sys_msync(hepag, 2);
+		} else if (ch == 'n') {
+			//sys_thread_suspend(getpid());
+			static bool foo = false;
+			if (!foo) {
+				foo = true;
+				sys_test_fault(hdpag, 0);
+			}
+			//int ch = page[19];
+			int ch = hdpag[19];
+			fprintf(out, "got ch: [%c](%d/%#x)\n", ch, ch, ch);
 		}
 	}
 

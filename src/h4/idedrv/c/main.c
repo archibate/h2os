@@ -14,6 +14,7 @@
 #include <numtools.h>
 #include <c4/liballoc.h>
 #include <l4/machine/mmu/page.h>
+#include <list.h>
 
 static const dev_t ide_dev = 0;
 char ide_buf[BSIZE];
@@ -99,45 +100,148 @@ off_t ide_lseek(off_t now_off, off_t off, int whence)
 	return off;
 }
 
-int ide_msync(off_t off, size_t size)
+/////////////////////////////////
+
+struct mpage_table
 {
-	panic("ide_msync not supported yet");
+	struct hlist_head head;
+	off_t base;
+	size_t size;
+	unsigned int flags;
+};
+
+struct mpage_entry
+{
+	struct hlist_node hlist;
+	void *page;
+	unsigned int pgnr;
+};
+
+void mpt_new_mpage(struct mpage_table *mpt, unsigned int pgnr, void *page)
+{
+	struct mpage_entry *mpe;
+	/*hlist_for_each_entry2(mpe, &mpt->head, hlist) {
+		if (mpe->pgnr == pgnr) {
+			//free(mpe->page);
+			mpe->page = page;
+			return;
+		}
+	}*/
+	mpe = zalloc(sizeof(struct mpage_entry));
+	mpe->page = page;
+	mpe->pgnr = pgnr;
+	hlist_add_head(&mpe->hlist, &mpt->head);
+	return;
 }
 
-int ide_fault(off_t off, int errcd, void **ppage)
+void *mpt_lookup_mpage(struct mpage_table *mpt, unsigned int pgnr)
+{
+	struct mpage_entry *mpe;
+	hlist_for_each_entry2(mpe, &mpt->head, hlist) {
+		if (mpe->pgnr == pgnr) {
+			BUG_ON(mpe->page == NULL);
+			return mpe->page;
+		}
+	}
+	return NULL;
+}
+
+/////////////////////////////////
+
+
+void ide_mpt_close(struct mpage_table *mpt)
+{
+	//fput(mpt->fp);
+	free(mpt);
+}
+
+int ide_mpt_msync(struct mpage_table *mpt, size_t off, size_t size)
+{
+	void *page = mpt_lookup_mpage(mpt, off / PageSize);
+	BUG_ON(page == NULL);
+	ide_pwrite(page + off % PageSize, size, mpt->base + off);
+	return 0;
+}
+
+int ide_mpt_fault(struct mpage_table *mpt, size_t off, int errcd, void **ppage)
 {
 	void *page = amalloc(PageSize, PageSize);
+	BUG_ON(mpt_lookup_mpage(mpt, off / PageSize) != NULL);
+	mpt_new_mpage(mpt, off / PageSize, page);
 	BUG_ON((uintptr_t)page & PageLomask);
-	ide_pread(page, PageSize, off);
+	ide_pread(page, PageSize, mpt->base + off);
 	*ppage = page;
 	return 0;
 }
 
-void ide_serve_ipc(void)
+struct mpage_table *ide_mpt_open(off_t base, size_t size, unsigned int flags)
 {
-	unsigned int nr = ipc_getw();
+	struct mpage_table *mpt = zalloc(sizeof(struct mpage_table));
+
+	mpt->flags = flags;
+	mpt->size = size;
+	mpt->base = base;
+	return mpt;
+}
+
+void ide_mpt_serve_ipc(void)
+{
+	struct mpage_table *mpt = (void*)ipc_getbadge();
+
+	int nr = ipc_getw();
+
 	switch (nr) {
 
 	case _FILE_msync:
 	{
-		off_t off = ipc_getoffset();
-		off += ipc_getw();
+		size_t inoff = ipc_getw();
 		size_t size = ipc_getw();
-		printk("ide_msync(%d, %d)", off, size);
-		int succ = ide_msync(off, size);
+		printk("ide_msync(%d, %d)", inoff, size);
+		int succ = ide_mpt_msync(mpt, inoff, size);
 		ipc_rewindw(succ);
 	} break;
-	
+
 	case _FILE_fault:
 	{
-		off_t off = ipc_getoffset();
-		off += ipc_getw();
+		size_t inoff = ipc_getw();
 		int errcd = ipc_getw();
-		printk("ide_fault(%d, %d)", off, errcd);
+		printk("ide_fault(%d, %d)", inoff, errcd);
 		void *page = NULL;
-		int succ = ide_fault(off, errcd, &page);
+		int succ = ide_mpt_fault(mpt, inoff, errcd, &page);
 		ipc_rewindw(succ);
 		ipc_putw((uintptr_t)page);
+	} break;
+
+	default:
+		ipc_rewindw(-ENOTSUP);
+	}
+	ipc_reply();
+}
+
+void ide_serve_ipc(void)
+{
+	switch (ipc_gettype()) {
+	case 2: return ide_mpt_serve_ipc();
+	}
+
+	int nr = ipc_getw();
+
+	switch (nr) {
+
+	case _FILE_mmap:
+	{
+		off_t base = ipc_getoffset();
+		size_t size = ipc_getw();
+		unsigned int flags = ipc_getw();
+		printk("ide_mmap(%d)", base);
+		struct mpage_table *mpt = ide_mpt_open(base, size, flags);
+		if (mpt != NULL) {
+			ipc_setbadge((uintptr_t)mpt);
+			ipc_settype(2);
+			ipc_rewindw(0);
+		} else {
+			ipc_rewindw(errno);
+		}
 	} break;
 
 	case _FILE_pread:
@@ -147,10 +251,8 @@ void ide_serve_ipc(void)
 		//printk("ide_pread(%d, %d)", len, off);
 		ipc_seek_setw(1);
 		void *buf = ipc_getbuf(&len);
-		//printk("buf=%p", buf);
 		ssize_t ret = ide_pread(buf, len, off);
 		ipc_rewindw(ret);
-		//printk("!!!ret=%d", ret);
 	} break;
 
 	case _FILE_pwrite:
@@ -202,23 +304,20 @@ void ide_serve_ipc(void)
 	} break;
 
 	default:
-		printk("ide_ENOTSUP: %d", nr);
-		ipc_putw(-ENOTSUP);
+		ipc_rewindw(-ENOTSUP);
 	}
-	int r = ipc_reply();
+	ipc_reply();
 }
 
 const int libh4_serve_id = SVID_IDEDRV;
 
 int main(void)
 {
-	static char heap[4096*32];
-	liballoc_set_memory(&heap, sizeof(heap));
+	static char buffer[4096*32];
+	liballoc_set_memory(buffer, sizeof(buffer));
 
 	while (1) {
-		//printk("!!!idedrv_recv!!!");
 		ipc_recv();
 		ide_serve_ipc();
 	}
 }
-
