@@ -22,7 +22,7 @@ int endp_recv(struct endpoint *ep, bool block)
 
 int endp_call(struct fd_entry *fde, bool block, bool recv, int phase)
 {
-	struct endpoint *ep = fde->ptr;
+	struct endpoint *ep = fde->ep;
 	struct msginfo *mip = &fde->msginfo;
 	struct ktcb *target = endpoint_call(ep, current, block, recv);
 	//current->ipcphase = phase ? phase : fd_entry(fd)->phase;
@@ -39,11 +39,12 @@ int endp_call(struct fd_entry *fde, bool block, bool recv, int phase)
 	return 0;
 }
 
-int endp_reply(uintptr_t badge, uintptr_t offset)
+int endp_reply(uintptr_t badge, uintptr_t offset, uintptr_t type)
 {
 	if (current->prplmip != NULL) {
 		current->prplmip->badge = badge;
 		current->prplmip->offset = offset;
+		current->prplmip->type = type;
 	}
 	current->prplmip = NULL;
 	struct ktcb *target = endpoint_reply(current); // T,ep

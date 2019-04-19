@@ -22,10 +22,10 @@ static int fd_verify(l4fd_t fd)
 
 	struct fd_entry *fde = &get_fde(fd);
 
-	if (fde->ptr == NULL)
+	if (fde->ep == NULL)
 		return -EBADF;
 
-	BUG_ON(fde->rtype != RTYPE_ENDPOINT);//
+	//BUG_ON(fde->rtype != RTYPE_ENDPOINT);//
 
 	/*if (~fde->isrecv != isrecv)
 		return -EPERM;*/
@@ -35,7 +35,7 @@ static int fd_verify(l4fd_t fd)
 
 static inline struct endpoint *fd_get_ep(l4fd_t fd)
 {
-	return (struct endpoint *) get_fde(fd).ptr;
+	return (struct endpoint *) get_fde(fd).ep;
 }
 
 static int do_sys_send(l4fd_t fd, bool block, bool recv, int phase)
@@ -98,9 +98,9 @@ int sys_poll(void)
 	return do_sys_recv(false);
 }
 
-int sys_reply(uintptr_t badge, uintptr_t offset)
+int sys_reply(uintptr_t badge, uintptr_t offset, uintptr_t type)
 {
-	return endp_reply(badge, offset);
+	return endp_reply(badge, offset, type);
 }
 
 int sys_nbsend(l4fd_t fd)

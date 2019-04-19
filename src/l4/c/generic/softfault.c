@@ -96,7 +96,7 @@ void softfault_callback(word_t vaddr, unsigned int errcd)
 	struct mregion *mreg = mm_lookup(current->mm, vaddr);
 	if (mreg == NULL)
 		user_bad_fault(current);
-	printk("!");//
+	//printk("scren!!");
 
 	word_t off = vaddr - mreg->start;
 	ipcbuf_write_faultinfo(current->ipcbuf, off, errcd);

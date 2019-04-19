@@ -145,16 +145,9 @@ struct mpage_table *hello_mpt_open(struct hello_file *fp, off_t base, size_t siz
 	return mpt;
 }
 
-void hello_serve_ipc(void *p)
+void hello_mpt_serve_ipc(struct mpage_table *mpt)
 {
-	struct mpage_table *mpt = p;
-	struct hello_file *fp = p;
-
 	int nr = ipc_getw();
-
-	//printk("nr=%d", nr == _FILE_mmap);
-	if ((ipc_getoffset() != -1) != (nr >= 0 || nr == _FILE_mmap))
-		goto notsup;
 
 	switch (nr) {
 
@@ -178,16 +171,32 @@ void hello_serve_ipc(void *p)
 		ipc_putw((uintptr_t)page);
 	} break;
 
+	default:
+		ipc_rewindw(-ENOTSUP);
+	}
+	ipc_reply();
+}
+
+void hello_serve_ipc(struct hello_file *fp)
+{
+	switch (ipc_gettype()) {
+	case 1: return hello_mpt_serve_ipc((void*)fp);
+	}
+
+	int nr = ipc_getw();
+
+	switch (nr) {
+
 	case _FILE_mmap:
 	{
 		off_t base = ipc_getoffset();
 		size_t size = ipc_getw();
 		unsigned int flags = ipc_getw();
 		printk("hello_mmap(%d)", base);
-		mpt = hello_mpt_open(fp, base, size, flags);
+		struct mpage_table *mpt = hello_mpt_open(fp, base, size, flags);
 		if (mpt != NULL) {
 			ipc_setbadge((uintptr_t)mpt);
-			ipc_setoffset(-1);
+			ipc_settype(1);
 			ipc_rewindw(0);
 		} else {
 			ipc_rewindw(errno);
@@ -254,7 +263,7 @@ void hello_serve_ipc(void *p)
 	} break;
 
 	default:
-notsup:		ipc_rewindw(-ENOTSUP);
+		ipc_rewindw(-ENOTSUP);
 	}
 	ipc_reply();
 }
@@ -271,16 +280,15 @@ int main(void)
 		void *p = (void*)ipc_getbadge();
 		if (ipc_isclose()) {
 			BUG();
-			/*if (ipc_getoffset() == -1) {
+			/*switch (ipc_getoffset())｛
 				hello_close(p);
 			} else {
-				hello_close(p);
+				hello_mpt_close(p);
 			}*/
 		} else {
 			if (p == NULL) {
 				unsigned int flags = 0;//TOD
 				p = hello_new_open(flags);
-				//printk("fp=%p", p);
 				ipc_setbadge((uintptr_t)p);
 			}
 			hello_serve_ipc(p);

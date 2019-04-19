@@ -15,6 +15,7 @@ int ipc_connect(key_t key, unsigned int flags)
 
 static uintptr_t ipc_badge;
 static uintptr_t ipc_offset;
+static uintptr_t ipc_type;
 #if 0
 static int ipc_fdreply;
 static int ipc_replyfd;
@@ -28,6 +29,16 @@ uintptr_t ipc_getbadge(void)
 void ipc_setbadge(uintptr_t badge)
 {
 	ipc_badge = badge;
+}
+
+uintptr_t ipc_gettype(void)
+{
+	return ipc_type;
+}
+
+void ipc_settype(uintptr_t type)
+{
+	ipc_type = type;
 }
 
 uintptr_t ipc_getoffset(void)
@@ -90,6 +101,7 @@ int ipc_recv(void)
 	else {
 		ipc_badge = ipc_msginfo.badge;
 		ipc_offset = ipc_msginfo.offset;
+		ipc_type = ipc_msginfo.type;
 		//ipc_fdreply = -1;
 	}
 	return r;
@@ -103,6 +115,7 @@ int ipc_poll(void)
 	else {
 		ipc_badge = ipc_msginfo.badge;
 		ipc_offset = ipc_msginfo.offset;
+		ipc_type = ipc_msginfo.type;
 		//ipc_fdreply = -1;
 	}
 	return r;
@@ -110,7 +123,7 @@ int ipc_poll(void)
 
 int ipc_reply(void)
 {
-	return sys_reply(ipc_badge, ipc_offset);
+	return sys_reply(ipc_badge, ipc_offset, ipc_type);
 }
 
 #if 0//{{{

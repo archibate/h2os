@@ -14,7 +14,7 @@ sl4id_t sys_kopen(l4id_t key)
 	if (ep == NULL)
 		return -ENOENT;
 
-	return gf_open(ep, RTYPE_ENDPOINT);
+	return gf_open(ep);
 }
 
 int sys_kserve(l4id_t key)

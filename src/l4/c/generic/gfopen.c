@@ -8,7 +8,7 @@ static int alloc_fd(void)
 {
 	int i;
 	for (i = current->fdtop; i < MAX_FDS; i++)
-		if (current->fds[i].ptr == NULL)
+		if (current->fds[i].ep == NULL)
 			goto found;
 	return -1;
 found:
@@ -24,9 +24,9 @@ static void free_fd(int fd)
 	memset(&current->fds[fd], 0, sizeof(struct fd_entry));
 }
 
-sl4fd_t gf_open(void *p, unsigned int rtype)
+sl4fd_t gf_open(struct endpoint *ep)
 {
-	BUG_ON(p == NULL);
+	BUG_ON(ep == NULL);
 
 	int fd = alloc_fd();
 	if (fd < 0)
@@ -34,8 +34,7 @@ sl4fd_t gf_open(void *p, unsigned int rtype)
 
 	struct fd_entry *fde = &current->fds[fd];
 
-	fde->rtype = rtype;
-	fde->ptr = p;
+	fde->ep = ep;
 
 	return fd;
 }
@@ -58,7 +57,7 @@ sl4fd_t gf_dup(l4fd_t fd)
 		return -ENFILE;
 
 	struct fd_entry *fde = &current->fds[fd];
-	if (fde->ptr == NULL)
+	if (fde->ep == NULL)
 		return -EBADF;
 
 	int nfd = alloc_fd();
@@ -78,11 +77,11 @@ int gf_dup2(l4fd_t fd, l4fd_t dirfd)
 		return -ENFILE;
 
 	struct fd_entry *fde = &current->fds[fd];
-	if (fde->ptr == NULL)
+	if (fde->ep == NULL)
 		return -EBADF;
 
 	struct fd_entry *nfde = &current->fds[dirfd];
-	if (nfde->ptr != NULL)
+	if (nfde->ep != NULL)
 		return -ECLOSAT;
 
 	memcpy(nfde, fde, sizeof(struct fd_entry));
