@@ -1,20 +1,28 @@
 #define USEFAT 1
+#define USEMPT 1
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 #include <h4/fs/sysnr.h>
 #include <h4/fs/defines.h>
 #include <h4/file/sysnr.h>
 #include <h4/servers.h>
+#include <malloc.h>
 #include <errno.h>
 #include <string.h>
 #include <case.h>
 #include <printk.h>
 #include <bug.h>
 #include <h4/fs/oflags.h>
+#include <l4/machine/mmu/page.h>
 #include <numtools.h>
 #ifdef USEFAT
 #include "vn.h"
 #include "dir.h"
+#define IPCT_FILE  1
+#endif
+#ifdef USEMPT
+#include <list.h>
+#define IPCT_MPTAB 2
 #endif
 
 int dev_resolve(const char *name)
@@ -45,6 +53,7 @@ int do_open(const char *path, unsigned int flags)
 		return -errno;
 
 	ipc_setbadge((uintptr_t)v);
+	ipc_settype(IPCT_FILE);
 	return 0;
 #else
 	return -ENOENT;
@@ -86,11 +95,144 @@ void file_close(vn_t *v)
 	free(v);
 }
 
+#ifdef USEMPT
+struct mpage_table
+{
+	struct hlist_head head;
+	vn_t *fp;
+	off_t base;
+	size_t size;
+	unsigned int flags;
+};
+
+struct mpage_entry
+{
+	struct hlist_node hlist;
+	void *page;
+	unsigned int pgnr;
+};
+
+void mpt_new_mpage(struct mpage_table *mpt, unsigned int pgnr, void *page)
+{
+	struct mpage_entry *mpe;
+	/*hlist_for_each_entry2(mpe, &mpt->head, hlist) {
+		if (mpe->pgnr == pgnr) {
+			//free(mpe->page);
+			mpe->page = page;
+			return;
+		}
+	}*/
+	mpe = zalloc(sizeof(struct mpage_entry));
+	mpe->page = page;
+	mpe->pgnr = pgnr;
+	hlist_add_head(&mpe->hlist, &mpt->head);
+	return;
+}
+
+void *mpt_lookup_mpage(struct mpage_table *mpt, unsigned int pgnr)
+{
+	struct mpage_entry *mpe;
+	hlist_for_each_entry2(mpe, &mpt->head, hlist) {
+		if (mpe->pgnr == pgnr) {
+			BUG_ON(mpe->page == NULL);
+			return mpe->page;
+		}
+	}
+	return NULL;
+}
+
+void file_mpt_close(struct mpage_table *mpt)
+{
+	//fput(mpt->fp);
+	free(mpt);
+}
+
+int file_mpt_msync(struct mpage_table *mpt, size_t off, size_t size)
+{
+	void *page = mpt_lookup_mpage(mpt, off / PageSize);
+	BUG_ON(page == NULL);
+	file_write(mpt->fp, page + off % PageSize, size, mpt->base + off);
+	return 0;
+}
+
+int file_mpt_fault(struct mpage_table *mpt, size_t off, int errcd, void **ppage)
+{
+	void *page = amalloc(PageSize, PageSize);
+	BUG_ON(mpt_lookup_mpage(mpt, off / PageSize) != NULL);
+	mpt_new_mpage(mpt, off / PageSize, page);
+	BUG_ON((uintptr_t)page & PageLomask);
+	file_read(mpt->fp, page, PageSize, mpt->base + off);
+	*ppage = page;
+	return 0;
+}
+
+struct mpage_table *file_mpt_open(vn_t *fp, off_t base, size_t size, unsigned int flags)
+{
+	struct mpage_table *mpt = zalloc(sizeof(struct mpage_table));
+
+	mpt->flags = flags;
+	mpt->size = size;
+	mpt->base = base;
+	mpt->fp = fp;
+	return mpt;
+}
+
+void file_mpt_serve_ipc(struct mpage_table *mpt)
+{
+	int nr = ipc_getw();
+
+	switch (nr) {
+
+	case _FILE_msync:
+	{
+		size_t inoff = ipc_getw();
+		size_t size = ipc_getw();
+		printk("file_msync(%d, %d)", inoff, size);
+		int succ = file_mpt_msync(mpt, inoff, size);
+		ipc_rewindw(succ);
+	} break;
+
+	case _FILE_fault:
+	{
+		size_t inoff = ipc_getw();
+		int errcd = ipc_getw();
+		printk("file_fault(%d, %d)", inoff, errcd);
+		void *page = NULL;
+		int succ = file_mpt_fault(mpt, inoff, errcd, &page);
+		ipc_rewindw(succ);
+		ipc_putw((uintptr_t)page);
+	} break;
+
+	default:
+		ipc_rewindw(-ENOTSUP);
+	}
+	ipc_reply();
+}
+#endif
+
 void file_serve_ipc(vn_t *v)
 {
 	unsigned int nr = ipc_getw();
 	//printk("!!!nr=%d", nr);
 	switch (nr) {
+
+#ifdef USEMPT
+	case _FILE_mmap:
+	{
+		off_t base = ipc_getoffset();
+		size_t size = ipc_getw();
+		unsigned int flags = ipc_getw();
+		printk("file_mmap(%d)", base);
+		struct mpage_table *mpt = file_mpt_open(v, base, size, flags);
+		if (mpt != NULL) {
+			ipc_setbadge((uintptr_t)mpt);
+			ipc_settype(2);
+			ipc_rewindw(0);
+		} else {
+			ipc_rewindw(errno);
+		}
+	} break;
+#endif
 
 	case _FILE_pread:
 	{
@@ -174,14 +316,15 @@ int main(void)
 	while (1) {
 		ipc_recv();
 
+		void *p = (void*)ipc_getbadge();
+		switch (ipc_gettype()) {
 #ifdef USEFAT
-		vn_t *v = (void*)ipc_getbadge();
-		if (v != NULL) {
-			file_serve_ipc(v);
-			ipc_reply();
-			continue;
-		}
+		case IPCT_FILE: file_serve_ipc(p); ipc_reply(); continue;
 #endif
+#ifdef USEMPT
+		case IPCT_MPTAB: file_mpt_serve_ipc(p); ipc_reply(); continue;
+#endif
+		}
 
 		int nr = ipc_getw();
 		switch (nr) {

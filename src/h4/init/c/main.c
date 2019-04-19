@@ -96,7 +96,7 @@ again:
 	char *hepag = (void*)0xd000000;
 	sys_mmap(hello, hepag, PageSize, 0);
 	char *hdpag = (void*)0xd001000;
-	sys_mmap(hda, hdpag, PageSize, 0);
+	sys_mmap(fd/*hda*/, hdpag, PageSize, 0);
 
 	char buf[128];
 	int ch;
