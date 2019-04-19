@@ -2,6 +2,7 @@
 
 #include <l4/enum/sfipctypes.h>
 
+#define _FILE_mmap   (-SFIPC_MMAP)
 #define _FILE_msync  (-SFIPC_MSYNC)
 #define _FILE_fault  (-SFIPC_FAULT)
 #define _FILE_pread  1

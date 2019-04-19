@@ -127,7 +127,9 @@ again:
 			static bool foo = false;
 			if (!foo) {
 				foo = true;
+				printk("!!!!!!!!!!!");
 				sys_test_fault(page, 0);
+				printk("!!!!!!!!!!!");
 			}
 			//int ch = page[19];
 			int ch = page[1];

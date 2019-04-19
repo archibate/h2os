@@ -5,6 +5,7 @@
 #include <memory.h>
 #include <errno.h>
 #include <stddef.h>
+#include <list.h>
 #include <bug.h>
 #include <panic.h>
 #include <printk.h>
@@ -13,10 +14,60 @@
 #include <numtools.h>
 #include <l4/machine/mmu/page.h>
 
+/////////////////////////////////
+
+struct mpage_table
+{
+	struct hlist_head head;
+	struct hello_file *fp;
+	off_t base;
+	size_t size;
+	unsigned int flags;
+};
+
+struct mpage_entry
+{
+	struct hlist_node hlist;
+	void *page;
+	unsigned int pgnr;
+};
+
+void mpt_new_mpage(struct mpage_table *mpt, unsigned int pgnr, void *page)
+{
+	struct mpage_entry *mpe;
+	/*hlist_for_each_entry2(mpe, &mpt->head, hlist) {
+		if (mpe->pgnr == pgnr) {
+			//free(mpe->page);
+			mpe->page = page;
+			return;
+		}
+	}*/
+	mpe = zalloc(sizeof(struct mpage_entry));
+	mpe->page = page;
+	mpe->pgnr = pgnr;
+	hlist_add_head(&mpe->hlist, &mpt->head);
+	return;
+}
+
+void *mpt_lookup_mpage(struct mpage_table *mpt, unsigned int pgnr)
+{
+	struct mpage_entry *mpe;
+	hlist_for_each_entry2(mpe, &mpt->head, hlist) {
+		if (mpe->pgnr == pgnr) {
+			BUG_ON(mpe->page == NULL);
+			return mpe->page;
+		}
+	}
+	return NULL;
+}
+
+/////////////////////////////////
+
 struct hello_file
 {
 	void *data;
 	size_t size;
+	struct mpage_table mpt;
 };
 
 ssize_t hello_pread(struct hello_file *fp, void *buf, size_t len, off_t off)
@@ -51,7 +102,7 @@ struct hello_file *hello_new_open(unsigned int flags)
 	/*struct hello_file *fp = malloc(sizeof(struct hello_file));
 	fp->id = conn;
 	BUG_ON(NULL != idmap_add(&ftab, fp));*/
-	struct hello_file *fp = malloc(sizeof(struct hello_file));
+	struct hello_file *fp = zalloc(sizeof(struct hello_file));
 	static char data[] = "Hello, World!\n";
 	fp->data = &data;
 	fp->size = sizeof(data)-1;
@@ -64,49 +115,83 @@ void hello_close(struct hello_file *fp)
 	free(fp);
 }
 
-static void *mmmy_page = NULL;
-
-int hello_msync(struct hello_file *fp, off_t off, size_t size)
+int hello_mpt_msync(struct mpage_table *mpt, size_t off, size_t size)
 {
-	hello_pwrite(fp, mmmy_page + off, size, off);
+	void *page = mpt_lookup_mpage(mpt, off / PageSize);
+	BUG_ON(page == NULL);
+	hello_pwrite(mpt->fp, page + off % PageSize, size, mpt->base + off);
 	return 0;
 }
 
-int hello_fault(struct hello_file *fp, off_t off, int errcd, void **ppage)
+int hello_mpt_fault(struct mpage_table *mpt, size_t off, int errcd, void **ppage)
 {
 	void *page = amalloc(PageSize, PageSize);
-	mmmy_page = page;
+	BUG_ON(mpt_lookup_mpage(mpt, off / PageSize) != NULL);
+	mpt_new_mpage(mpt, off / PageSize, page);
 	BUG_ON((uintptr_t)page & PageLomask);
-	hello_pread(fp, page, PageSize, off);
+	hello_pread(mpt->fp, page, PageSize, mpt->base + off);
 	*ppage = page;
 	return 0;
 }
 
-void hello_serve_ipc(struct hello_file *fp)
+struct mpage_table *hello_mpt_open(struct hello_file *fp, off_t base, size_t size, unsigned int flags)
 {
-	unsigned int nr = ipc_getw();
+	struct mpage_table *mpt = zalloc(sizeof(struct mpage_table));
+
+	mpt->flags = flags;
+	mpt->size = size;
+	mpt->base = base;
+	mpt->fp = fp;
+	return mpt;
+}
+
+void hello_serve_ipc(void *p)
+{
+	struct mpage_table *mpt = p;
+	struct hello_file *fp = p;
+
+	int nr = ipc_getw();
+
+	//printk("nr=%d", nr == _FILE_mmap);
+	if ((ipc_getoffset() != -1) != (nr >= 0 || nr == _FILE_mmap))
+		goto notsup;
+
 	switch (nr) {
 
 	case _FILE_msync:
 	{
-		off_t off = ipc_getoffset();
-		off += ipc_getw();
+		size_t inoff = ipc_getw();
 		size_t size = ipc_getw();
-		printk("hello_msync(%d, %d)", off, size);
-		int succ = hello_msync(fp, off, size);
+		printk("hello_msync(%d, %d)", inoff, size);
+		int succ = hello_mpt_msync(mpt, inoff, size);
 		ipc_rewindw(succ);
 	} break;
-	
+
 	case _FILE_fault:
 	{
-		off_t off = ipc_getoffset();
-		off += ipc_getw();
+		size_t inoff = ipc_getw();
 		int errcd = ipc_getw();
-		printk("hello_fault(%d, %d)", off, errcd);
+		printk("hello_fault(%d, %d)", inoff, errcd);
 		void *page = NULL;
-		int succ = hello_fault(fp, off, errcd, &page);
+		int succ = hello_mpt_fault(mpt, inoff, errcd, &page);
 		ipc_rewindw(succ);
 		ipc_putw((uintptr_t)page);
+	} break;
+
+	case _FILE_mmap:
+	{
+		off_t base = ipc_getoffset();
+		size_t size = ipc_getw();
+		unsigned int flags = ipc_getw();
+		printk("hello_mmap(%d)", base);
+		mpt = hello_mpt_open(fp, base, size, flags);
+		if (mpt != NULL) {
+			ipc_setbadge((uintptr_t)mpt);
+			ipc_setoffset(-1);
+			ipc_rewindw(0);
+		} else {
+			ipc_rewindw(errno);
+		}
 	} break;
 
 	case _FILE_pread:
@@ -169,7 +254,7 @@ void hello_serve_ipc(struct hello_file *fp)
 	} break;
 
 	default:
-		ipc_rewindw(-ENOTSUP);
+notsup:		ipc_rewindw(-ENOTSUP);
 	}
 	ipc_reply();
 }
@@ -183,17 +268,22 @@ int main(void)
 
 	while (1) {
 		ipc_recv();
-		struct hello_file *fp = (void*)ipc_getbadge();
+		void *p = (void*)ipc_getbadge();
 		if (ipc_isclose()) {
-			hello_close(fp);
+			BUG();
+			/*if (ipc_getoffset() == -1) {
+				hello_close(p);
+			} else {
+				hello_close(p);
+			}*/
 		} else {
-			if (!fp) {
+			if (p == NULL) {
 				unsigned int flags = 0;//TOD
-				fp = hello_new_open(flags);
-				//printk("fp=%p", fp);
-				ipc_setbadge((uintptr_t)fp);
+				p = hello_new_open(flags);
+				//printk("fp=%p", p);
+				ipc_setbadge((uintptr_t)p);
 			}
-			hello_serve_ipc(fp);
+			hello_serve_ipc(p);
 		}
 	}
 }

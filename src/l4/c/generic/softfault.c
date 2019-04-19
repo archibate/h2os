@@ -12,17 +12,6 @@
 #include <l4/enum/errno.h>
 #include <l4/misc/bug.h>
 
-int softfault_mmap(struct fd_entry *fde, word_t vaddr, size_t size, unsigned int flags)
-{
-	//printk("sm: %p", current->mm);
-	struct mregion *mreg = mm_new(current->mm, vaddr, vaddr + size);
-	if (mreg == NULL)
-		return -EFAULT;
-
-	memcpy(&mreg->fde, fde, sizeof(struct fd_entry));
-	return 0;
-}
-
 static void ipcbuf_write_faultinfo(void *ipcbuf, word_t off, unsigned int errcd)
 {
 	word_t *ib = ipcbuf;
@@ -39,6 +28,14 @@ static void ipcbuf_write_msyncinfo(void *ipcbuf, word_t off, size_t size)
 	ib[2] = size;
 }
 
+static void ipcbuf_write_mmapinfo(void *ipcbuf, size_t size, unsigned int flags)
+{
+	word_t *ib = ipcbuf;
+	ib[0] = -SFIPC_MMAP;
+	ib[1] = size;
+	ib[2] = flags;
+}
+
 static int ipcbuf_read_faultres(void *ipcbuf, word_t *page)
 {
 	word_t *ib = ipcbuf;
@@ -52,6 +49,30 @@ static int ipcbuf_read_msyncres(void *ipcbuf)
 	word_t *ib = ipcbuf;
 	int succ = ib[0];
 	return succ;
+}
+
+static int ipcbuf_read_mmapres(void *ipcbuf)
+{
+	word_t *ib = ipcbuf;
+	int succ = ib[0];
+	return succ;
+}
+
+int softfault_mmap(struct fd_entry *fde, word_t vaddr, size_t size, unsigned int flags)
+{
+	//printk("sm: %p", current->mm);
+	struct mregion *mreg = mm_new(current->mm, vaddr, vaddr + size);
+	if (mreg == NULL)
+		return -EFAULT;
+
+	memcpy(&mreg->fde, fde, sizeof(struct fd_entry));
+
+	ipcbuf_write_mmapinfo(current->ipcbuf, size, flags);
+
+	//printk("!!!!!callsfipc_Mmap");
+	current->sfipc_type = SFIPC_MMAP;
+	endp_call(&mreg->fde, true, true, -SFIPC_MMAP);
+	return 0;
 }
 
 void user_bad_fault(struct ktcb *proc)
@@ -75,7 +96,7 @@ void softfault_callback(word_t vaddr, unsigned int errcd)
 	struct mregion *mreg = mm_lookup(current->mm, vaddr);
 	if (mreg == NULL)
 		user_bad_fault(current);
-	printk("!!!softfault_callback(%p, %d)", vaddr, errcd);
+	printk("!");//
 
 	word_t off = vaddr - mreg->start;
 	ipcbuf_write_faultinfo(current->ipcbuf, off, errcd);
@@ -91,6 +112,7 @@ static void softfault_onreply_fault(struct ktcb *target)
 
 	word_t page;
 	int succ = ipcbuf_read_faultres(current->ipcbuf, &page);
+	printk("succ=%d", succ);
 	if (succ < 0) {
 bad:		user_bad_fault(target);
 		return;
@@ -113,6 +135,15 @@ static void softfault_onreply_msync(struct ktcb *target)
 	target->context.eax = succ; //T: eax
 }
 
+static void softfault_onreply_mmap(struct ktcb *target)
+{
+	int succ = ipcbuf_read_mmapres(current->ipcbuf);
+	target->context.eax = succ; //T: eax
+	if (succ < 0) {
+		//TOD: free that mreg
+	}
+}
+
 void softfault_onreply(struct ktcb *target)
 {
 	unsigned int type = target->sfipc_type;
@@ -120,6 +151,7 @@ void softfault_onreply(struct ktcb *target)
 	switch (type) {
 	case SFIPC_FAULT: return softfault_onreply_fault(target);
 	case SFIPC_MSYNC: return softfault_onreply_msync(target);
+	case SFIPC_MMAP:  return softfault_onreply_mmap(target);
 	default: BUG();
 	}
 }
@@ -138,4 +170,5 @@ int softfault_msync(word_t vaddr, size_t size)
 
 	current->sfipc_type = SFIPC_MSYNC;
 	endp_call(&mreg->fde, true, true, -SFIPC_MSYNC);
+	return 0;
 }
