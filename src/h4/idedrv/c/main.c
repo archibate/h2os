@@ -196,7 +196,7 @@ void ide_mpt_serve_ipc(void)
 	{
 		size_t inoff = ipc_getw();
 		size_t size = ipc_getw();
-		printk("ide_msync(%d, %d)", inoff, size);
+		//printk("ide_msync(%d, %d)", inoff, size);
 		int succ = ide_mpt_msync(mpt, inoff, size);
 		ipc_rewindw(succ);
 	} break;
@@ -205,7 +205,7 @@ void ide_mpt_serve_ipc(void)
 	{
 		size_t inoff = ipc_getw();
 		int errcd = ipc_getw();
-		printk("ide_fault(%d, %d)", inoff, errcd);
+		//printk("ide_fault(%d, %d)", inoff, errcd);
 		void *page = NULL;
 		int succ = ide_mpt_fault(mpt, inoff, errcd, &page);
 		ipc_rewindw(succ);
@@ -233,7 +233,7 @@ void ide_serve_ipc(void)
 		off_t base = ipc_getoffset();
 		size_t size = ipc_getw();
 		unsigned int flags = ipc_getw();
-		printk("ide_mmap(%d)", base);
+		//printk("ide_mmap(%d)", base);
 		struct mpage_table *mpt = ide_mpt_open(base, size, flags);
 		if (mpt != NULL) {
 			ipc_setbadge((uintptr_t)mpt);

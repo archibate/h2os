@@ -38,7 +38,7 @@ void _FASTCALL hwintr(struct iframe *iframe)
 		BUG_ON((iframe->cs & 3) == 0);
 		hwpgfault(getcr2(), iframe->error_code);
 	case ExceptionGeneralProtection:
-		printk("(sp=%p)", iframe->sp);
+		//printk("(sp=%p)", iframe->sp);
 		panic("#GP from %#04x:%p of instruction %02X (%d)",
 				iframe->cs, iframe->pc,
 				*(volatile uchar*)iframe->pc,

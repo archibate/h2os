@@ -32,13 +32,7 @@ vn_t *__vopen(sb_t *sb, de_t *e)
 	v->sb = sb;
 	v->type = VN_REGFAT;
 
-	uint32_t clus = egetclus(e);
-	int i;
-	//printk("vopen: clus=%d", clus);
-	for (i = 0; i < CBUFMAX; i++) {
-		v->clus[i] = clus;
-		v->blkn[i] = 0;
-	}
+	v->clus_start = egetclus(e);
 
 	return v;
 }
@@ -74,6 +68,8 @@ vn_t *vopendir(sb_t *sb, de_t *e)
 	return __vopen(sb, e);
 }
 
+extern ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr);
+#if 0 // {{{
 static ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 {
 	//printk("!!vvvvv=%p", v);//
@@ -132,13 +128,21 @@ static ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 
 	return len - n;
 }
+#endif // }}}
 
+//extern const char *g_path;//
 static ssize_t __vrw_rootdir(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 {
+		//printk("1[%p:%s][%p:%s]", g_path, g_path, buf, buf);//
+		//unsigned long sp; asm volatile ("mov %%esp, %0" : "=r" (sp));//
+		//printk("%p %p %p %p", g_path, buf, buf + len, sp);//
+		//int ret;
 	if (wr)
 		return pwrite(v->sb->hd, buf, len, v->sb->root_beg + off);
 	else
 		return pread(v->sb->hd, buf, len, v->sb->root_beg + off);
+		//printk("2[%p:%s][%p:%s]", g_path, g_path, buf, buf);//
+		//return ret;
 }
 
 static ssize_t __vrw(vn_t *v, void *buf, size_t len, off_t off, bool wr)
@@ -146,6 +150,7 @@ static ssize_t __vrw(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 	if (off < 0 || off > v->size)
 		return -EINVAL;
 
+	//if (!wr)
 	CLMAX(len, v->size);
 
 	switch (v->type) {

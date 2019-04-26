@@ -1,4 +1,7 @@
 #pragma once
+
+#include <inttypes.h>
+
 // https://github.com/archibate/jos/blob/master/lab1/code/inc/elf.h
 
 #define ELF_MAGIC 0x464C457FU	/* "\x7FELF" in little endian */

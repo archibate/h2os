@@ -1,0 +1,43 @@
+APP=$(shell cat package.ini | grep 'name=' | sed 's/name=usr\///')
+LIBS+=c4 h4 debug h4 l4 c#T:c
+include $(ROOT)/tools/general.mak
+
+.PHONY: default
+default: all
+
+.PHONY: showinfo
+showinfo:
+	@echo CFLAGS=$(CFLAGS)
+	@echo LDFLAGS=$(LDFLAGS)
+	@echo DEFINES=$(DEFINES)
+	@echo INCLUDES=$(INCLUDES)
+	@echo SRCPATH=$(SRCPATH)
+	@echo INCPATH=$(INCPATH)
+	@echo LIBPATH=$(LIBPATH)
+	@echo ADIRS=$(ADIRS)
+	@echo ROOT=$(ROOT)
+	@echo APP=$(APP)
+
+LDSCRIPT=$(ROOT)/tools/user.ld
+
+CLEAN+=$(APP).elf $(LDSCRIPT).i $(OBJS)
+$(APP).elf: $(LDSCRIPT).i $(OBJS)
+	$(EL) ld $@
+	$(CC) $(CFLAGS) $(LDFLAGS) -T $(LDSCRIPT).i -o $@ $(OBJS) $(LIBS:%=-l%)
+
+ALL+=out/bin/$(APP)
+out/bin/$(APP): $(APP).elf
+	@mkdir -p $(@D)
+	$(EL) strip $@
+	$(STRIP) $(STRIPFLAGS) -o $@ $<
+
+.PHONY: all
+all: $(ALL)
+
+.PHONY: clean
+clean:
+	rm -rf $(CLEAN)
+
+.PHONY: distclean
+distclean:
+	rm -rf $(CLEAN) out

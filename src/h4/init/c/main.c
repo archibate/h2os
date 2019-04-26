@@ -49,7 +49,7 @@ static char fsf_a[2048], fsf_b[2048];
 
 const int libh4_serve_id = -1;
 
-void main(void)
+int main(void)
 {
 #if 0//{{{
 	l4id_t id;
@@ -92,6 +92,10 @@ again:
 	BUG_ON(fp == NULL);
 	FILE *kb = fdopen(kbd, "r");
 	BUG_ON(kb == NULL);
+
+	int exe = open("init", O_RDONLY);
+	BUG_ON(exe < 0);
+	((void(*)(void))loadelf(exe))();
 
 	char *hepag = (void*)0xd000000;
 	sys_mmap(hello, hepag, PageSize, 0);
@@ -149,5 +153,5 @@ again:
 		}
 	}
 
-	_exit(0);
+	return 0;
 }

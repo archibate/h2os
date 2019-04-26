@@ -40,6 +40,7 @@ void egetname(const de_t *e, char *buf)
 	}
 
 out:	*buf++ = 0;
+
 	return;
 }
 
@@ -47,5 +48,6 @@ int ecmpname(const de_t *e, const char *name)
 {
 	char ent_name[NAME_MAX+1];
 	egetname(e, ent_name);
+	//if (e->name[0]) printk("ecmpname: [%s] vs [%s] = %d", name, ent_name, stricmp(name, ent_name));
 	return stricmp(ent_name, name);
 }

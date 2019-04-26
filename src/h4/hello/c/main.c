@@ -106,7 +106,6 @@ struct hello_file *hello_new_open(unsigned int flags)
 	static char data[] = "Hello, World!\n";
 	fp->data = &data;
 	fp->size = sizeof(data)-1;
-	BUG_ON(fp == NULL);
 	return fp;
 }
 
@@ -161,7 +160,7 @@ void hello_mpt_serve_ipc(struct mpage_table *mpt)
 	{
 		size_t inoff = ipc_getw();
 		size_t size = ipc_getw();
-		printk("hello_msync(%d, %d)", inoff, size);
+		//printk("hello_msync(%d, %d)", inoff, size);
 		int succ = hello_mpt_msync(mpt, inoff, size);
 		ipc_rewindw(succ);
 	} break;
@@ -170,7 +169,7 @@ void hello_mpt_serve_ipc(struct mpage_table *mpt)
 	{
 		size_t inoff = ipc_getw();
 		int errcd = ipc_getw();
-		printk("hello_fault(%d, %d)", inoff, errcd);
+		//printk("hello_fault(%d, %d)", inoff, errcd);
 		void *page = NULL;
 		int succ = hello_mpt_fault(mpt, inoff, errcd, &page);
 		ipc_rewindw(succ);
@@ -198,7 +197,7 @@ void hello_serve_ipc(struct hello_file *fp)
 		off_t base = ipc_getoffset();
 		size_t size = ipc_getw();
 		unsigned int flags = ipc_getw();
-		printk("hello_mmap(%d)", base);
+		//printk("hello_mmap(%d)", base);
 		struct mpage_table *mpt = hello_mpt_open(fp, base, size, flags);
 		if (mpt != NULL) {
 			ipc_setbadge((uintptr_t)mpt);

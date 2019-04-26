@@ -24,7 +24,7 @@ all: out
 ifdef MINGW
 BASE_PKGNAME+=lib/gcc
 endif
-BASE_PKGNAME+=lib l4 h4 grub
+BASE_PKGNAME+=lib l4 h4 usr grub
 
 CLEAN+=out
 .PHONY: out
@@ -40,6 +40,11 @@ os.iso:
 	make out
 	grub-mkrescue -o $@ out
 	rm -rf out
+
+CLEAN+=hda.img
+.PHONY: hda.img
+hda.img: out
+	tools/mkfatimg.sh
 
 CLEAN+=os.img
 .PHONY: os.img
@@ -61,7 +66,7 @@ QEMUFLAGS+=-m $(MEGS) $(if $(DEBUG),-S -s,) -hda $(HDA_IMG)
 BOCHSFLAGS+='megs:$(MEGS)' 'ata0-master: type=disk, path="$(HDA_IMG)", mode=flat'
 
 H4_MODS=$(shell cat src/h4/package.ini | grep deps= | sed 's/deps=//' | sed 's/h4\///g')
-QINITRD=$(shell echo $(H4_MODS:%=out/bin/%) | awk '{for (i=1;i<=NF;i++)printf "%s%s",$$i,(i!=NF?",":"");}')
+QINITRD=$(shell echo $(H4_MODS:%=out/sbin/%) | awk '{for (i=1;i<=NF;i++)printf "%s%s",$$i,(i!=NF?",":"");}')
 
 .PHONY: showinfo
 showinfo:
@@ -76,13 +81,13 @@ showinfo:
 	@echo MEGS=$(MEGS)
 
 .PHONY: run
-run: $(if $(DRUN),,out)
+run: $(if $(DRUN),,out hda.img)
 	$(QEMU) -kernel out/boot/vmlinux-l4 \
 		-initrd "$(QINITRD)" \
 		$(QEMUFLAGS)
 
 .PHONY: runiso
-runiso: os.iso
+runiso: os.iso hda.img
 	$(QEMU) -cdrom $< -boot d $(QEMUFLAGS)
 
 .PHONY: bochsiso

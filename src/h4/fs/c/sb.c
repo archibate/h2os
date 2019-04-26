@@ -4,6 +4,27 @@
 #include <printk.h>
 #include <h4/file/api.h>
 #include <bug.h>
+#include <panic.h>//
+
+#if 1
+static void printhex(unsigned char *dat, int len)
+{
+	int i;
+	for (i = 0; i < len; i += 16) {
+		printk("%06X:"
+				" %02X %02X %02X %02X"
+				" %02X %02X %02X %02X"
+				" %02X %02X %02X %02X"
+				" %02X %02X %02X %02X"
+				,i,
+				dat[i+0], dat[i+1], dat[i+2], dat[i+3],
+				dat[i+4], dat[i+5], dat[i+6], dat[i+7],
+				dat[i+8], dat[i+9], dat[i+10], dat[i+11],
+				dat[i+12], dat[i+13], dat[i+14], dat[i+15],
+				0);
+	}
+}
+#endif
 
 struct bpb
 {
@@ -53,8 +74,9 @@ sb_t *load_sb(int hd)
 	struct bs16 bs;
 	BUG_ON(pread(hd, &bs, sizeof(bs), sizeof(bpb)) != sizeof(bs));
 
+#define PRINT_SB_ONLOAD 0
 #ifdef PRINT_SB_ONLOAD
-	printk("Loading MS-DOS Volume:");
+	printk("Loading a MS-DOS Volume:");
 	printk("Filesys type: %s", bs.fs_type);
 	printk("Volume Label: %s", bs.vol_lab);
 	printk("Volume ID: %#x", bs.vol_id);
@@ -85,11 +107,13 @@ sb_t *load_sb(int hd)
 
 	uint8_t *fat12 = malloc(fat_size);
 	BUG_ON(pread(hd, fat12, fat_size, fat_base) != fat_size);
+	//printk("read fat at fat_base=%#x, fat_size=%#x", fat_base, fat_size);//
 	fat_size = fat_size * 3 / 2;
 	uint32_t *fat32 = malloc(fat_size);
 	fat_12to32(fat32, fat12, fat_size);
 	sb->fat = fat32;
 	sb->fat_size = fat_size;
+	//printhex(fat12, 100); BUG();
 	free(fat12);
 
 #ifdef PRINT_SB_ONLOAD

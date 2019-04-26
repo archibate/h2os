@@ -26,6 +26,7 @@ ssize_t pwrite(int fd, const void *buf, size_t len, off_t off)
 			return !lened ? ret : lened;
 		lened += ret;
 		off += ret;
+		buf += ret;
 		if (ret != m)
 			break;
 	}

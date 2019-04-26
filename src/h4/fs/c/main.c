@@ -12,6 +12,7 @@
 #include <case.h>
 #include <printk.h>
 #include <bug.h>
+#include <panic.h>
 #include <h4/fs/oflags.h>
 #include <l4/machine/mmu/page.h>
 #include <numtools.h>
@@ -27,14 +28,16 @@
 
 int dev_resolve(const char *name)
 {
-	if (!strcmp(name, "hello")) 
-		return SVID_HELLO;
+	if (!strcmp(name, "zero")) 
+		return SVID_ZERO;
 	else if (!strcmp(name, "cons")) 
 		return SVID_CONS;
 	else if (!strcmp(name, "keybd")) 
 		return SVID_KEYBD;
 	else if (!strcmp(name, "hda")) 
 		return SVID_IDEDRV;
+	else if (!strcmp(name, "hello")) 
+		return SVID_HELLO;
 	else 
 		return -ENOENT;
 }
@@ -158,10 +161,13 @@ int file_mpt_msync(struct mpage_table *mpt, size_t off, size_t size)
 int file_mpt_fault(struct mpage_table *mpt, size_t off, int errcd, void **ppage)
 {
 	void *page = amalloc(PageSize, PageSize);
+	//printk("file_mpt_fault: off=%d, page=%p", off, page);
 	BUG_ON(mpt_lookup_mpage(mpt, off / PageSize) != NULL);
 	mpt_new_mpage(mpt, off / PageSize, page);
 	BUG_ON((uintptr_t)page & PageLomask);
+	//printk("file_mpt_fault: file_read(%d)", mpt->base + off);
 	file_read(mpt->fp, page, PageSize, mpt->base + off);
+	//panic("file: page[0] = %d", ((char*)page)[0]);
 	*ppage = page;
 	return 0;
 }
@@ -187,7 +193,7 @@ void file_mpt_serve_ipc(struct mpage_table *mpt)
 	{
 		size_t inoff = ipc_getw();
 		size_t size = ipc_getw();
-		printk("file_msync(%d, %d)", inoff, size);
+		//printk("file_msync(%d, %d)", inoff, size);
 		int succ = file_mpt_msync(mpt, inoff, size);
 		ipc_rewindw(succ);
 	} break;
@@ -196,7 +202,7 @@ void file_mpt_serve_ipc(struct mpage_table *mpt)
 	{
 		size_t inoff = ipc_getw();
 		int errcd = ipc_getw();
-		printk("file_fault(%d, %d)", inoff, errcd);
+		//printk("file_fault(%d, %d)", inoff, errcd);
 		void *page = NULL;
 		int succ = file_mpt_fault(mpt, inoff, errcd, &page);
 		ipc_rewindw(succ);
@@ -222,7 +228,7 @@ void file_serve_ipc(vn_t *v)
 		off_t base = ipc_getoffset();
 		size_t size = ipc_getw();
 		unsigned int flags = ipc_getw();
-		printk("file_mmap(%d)", base);
+		//printk("file_mmap(%d)", base);
 		struct mpage_table *mpt = file_mpt_open(v, base, size, flags);
 		if (mpt != NULL) {
 			ipc_setbadge((uintptr_t)mpt);
@@ -331,12 +337,14 @@ int main(void)
 		CASE(_FS_open) {
 			size_t len = MAXPATH;
 			unsigned int flags = ipc_getw();
-			const char *path = ipc_getbuf(&len);
+			char *path = ipc_getbuf(&len);
 			if (strnlen(path, len) >= MAXPATH) {
 				ipc_rewindw(-ENAMETOOLONG);
 				BREAK;
 			}
+			path = strdup(path);
 			int ret = do_open(path, flags);
+			free(path);
 			ipc_rewindw(ret);
 		}
 		DEFAULT {

@@ -1,5 +1,5 @@
 APP=$(shell cat package.ini | grep 'name=' | sed 's/name=h4\///')
-LIBS+=c4 h4 debug h4 l4 c
+LIBS+=loader c4 h4 debug h4 l4 c
 include $(ROOT)/tools/general.mak
 
 .PHONY: default
@@ -18,15 +18,15 @@ showinfo:
 	@echo ROOT=$(ROOT)
 	@echo APP=$(APP)
 
-LDSCRIPT=user.ld
+LDSCRIPT=$(ROOT)/tools/user.h4.ld
 
 CLEAN+=$(APP).elf $(LDSCRIPT).i $(OBJS)
 $(APP).elf: $(LDSCRIPT).i $(OBJS)
 	$(EL) ld $@
 	$(CC) $(CFLAGS) $(LDFLAGS) -T $(LDSCRIPT).i -o $@ $(OBJS) $(LIBS:%=-l%)
 
-ALL+=out/bin/$(APP)
-out/bin/$(APP): $(APP).elf
+ALL+=out/sbin/$(APP)
+out/sbin/$(APP): $(APP).elf
 	@mkdir -p $(@D)
 	$(EL) strip $@
 	$(STRIP) $(STRIPFLAGS) -o $@ $<

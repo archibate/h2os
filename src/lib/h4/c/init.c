@@ -16,7 +16,7 @@ static void try_openat(key_t key, int fd)
 	}
 }
 
-extern const int libh4_serve_id;
+extern int libh4_serve_id;
 
 void __libh4_init(void)
 {

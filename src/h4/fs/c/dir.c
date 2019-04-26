@@ -5,14 +5,20 @@
 #include "error.h"
 #include <printk.h>//
 
+//extern const char *g_path;//
+
 static int dir_lookup(vn_t *dir, const char *name, de_t *e)
 {
 	//printk("dir_lookup(%s)", name);//
 	int n;
+	//printk("!0[%s]", g_path);
 	for (n = 0; n < dir->size / DESIZE; n++) {
 		//printk("!!");//
+		//printk("%p", g_path);//
+		//printk("!A[%s]", g_path);//
 		if (DESIZE != vread(dir, e, DESIZE, n * DESIZE))
 			return -EIO;
+		//printk("!B[%s]", g_path);//
 		//if (e->name[0]) printk("dir_lookup: %.11s", e->name);//
 		//printk("!!!%d", e->attr);//
 		if (!ecmpname(e, name))
@@ -44,6 +50,7 @@ static int __dir_getve(vn_t *dir, const char *path, de_t *e,
 	const char *end;
 	int ret;
 	bool runned = false;
+	//printk("!dg[%p:%s]", path, path);
 	
 	while (1) {
 		if (*path == 0) {
@@ -61,7 +68,9 @@ static int __dir_getve(vn_t *dir, const char *path, de_t *e,
 		if (path == NULL)
 			return -ENAMETOOLONG;
 
+		//g_path = path;
 		ret = dir_lookup(dir, name, e);
+		//g_path = NULL;
 		if (ret < 0)
 			return ret;
 
@@ -69,10 +78,13 @@ static int __dir_getve(vn_t *dir, const char *path, de_t *e,
 		if (runned)
 			free(dir);
 
-		if (*path == 0 && !parent)
+		if (*path == 0 && !parent) {
+			//printk("!!!!!!!!!pe");
 			return 0;
+		}
 
 		dir = vopendir(sb, e);
+		//printk("e->name=[%s], dir=%p, errno=%d", e->name, dir, errno);
 		if (dir == NULL)
 			return -errno;
 

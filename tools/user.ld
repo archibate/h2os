@@ -9,13 +9,8 @@ OUTPUT_FORMAT("elf32-i386")
 /* https://github.com/archibate/jos/blob/master/lab4/partB/kern/kernel.ld */
 SECTIONS
 {
-	. = KernVirtEnd;
-
-	.header :
-	{
-		*(.mboot_header)
-		*(.stub)
-	}
+	/*. = KernVirtEnd;*/
+	. = 0x10000000;
 
 	.text :
 	{
@@ -34,18 +29,31 @@ SECTIONS
 		*(.stabstr)
 	}
 
-	. = ALIGN(PageSize);
+	.rodata_align :
+	{
+		. = ALIGN(PageSize);
+	}
+
 	.data :
 	{
 		*(.data .data.*)
 		*(.note* .comment*)
 	}
 
-	. = ALIGN(PageSize);
+	.data_align :
+	{
+		. = ALIGN(PageSize);
+	}
+
 	.bss :
 	{
 		*(.bss .bss.*)
 		*(COMMON)
+	}
+
+	.bss_align :
+	{
+		. = ALIGN(PageSize);
 	}
 
 	/DISCARD/ :

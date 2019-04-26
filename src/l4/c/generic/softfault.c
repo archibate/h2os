@@ -20,6 +20,14 @@ static void ipcbuf_write_faultinfo(void *ipcbuf, word_t off, unsigned int errcd)
 	ib[2] = errcd;
 }
 
+static void ipcbuf_write_munmapinfo(void *ipcbuf, word_t off, size_t size)
+{
+	word_t *ib = ipcbuf;
+	ib[0] = -SFIPC_MUNMAP;
+	ib[1] = off;
+	ib[2] = size;
+}
+
 static void ipcbuf_write_msyncinfo(void *ipcbuf, word_t off, size_t size)
 {
 	word_t *ib = ipcbuf;
@@ -45,6 +53,13 @@ static int ipcbuf_read_faultres(void *ipcbuf, word_t *page)
 }
 
 static int ipcbuf_read_msyncres(void *ipcbuf)
+{
+	word_t *ib = ipcbuf;
+	int succ = ib[0];
+	return succ;
+}
+
+static int ipcbuf_read_munmapres(void *ipcbuf)
 {
 	word_t *ib = ipcbuf;
 	int succ = ib[0];
@@ -113,7 +128,7 @@ static void softfault_onreply_fault(struct ktcb *target)
 
 	word_t page;
 	int succ = ipcbuf_read_faultres(current->ipcbuf, &page);
-	printk("succ=%d", succ);
+	//printk("succ=%d, page=%p, page[0]=%#x", succ, page, ((char*)page)[0]);
 	if (succ < 0) {
 bad:		user_bad_fault(target);
 		return;
@@ -136,6 +151,15 @@ static void softfault_onreply_msync(struct ktcb *target)
 	target->context.eax = succ; //T: eax
 }
 
+static void softfault_onreply_munmap(struct ktcb *target)
+{
+	int succ = ipcbuf_read_munmapres(current->ipcbuf);
+	if (succ >= 0) {
+		mm_del(target->sfipc_wilmreg);
+	}
+	target->sfipc_wilmreg = NULL;
+}
+
 static void softfault_onreply_mmap(struct ktcb *target)
 {
 	int succ = ipcbuf_read_mmapres(current->ipcbuf);
@@ -152,9 +176,10 @@ void softfault_onreply(struct ktcb *target)
 	unsigned int type = target->sfipc_type;
 	target->sfipc_type = 0;
 	switch (type) {
-	case SFIPC_FAULT: return softfault_onreply_fault(target);
-	case SFIPC_MSYNC: return softfault_onreply_msync(target);
-	case SFIPC_MMAP:  return softfault_onreply_mmap(target);
+	case SFIPC_FAULT:  return softfault_onreply_fault(target);
+	case SFIPC_MSYNC:  return softfault_onreply_msync(target);
+	case SFIPC_MMAP:   return softfault_onreply_mmap(target);
+	case SFIPC_MUNMAP: return softfault_onreply_munmap(target);
 	default: BUG();
 	}
 }
@@ -173,5 +198,24 @@ int softfault_msync(word_t vaddr, size_t size)
 
 	current->sfipc_type = SFIPC_MSYNC;
 	endp_call(&mreg->fde, true, true, -SFIPC_MSYNC);
+	return 0;
+}
+
+int softfault_munmap(word_t vaddr, size_t size)
+{
+	struct mregion *mreg = mm_lookup(current->mm, vaddr);
+	if (mreg == NULL)
+		return -EFAULT;
+
+	word_t off = vaddr - mreg->start;
+	if (vaddr + size >= mreg->end)
+		return -EFAULT;
+
+	ipcbuf_write_munmapinfo(current->ipcbuf, off, size);
+
+	current->sfipc_wilmreg = mreg;
+	current->sfipc_type = SFIPC_MUNMAP;
+	endp_call(&mreg->fde, true, true, -SFIPC_MUNMAP);
+
 	return 0;
 }

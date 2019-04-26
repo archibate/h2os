@@ -41,7 +41,7 @@ src_install()
 	then
 		echo "--> installing $p"
 		mkdir -p $ipm_dest
-		for x in boot bin lib include
+		for x in boot bin sbin lib slib include
 		do
 			if [ -d $dir/out/$x ]
 			then

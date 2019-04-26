@@ -3,19 +3,21 @@
 #include "de.h"
 #include "sb.h"
 #include <h4/fs/oflags.h>
+#include <list.h>
 
 #define CBUFMAX 4
 
 typedef struct virfile
 {
-	uint32_t clus[CBUFMAX];
-	uint32_t blkn[CBUFMAX];
+	struct hlist_head cache_lru;
 	enum {
 		VN_REGFAT,
 		VN_ROOTDIR,
 	} type;
-	uint32_t attr;
+	//int cache_id;
 	size_t size;
+	uint32_t clus_start;
+	uint32_t attr;
 	sb_t *sb;
 	uint32_t exflags;
 } vn_t;

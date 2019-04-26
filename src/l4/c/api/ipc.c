@@ -136,6 +136,11 @@ int sys_msync(void *p, size_t size)
 	return softfault_msync((word_t)p, size);
 }
 
+int sys_munmap(void *p, size_t size)
+{
+	return softfault_munmap((word_t)p, size);
+}
+
 #include <l4/generic/softfault.h>//
 int sys_test_fault(void *p, unsigned int errcd)
 {

@@ -9,13 +9,7 @@ OUTPUT_FORMAT("elf32-i386")
 /* https://github.com/archibate/jos/blob/master/lab4/partB/kern/kernel.ld */
 SECTIONS
 {
-	. = KernVirtEnd;
-
-	.header :
-	{
-		*(.mboot_header)
-		*(.stub)
-	}
+	. = KernVirtEnd; /* 0x01000000 */
 
 	.text :
 	{
