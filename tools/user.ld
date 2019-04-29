@@ -4,6 +4,8 @@
 ENTRY(_start)
 #ifndef _MINGW
 OUTPUT_FORMAT("elf32-i386")
+#else
+#define PROVIDE(x) PROVIDE(_##x)
 #endif
 
 /* https://github.com/archibate/jos/blob/master/lab4/partB/kern/kernel.ld */
@@ -22,11 +24,15 @@ SECTIONS
 	}
 	.stab :
 	{
+		PROVIDE(__STAB_BEGIN__ = .);
 		*(.stab)
+		PROVIDE(__STAB_END__ = .);
 	}
 	.stabstr :
 	{
+		PROVIDE(__STABSTR_BEGIN__ = .);
 		*(.stabstr)
+		PROVIDE(__STABSTR_END__ = .);
 	}
 
 	.rodata_align :
@@ -38,6 +44,22 @@ SECTIONS
 	{
 		*(.data .data.*)
 		*(.note* .comment*)
+	}
+
+	.ctors :
+	{
+		PROVIDE(__CTORS_BEGIN__ = .);
+		*(.ctors .ctors.*)
+		PROVIDE(__CTORS_END__ = .);
+		LONG(0);
+	}
+
+	.dtors :
+	{
+		PROVIDE(__DTORS_BEGIN__ = .);
+		*(.dtors .dtors.*)
+		PROVIDE(__DTORS_END__ = .);
+		LONG(0);
 	}
 
 	.data_align :

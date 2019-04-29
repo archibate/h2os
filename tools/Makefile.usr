@@ -1,5 +1,7 @@
 APP=$(shell cat package.ini | grep 'name=' | sed 's/name=usr\///')
 LIBS+=c4 h4 debug h4 l4 c#T:c
+#CRTBEGIN=0 1
+SRCPATH+=$(ROOT)/src/lib/c4/crt
 include $(ROOT)/tools/general.mak
 
 .PHONY: default
@@ -23,7 +25,7 @@ LDSCRIPT=$(ROOT)/tools/user.ld
 CLEAN+=$(APP).elf $(LDSCRIPT).i $(OBJS)
 $(APP).elf: $(LDSCRIPT).i $(OBJS)
 	$(EL) ld $@
-	$(CC) $(CFLAGS) $(LDFLAGS) -T $(LDSCRIPT).i -o $@ $(OBJS) $(LIBS:%=-l%)
+	$(CC) $(CFLAGS) $(LDFLAGS) -T $(LDSCRIPT).i -o $@ $(CRTBEGIN:%=$(ROOT)/out/lib/crt%.o) $(OBJS) $(CRTEND:%=$(ROOT)/out/lib/crt%.o) $(LIBS:%=-l%)
 
 ALL+=out/bin/$(APP)
 out/bin/$(APP): $(APP).elf

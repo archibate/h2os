@@ -25,3 +25,11 @@ int atoi(const char *s);
 
 void srand(unsigned int seed);
 int rand(void);
+
+#define EXIT_SUCCESS 0
+#define EXIT_FAILURE (-1)
+
+#include <compiler.h>
+
+void _NORETURN exit(int status);
+void atexit(void (*proc)(void));

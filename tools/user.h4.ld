@@ -4,6 +4,8 @@
 ENTRY(_start)
 #ifndef _MINGW
 OUTPUT_FORMAT("elf32-i386")
+#else
+#define PROVIDE(x) PROVIDE(_##x)
 #endif
 
 /* https://github.com/archibate/jos/blob/master/lab4/partB/kern/kernel.ld */

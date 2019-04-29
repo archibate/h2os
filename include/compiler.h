@@ -1,6 +1,8 @@
 #pragma once
 
 #define _DEPRECATED		__attribute__((deprecated))
+#define _CTOR			__attribute__((constructor))
+#define _DTOR			__attribute__((destructor))
 #define _FASTCALL	    __attribute__((fastcall))
 #define _STDCALL	    __attribute__((stdcall))
 #define _CDECL  	    __attribute__((cdecl))

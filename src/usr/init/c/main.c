@@ -4,8 +4,13 @@
 
 int main(void)
 {
-	int fd = open("/dev/cons", O_WRONLY);
-	FILE *fp = fdopen(fd, "w");
-	fprintf(fp, "Hello, World!\n");
+	close(0);
+	close(1);
+	close(2);
+	open("/dev/keybd", O_RDONLY);
+	open("/dev/cons", O_WRONLY);
+	dup(1);
+
+	printf("init: started\n");
 	return 0;
 }
