@@ -6,10 +6,13 @@
 #define PGSIZE 4096 // machi
 #define PGMASK (-PGSIZE)
 #include <roundtools.h> // RoundUp in amalloc
-#include <inttypes.h> // size_t
-typedef size_t addr_t;
+#include <inttypes.h> // size_t, uintptr_t
+#include <h4/mm.h> // brk
+typedef uintptr_t addr_t;
 
+#include <compiler.h> // _CTOR
 #include <assert.h> // assert
+#include <bug.h> // BUG_ON
 
 typedef struct HNODE {
 	struct HNODE *next, *prev;
@@ -18,49 +21,63 @@ typedef struct HNODE {
 
 static HNODE *heap_head;
 
-#ifdef LIBC4_UNISTD
-#include <unistd.h> // brk
-static void *get_break(void)
-{
-	return sbrk(0);
-}
-
-static void set_break(void *p)
-{
-	static void *currbrk = NULL;
-	p = p + PGSIZE;
-	if (currbrk != p)
-		brk(currbrk = p);
-}
-#else
 static void *currbrk, *maxbrk;
 
-static void *get_break(void)
+static void *hard_sbrk(ptrdiff_t incptr)
 {
-	return currbrk;
+	//printk("hard_sbrk(%#x): %p->%p", incptr, currbrk, currbrk + incptr);
+	void *oldbrk = currbrk;
+	void *noldbrk = sbrk(incptr);
+	//printk("%p:%p", noldbrk, oldbrk);
+	BUG_ON(noldbrk != oldbrk);
+	currbrk += incptr;
+	return oldbrk;
+}
+
+static void *first_hard_sbrk(ptrdiff_t incptr);
+static void *(*my_sbrk)(ptrdiff_t incptr) = first_hard_sbrk;
+
+static void *first_hard_sbrk(ptrdiff_t incptr)
+{
+	//printk("first_hard_sbrk(%#x)", incptr);
+	void *oldbrk = sbrk(incptr);
+	BUG_ON(oldbrk == (void*)-1);
+	currbrk = oldbrk + incptr;
+	//printk("first_hard_sbrk: %p", currbrk);
+	my_sbrk = hard_sbrk;
+	return oldbrk;
+}
+
+static void *soft_sbrk(ptrdiff_t incptr)
+{
+	void *oldbrk = currbrk;
+	currbrk += incptr;
+	BUG_ON(currbrk > maxbrk);
+	return oldbrk;
 }
 
 static void set_break(void *p)
 {
-	currbrk = p + PGSIZE;
-	assert_info(currbrk < maxbrk, "malloc: out of memory");
+	p = p + PGSIZE;
+	if (currbrk != p) {
+		my_sbrk(p - currbrk);
+	}
 }
 
-void liballoc_set_memory(void *begin, size_t size)
+void liballoc_init(void) // not called in h4 init modules
 {
-	currbrk = begin;
-	maxbrk = begin + size;
-	liballoc_init();
-}
-#endif
-
-void liballoc_init(void)
-{
-	heap_head = (HNODE*)get_break();
-	set_break(heap_head);
+	heap_head = (HNODE*)my_sbrk(PGSIZE);
 	heap_head->allocated = 0;
 	heap_head->next = 0;
 	heap_head->prev = heap_head;
+}
+
+void liballoc_set_memory(void *begin, size_t size) // used in h4 init modules
+{
+	my_sbrk = soft_sbrk;
+	currbrk = begin;
+	maxbrk = begin + size;
+	liballoc_init();
 }
 
 #ifdef dbg_printf // {{{

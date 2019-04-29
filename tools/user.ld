@@ -76,6 +76,7 @@ SECTIONS
 	.bss_align :
 	{
 		. = ALIGN(PageSize);
+		PROVIDE(__EBSS__ = .);
 	}
 
 	/DISCARD/ :

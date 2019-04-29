@@ -1,4 +1,6 @@
-#include <c4/liballoc.h>//
+#include <c4/libcrt.h>
+#include <h4/mm/init.h>
+#include <c4/liballoc.h>
 
 static void call_ctors(void)
 {
@@ -9,9 +11,16 @@ static void call_ctors(void)
 		/*printk("calling ctor %p", *ctor), */(*ctor)();
 }
 
-void __crt_init(int argc, char *const argv[], char *const envp[])
+int __crt_argc;
+char *const *__crt_argv;
+char *const *__crt_envp;
+
+void __crt_init(void *ebss, int argc, char *const argv[], char *const envp[])
 {
-	static char heap[4096*2];//
-	liballoc_set_memory(&heap, sizeof(heap));//
+	__crt_argc = argc;
+	__crt_argv = argv;
+	__crt_envp = envp;
+	__mm_init(ebss);
+	liballoc_init();
 	call_ctors();
 }

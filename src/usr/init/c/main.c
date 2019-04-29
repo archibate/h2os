@@ -1,8 +1,9 @@
 #include <h4/fs.h>
 #include <h4/file.h>
+//#include <h4/sys/execve.h>
 #include <stdio.h>
 
-int main(void)
+int main(int argc, char *const argv[], char *const envp[])
 {
 	close(0);
 	close(1);
@@ -11,6 +12,8 @@ int main(void)
 	open("/dev/cons", O_WRONLY);
 	dup(1);
 
-	printf("init: started\n");
+	printf("init: Hello, World!\n");
 	return 0;
+	/*char *exec_argv[] = {"hello", NULL};
+	return execve("/bin/hello", &exec_argv, envp);*/
 }
