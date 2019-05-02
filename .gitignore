@@ -97,3 +97,6 @@ isodir/
 .*.swo
 .*.swn
 .*.swm
+
+# OS Configuation output
+tools/config.mak

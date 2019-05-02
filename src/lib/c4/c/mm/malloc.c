@@ -3,14 +3,14 @@
 #include <malloc.h> // impelementation
 #include <c4/liballoc.h> // impelementation
 #include <memory.h> // memcpy in realloc
-#define PGSIZE 4096 // machi
+#include <l4/machine/mmu/page.h> // PageSize
+#define PGSIZE PageSize // machi
 #define PGMASK (-PGSIZE)
 #include <roundtools.h> // RoundUp in amalloc
 #include <inttypes.h> // size_t, uintptr_t
 #include <h4/mm.h> // brk
 typedef uintptr_t addr_t;
 
-#include <compiler.h> // _CTOR
 #include <assert.h> // assert
 #include <bug.h> // BUG_ON
 
