@@ -34,6 +34,7 @@ struct ktcb
 	word_t fault_vaddr;
 	unsigned int fault_errcd;
 	unsigned int sfipc_type;
+	struct mm *sfipc_mm;
 	struct mregion *sfipc_wilmreg;
 
 	struct endpoint ep;

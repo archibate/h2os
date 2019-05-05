@@ -1,0 +1,80 @@
+#include <h4/sys/types.h>
+#include <h4/sys/ipc.h>
+#include <h4/mm/sysnr.h>
+#include <h4/servers.h>
+#include <errno.h>
+#include <case.h>
+#include <printk.h>
+#include <bug.h>
+
+struct mm
+{
+};
+
+int mm_execve(const char *path)
+{
+	int fd = open(path, "r");
+	if (fd < 0)
+		return fd;
+	void *pc = loadelf(fd);
+	close(fd);
+	if (pc == NULL)
+		return -ENOEXEC;
+	mm_setpc(pc);
+	return 0;
+}
+
+struct mm *new_mm(uintptr_t ebss)
+{
+	struct mm *mm = malloc(sizeof(struct mm));
+	return mm;
+}
+
+static char *ipc_getstr(size_t maxlen)
+{
+	char *q = ipc_getbuf(NULL);
+	size_t len = strnlen(q, maxlen);
+	if (len == 0)
+		return NULL;
+	ipc_seek_cur(len);
+	char *p = malloc(len);
+	memcpy(p, q, len);
+	return p;
+}
+
+const int libh4_serve_id = SVID_MM;
+
+int main(void)
+{
+	while (1) {
+		ipc_recv();
+		int nr = ipc_getw();
+
+		struct mm *mm = (void*)ipc_getbadge();
+		if (mm == NULL) {
+			switch (nr) {
+			CASE(_MM_newinit) {
+				uintptr_t ebss = ipc_getw();
+				mm = mm_new(ebss);
+				ipc_setbadge((uintptr_t)mm);
+				ipc_rewindw(mm == NULL ? -errno : 0);
+			}
+			DEFAULT {
+				ipc_rewindw(-ENOTSUP);
+			}
+			}
+		} else {
+			switch (nr) {
+			CASE(_MM_execve) {
+				read_execve_ipc_argument();
+				int ret = mm_execve(mm);
+				ipc_rewindw(ret);
+			}
+			DEFAULT {
+				ipc_rewindw(-ENOTSUP);
+			}
+			}
+		}
+		ipc_reply();
+	}
+}

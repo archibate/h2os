@@ -73,12 +73,19 @@ static int ipcbuf_read_mmapres(void *ipcbuf)
 	return succ;
 }
 
-#define get_mmcmm(mmc) ((mmc) == -1 ? current->replying->mm : current->mm)
+static struct ktcb /*kpcb*/ *getmmcproc(l4id_t mmc)
+{
+	if (mmc == 0)
+		return current;
+	else
+		BUG();
+}
 
 int softfault_mmap(l4id_t mmc, struct fd_entry *fde, word_t vaddr, size_t size, unsigned int flags, unsigned int prot)
 {
+	struct ktcb *proc = getmmcproc(mmc);
 	//printk("sm: %p", current->mm);
-	struct mregion *mreg = mm_new(current->mm, vaddr, vaddr + size, prot);
+	struct mregion *mreg = mm_new(proc->mm, vaddr, vaddr + size, prot);
 	if (mreg == NULL)
 		return -EFAULT;
 
@@ -89,8 +96,7 @@ int softfault_mmap(l4id_t mmc, struct fd_entry *fde, word_t vaddr, size_t size, 
 	//printk("!!!!!callsfipc_Mmap");
 	current->sfipc_type = SFIPC_MMAP;
 	current->sfipc_wilmreg = mreg;
-	current->sfipc_mm = get_mmcmm(mmc);
-
+	current->sfipc_proc = proc;
 	endp_call(&mreg->fde, true, true, -SFIPC_MMAP);
 	return 0;
 }
@@ -102,27 +108,28 @@ void user_bad_fault(struct ktcb *proc)
 
 void softfault_callback(l4id_t mmc, word_t vaddr, unsigned int errcd)
 {
+	struct ktcb *proc = getmmcproc(mmc);
 	//printk("softfault_callback(%p, %d)", vaddr, errcd);
 	//current->state = THREAD_SUSPEND;
 	//thread_suspend(current);
 	//return;
 
-	current->fault_vaddr = vaddr;
-	current->fault_errcd = errcd;
-	current->sfipc_mm = get_mmcmm(mmc);
+	proc->fault_vaddr = vaddr;
+	proc->fault_errcd = errcd;
 
 	//printk("sc: %p", current->mm);
 	//printk("scsc %p", list_entry(current->mm->mregs.first, struct mregion, hlist)->start);
 	//printk("!softfault_callback(%p, %d)", vaddr, errcd);
-	struct mregion *mreg = mm_lookup(current->mm, vaddr);
+	struct mregion *mreg = mm_lookup(proc->mm, vaddr);
 	if (mreg == NULL)
-		user_bad_fault(current);
+		user_bad_fault(proc);
 	//printk("scren!!");
 
 	word_t off = vaddr - mreg->start;
 	ipcbuf_write_faultinfo(current->ipcbuf, off, errcd);
 
 	current->sfipc_type = SFIPC_FAULT;
+	current->sfipc_proc = proc;
 	endp_call(&mreg->fde, true, true, -SFIPC_FAULT);
 	//printk("soncall: %p->%p", current, sched_get_curr());
 }
@@ -138,9 +145,7 @@ static void softfault_onreply_fault(struct ktcb *target)
 bad:		user_bad_fault(target);
 		return;
 	}
-	BUG_ON(target->sfipc_mm == NULL);
-	int ret = arch_mm_map_page(target->sfipc_mm, target->fault_vaddr, succ, page);
-	target->sfipc_mm = NULL;
+	int ret = arch_mm_map_page(target->mm, target->fault_vaddr, succ, page);
 	if (ret < 0) {
 		/*target->fault_addr = vaddr;
 		//target->fault_errcd = PageFaultErrorCode_Protect;
@@ -155,7 +160,6 @@ bad:		user_bad_fault(target);
 static void softfault_onreply_msync(struct ktcb *target)
 {
 	int succ = ipcbuf_read_msyncres(current->ipcbuf);
-	target->sfipc_mm = NULL;
 	target->context.eax = succ; //T: eax
 }
 
@@ -165,7 +169,6 @@ static void softfault_onreply_munmap(struct ktcb *target)
 	if (succ >= 0) {
 		mm_del(target->sfipc_wilmreg);
 	}
-	target->sfipc_mm = NULL;
 	target->sfipc_wilmreg = NULL;
 }
 
@@ -177,7 +180,6 @@ static void softfault_onreply_mmap(struct ktcb *target)
 		//TOD: free that mreg
 		mm_del(target->sfipc_wilmreg);
 	}
-	target->sfipc_mm = NULL;
 	target->sfipc_wilmreg = NULL;
 }
 
@@ -207,14 +209,13 @@ int softfault_msync(l4id_t mmc, word_t vaddr, size_t size)
 	ipcbuf_write_msyncinfo(current->ipcbuf, off, size);
 
 	current->sfipc_type = SFIPC_MSYNC;
-	current->sfipc_mm = get_mmcmm(mmc);
 	endp_call(&mreg->fde, true, true, -SFIPC_MSYNC);
 	return 0;
 }
 
 int softfault_munmap(l4id_t mmc, word_t vaddr, size_t size)
 {
-	struct mregion *mreg = mm_lookup(current->mm, vaddr);
+	struct mregion *mreg = mm_lookup(proc->mm, vaddr);
 	if (mreg == NULL)
 		return -EFAULT;
 
@@ -222,11 +223,10 @@ int softfault_munmap(l4id_t mmc, word_t vaddr, size_t size)
 	if (vaddr + size >= mreg->end)
 		return -EFAULT;
 
-	ipcbuf_write_munmapinfo(current->ipcbuf, off, size);
+	ipcbuf_write_munmapinfo(proc->ipcbuf, off, size);
 
 	current->sfipc_wilmreg = mreg;
 	current->sfipc_type = SFIPC_MUNMAP;
-	current->sfipc_mm = get_mmcmm(mmc);
 	endp_call(&mreg->fde, true, true, -SFIPC_MUNMAP);
 
 	return 0;

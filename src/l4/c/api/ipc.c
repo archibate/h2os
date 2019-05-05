@@ -1,5 +1,6 @@
 #include <l4/api/ipc.h>
 #include <l4/api/mmap.h>
+#include <l4/enum/mmprot.h>
 #include <l4/generic/endpoint.h>
 #include <l4/generic/sched.h>
 #include <l4/enum/errno.h>
@@ -120,30 +121,31 @@ int sys_call(l4fd_t fd)
 }
 
 // https://baike.so.com/doc/6784320-7000923.html
-int sys_mmap(l4fd_t fd, void *p, size_t size, unsigned int flags)
+int sys_mmap(l4id_t mmc, l4fd_t fd, void *p, size_t size)
 {
 	int err = fd_verify(fd);
 	if (err < 0)
 		return err;
 
-	int prot = 0;
+	unsigned int prot = PROT_READ | PROT_WRITE | PROT_EXEC;
+	unsigned int flags = 0;
 
-	return softfault_mmap(&get_fde(fd), (word_t)p, size, flags, prot);
+	return softfault_mmap(mmc, &get_fde(fd), (word_t)p, size, flags, prot);
 }
 
-int sys_msync(void *p, size_t size)
+int sys_msync(l4id_t mmc, void *p, size_t size)
 {
-	return softfault_msync((word_t)p, size);
+	return softfault_msync(mmc, (word_t)p, size);
 }
 
-int sys_munmap(void *p, size_t size)
+int sys_munmap(l4id_t mmc, void *p, size_t size)
 {
-	return softfault_munmap((word_t)p, size);
+	return softfault_munmap(mmc, (word_t)p, size);
 }
 
 #include <l4/generic/softfault.h>//
-int sys_test_fault(void *p, unsigned int errcd)
+int sys_test_fault(l4id_t mmc, void *p, unsigned int errcd)
 {
-	softfault_callback((word_t)p, errcd);
+	softfault_callback(mmc, (word_t)p, errcd);
 	return 0;
 }

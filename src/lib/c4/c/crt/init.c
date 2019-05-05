@@ -15,7 +15,7 @@ int __crt_argc;
 char *const *__crt_argv;
 char *const *__crt_envp;
 
-void __crt_init(void *ebss, int argc, char *const argv[], char *const envp[])
+void __crt_init(void *ebss, int argc, char *const *argv, char *const *envp)
 {
 	__crt_argc = argc;
 	__crt_argv = argv;

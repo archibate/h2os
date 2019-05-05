@@ -7,7 +7,7 @@
 
 static void *curr_brk, *min_brk;
 
-void __mm_init(void *ebss)
+void __mm_init(void *ebss) // should be called from crt_init(ebss)
 {
 	min_brk = curr_brk = ebss;
 }
@@ -19,10 +19,10 @@ void *sbrk(ptrdiff_t incptr)
 	int ret;
 	if (incptr > 0) {
 		int zero = open("/dev/zero", O_RDONLY);
-		ret = sys_mmap(zero, curr_brk, incptr, 0);
+		ret = sys_mmap(0, zero, curr_brk, incptr);
 		void *p;
 		for (p = curr_brk; p < curr_brk + incptr; p += PageSize)
-			sys_test_fault(p, 6);
+			sys_test_fault(0, p, 6);
 		close(zero);
 	} else if (incptr < 0) {
 		void *new_brk = curr_brk + incptr;
@@ -30,7 +30,7 @@ void *sbrk(ptrdiff_t incptr)
 			errno = -EFAULT;
 			return (void*)-1;
 		}
-		ret = sys_munmap(new_brk, -incptr);
+		ret = sys_munmap(0, new_brk, -incptr);
 	}
 	if (ret < 0) {
 		errno = -ret;

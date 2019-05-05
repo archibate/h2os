@@ -2,6 +2,7 @@
 #include <h4/sys/ipc.h>
 #include <l4/api/keier.h>
 #include <l4/api/open.h>
+#include <bug.h>//
 
 int ipc_open(key_t key)
 {
@@ -10,6 +11,8 @@ int ipc_open(key_t key)
 
 int ipc_serve(key_t key)
 {
+	//printk("ipc_serve(%d)", key);////
+	//BUG_ON(key == 6174);//
 	return sys_kserve(key);
 }
 

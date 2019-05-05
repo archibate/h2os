@@ -1,5 +1,5 @@
 APP=$(shell cat package.ini | grep 'name=' | sed 's/name=h4\///')
-LIBS+=loader c4 h4 debug h4 l4 c
+LIBS+=c4 h4 debug h4 l4 c
 include $(ROOT)/tools/general.mak
 
 .PHONY: default

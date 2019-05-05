@@ -11,6 +11,7 @@
 #include <l4/api/thread.h>
 #include <l4/api/sched.h>*/
 #include <l4/api/mmap.h>
+#include <l4/enum/mmprot.h>
 #include <l4/stdafx.h>
 #include <l4/machine/mmu/page.h>
 #include <h4/sys/types.h>
@@ -93,14 +94,10 @@ again:
 	FILE *kb = fdopen(kbd, "r");
 	BUG_ON(kb == NULL);
 
-	int exe = open("init", O_RDONLY);
-	BUG_ON(exe < 0);
-	((void(*)(void))loadelf(exe))();
-
 	char *hepag = (void*)0xd000000;
-	sys_mmap(hello, hepag, PageSize, 0);
+	sys_mmap(0, hello, hepag, PageSize);
 	char *hdpag = (void*)0xd001000;
-	sys_mmap(fd/*hda*/, hdpag, PageSize, 0);
+	sys_mmap(0, fd/*hda*/, hdpag, PageSize);
 
 	char buf[128];
 	int ch;
@@ -133,23 +130,33 @@ again:
 			static bool foo = false;
 			if (!foo) {
 				foo = true;
-				sys_test_fault(hepag, 0);
+				sys_test_fault(0, hepag, 0);
 			}
 			//int ch = page[19];
 			int ch = hepag[1];
 			fprintf(out, "got ch: [%c](%d/%#x)\n", ch, ch, ch);
 			hepag[1] = 'z';
-			sys_msync(hepag, 2);
+			sys_msync(0, hepag, 2);
 		} else if (ch == 'n') {
 			//sys_thread_suspend(getpid());
 			static bool foo = false;
 			if (!foo) {
 				foo = true;
-				sys_test_fault(hdpag, 0);
+				sys_test_fault(0, hdpag, 0);
 			}
 			//int ch = page[19];
 			int ch = hdpag[19];
 			fprintf(out, "got ch: [%c](%d/%#x)\n", ch, ch, ch);
+		} else if (ch == 'e') {
+			/*int exe = open("init", O_RDONLY);
+			  BUG_ON(exe < 0);
+			  ((void(*)(void))loadelf(-1, exe))();*/
+			char *exec_argv[] = {"-init", NULL};
+			char *exec_envp[] = {"PATH=/", NULL};
+			int ret = execve("/init", &exec_argv, &exec_envp);
+			printk("execve returned %d", ret);
+			//printk("execve returned %d: %s", ret, strerror(ret));
+			BUG();
 		}
 	}
 
