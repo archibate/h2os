@@ -153,7 +153,7 @@ again:
 			  ((void(*)(void))loadelf(-1, exe))();*/
 			char *exec_argv[] = {"-init", NULL};
 			char *exec_envp[] = {"PATH=/", NULL};
-			int ret = execve("/init", &exec_argv, &exec_envp);
+			int ret = execve("/init", exec_argv, exec_envp);
 			printk("execve returned %d", ret);
 			//printk("execve returned %d: %s", ret, strerror(ret));
 			BUG();

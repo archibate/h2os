@@ -14,7 +14,7 @@ int main(int argc, char *const *argv, char *const *envp)
 
 	printf("init started\n");
 
-	char *exec_argv[] = {"hello", NULL};
+	char *exec_argv[] = {"echo", "hello", "world", NULL};
 	char *exec_envp[] = {"PATH=/", NULL};
-	return execve("/hello", &exec_argv, &exec_envp);
+	return execve("/echo", exec_argv, exec_envp);
 }

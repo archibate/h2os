@@ -1,3 +1,5 @@
 #pragma once
 
-void __crt_init(void *ebss, int argc, char *const *argv, char *const *envp);
+#include <compiler.h>
+
+void _NORETURN __crt_start(void *ebss, int (*main)(int, char *const *, char *const *), void *sp);

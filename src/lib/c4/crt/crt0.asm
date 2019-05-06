@@ -6,10 +6,6 @@ extrn __crt_main
 
 _start:
 	xor ebp, ebp
-	mov esp, stack_top
+	push esp
 	call __crt_main
 	ud2
-
-section .bss
-	resb 4096
-stack_top:

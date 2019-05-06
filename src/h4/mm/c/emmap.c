@@ -8,7 +8,9 @@
 
 int emmap(int mmc, int fd, uintptr_t addr, size_t size, int prot)
 {
-	sys_mmap(mmc, fd, (void*)addr, size);
+	int ret = sys_mmap(mmc, fd, (void*)addr, size);
+	if (ret < 0)
+		return ret;
 	int pfc = PageFaultErrorCode_User;
 	if (prot & PROT_EXEC)
 		pfc |= PageFaultErrorCode_Instr;
@@ -17,4 +19,5 @@ int emmap(int mmc, int fd, uintptr_t addr, size_t size, int prot)
 	uintptr_t a;
 	for (a = addr; a < addr + size; a += PageSize)
 		sys_test_fault(mmc, (void*)a, pfc);
+	return 0;
 }

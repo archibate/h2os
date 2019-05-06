@@ -1,6 +1,12 @@
 #include <c4/libcrt.h>
 #include <h4/mm/init.h>
 #include <c4/liballoc.h>
+#include <h4/mm/defines.h>
+#include <inttypes.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+#include <memory.h>
 
 static void call_ctors(void)
 {
@@ -15,12 +21,36 @@ int __crt_argc;
 char *const *__crt_argv;
 char *const *__crt_envp;
 
-void __crt_init(void *ebss, int argc, char *const *argv, char *const *envp)
+static int crt_parse_once(char **arr, size_t max, char **psp)
 {
-	__crt_argc = argc;
-	__crt_argv = argv;
-	__crt_envp = envp;
+	char *sp = *psp;
+	int i;
+	for (i = 0; i < max; i++) {
+		//printk("sp=[%s]", sp);
+		arr[i] = sp;
+		size_t size = strlen(sp);
+		sp += size + 1;
+		if (size == 0)
+			break;
+	}
+	//printk("----");
+	arr[i] = NULL;
+	*psp = sp;
+	return i;
+}
+
+void _NORETURN __crt_start(void *ebss, int (*main)(int, char *const *, char *const *), void *sp)
+{
 	__mm_init(ebss);
 	liballoc_init();
+
+	char *argv[MAX_ARGV+1];
+	char *envp[MAX_ENVP+1];
+	__crt_argc = crt_parse_once(argv, MAX_ARGV, &sp);
+	crt_parse_once(envp, MAX_ENVP, &sp);
+	__crt_argv = argv;
+	__crt_envp = envp;
+
 	call_ctors();
+	exit(main(__crt_argc, __crt_argv, __crt_envp));
 }

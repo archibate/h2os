@@ -13,20 +13,11 @@
 #include <stddef.h>
 #include <bug.h>
 #include "loader.h"
+#include "passarg.h"
 
-#if 1
 int mm_execve(int mmc, const char *path, char *const *argv, char *const *envp)
 {
-	int fd = open(path, O_RDONLY);
-	if (fd < 0)
-		return fd;
-	int ret = loadelf(mmc, fd);
-	close(fd);
-	return ret;
-}
-#else
-int mm_execve(int mmc, const char *path, char *const *argv, char *const *envp)
-{
+#if 0
 	printk("mm_execve:");
 	printk("  path: %s", path);
 	char *const *p;
@@ -36,15 +27,20 @@ int mm_execve(int mmc, const char *path, char *const *argv, char *const *envp)
 	printk("  envp:");
 	for (p = envp; *p; p++)
 		printk("    %s", *p);
+#endif
 
 	int fd = open(path, O_RDONLY);
 	if (fd < 0)
 		return fd;
-	void *pc = loadelf(mmc, fd);
-
+	uintptr_t pc, sp;
+	int ret = loadelf(mmc, fd, &pc);
+	close(fd);
+	if (ret < 0)
+		return ret;
+	stack_init(mmc, argv, envp, &sp);
+	sys_mmctl_setpcsp(mmc, pc, sp);
 	return 0;
 }
-#endif
 
 static char *ipc_getstr(size_t maxlen)
 {

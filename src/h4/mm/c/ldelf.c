@@ -23,7 +23,7 @@
 
 static void loadprog(int mmc, int fd, struct Proghdr *ph);
 // https://github.com/archibate/jos/blob/master/lab1/code/boot/main.c
-int loadelf(int mmc, int fd)
+int loadelf(int mmc, int fd, uintptr_t *pc)
 {
 	struct Elfhdr e;
 	static struct Proghdr ph;
@@ -47,7 +47,7 @@ int loadelf(int mmc, int fd)
 	}
 
 	tprintk("Executable Entry Point at %#p", e.e_entry);
-	sys_mmctl_setpcsp(mmc, e.e_entry, 0);
+	*pc = e.e_entry;
 	return 0;
 }
 
@@ -78,7 +78,7 @@ void loadprog(int mmc, int fd, struct Proghdr *ph)
 	if (filesz < memsz) {
 		int zero = open("/dev/zero", O_RDONLY);
 		BUG_ON(zero < 0);
-		emmap(mmc, zero, pa + filesz, memsz - filesz, prot);
+		BUG_ON(emmap(mmc, zero, pa + filesz, memsz - filesz, prot) < 0);
 		close(zero);
 	}
 

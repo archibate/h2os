@@ -1,5 +1,6 @@
 #include <l4/system/kbase.h>
 #include <l4/machine/mmu/page.h>
+#include <h4/sys/ubase.h>
 
 ENTRY(_start)
 #ifndef _MINGW
@@ -12,7 +13,7 @@ OUTPUT_FORMAT("elf32-i386")
 SECTIONS
 {
 	/*. = KernVirtEnd;*/
-	. = 0x10000000;
+	. = UserCodeBegin;
 
 	.text :
 	{
