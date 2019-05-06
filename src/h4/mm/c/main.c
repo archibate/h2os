@@ -20,12 +20,9 @@ int mm_execve(int mmc, const char *path, char *const *argv, char *const *envp)
 	int fd = open(path, O_RDONLY);
 	if (fd < 0)
 		return fd;
-	void *pc = loadelf(mmc, fd);
+	int ret = loadelf(mmc, fd);
 	close(fd);
-	if (pc == NULL)
-		return -ENOEXEC;
-	sys_mmctl_setpc(mmc, (uintptr_t)pc);
-	return 0;
+	return ret;
 }
 #else
 int mm_execve(int mmc, const char *path, char *const *argv, char *const *envp)

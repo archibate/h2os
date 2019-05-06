@@ -53,3 +53,8 @@ void mm_del(struct mregion *mreg)
 	hlist_del(&mreg->hlist);
 	kcache_free(&mreg_kcache, mreg);
 }
+
+void mm_destroy(struct mm *mm)
+{
+	pgdir_init(mm->pgdir);
+}

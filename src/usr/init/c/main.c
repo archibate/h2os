@@ -12,9 +12,9 @@ int main(int argc, char *const *argv, char *const *envp)
 	open("/dev/cons", O_WRONLY);
 	dup(1);
 
-	printf("hello from init\n");
+	printf("init started\n");
 
-	/*char *exec_argv[] = {"hello", NULL};
+	char *exec_argv[] = {"hello", NULL};
 	char *exec_envp[] = {"PATH=/", NULL};
-	return execve("/bin/hello", &exec_argv, &exec_envp);*/
+	return execve("/hello", &exec_argv, &exec_envp);
 }
