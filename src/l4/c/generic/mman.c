@@ -1,17 +1,10 @@
 #include <l4/generic/mman.h>
 #include <l4/generic/mregion.h>
-#include <l4/generic/kcache.h>
-#include <l4/generic/allocpage.h>
-#include <l4/machine/mmu/page.h>
-#include <l4/generic/allocpage.h>
+#include <l4/generic/pgdir.h>
+#include <l4/generic/kcget.h>
+#include <l4/enum/rtype.h>
+//#include <l4/machine/mmu/page.h>
 #include <bug.h>
-
-struct kcache mreg_kcache;
-
-void init_mman(void)
-{
-	kcache_init(&mreg_kcache, sizeof(struct mregion), PageSize);
-}
 
 struct mregion *mm_new(struct mm *mm, word_t start, word_t end, unsigned int prot)
 {
@@ -21,12 +14,7 @@ struct mregion *mm_new(struct mm *mm, word_t start, word_t end, unsigned int pro
 			return NULL;
 	}
 
-	mreg = kcache_alloc(&mreg_kcache);
-	if (mreg == NULL) {
-		kcache_add_page(&mreg_kcache, alloc_page());
-		mreg = kcache_alloc(&mreg_kcache);
-		BUG_ON(mreg == NULL);
-	}
+	mreg = kcg_new(RTYPE_MREGION);
 
 	hlist_add_head(&mreg->hlist, &mm->mregs);
 
@@ -51,10 +39,17 @@ struct mregion *mm_lookup(struct mm *mm, word_t addr)
 void mm_del(struct mregion *mreg)
 {
 	hlist_del(&mreg->hlist);
-	kcache_free(&mreg_kcache, mreg);
+	kcg_delete(RTYPE_MREGION, mreg);
 }
 
 void mm_destroy(struct mm *mm)
 {
 	pgdir_init(mm->pgdir);
+}
+
+struct mm *mm_fork(struct mm *mm)
+{
+	struct mm *new_mm = kcg_new(RTYPE_MMAN);
+	new_mm->pgdir = pgdir_fork(mm->pgdir);
+	return new_mm;
 }

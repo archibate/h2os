@@ -2,6 +2,7 @@
 #include <l4/generic/thread.h>
 #include <l4/generic/endpoint.h>
 #include <l4/generic/asyncep.h>
+#include <l4/generic/mregion.h>
 #include <l4/enum/rtype.h>
 #include <l4/misc/bug.h>
 
@@ -15,6 +16,10 @@ size_t _PURE rtype_get_sizeof(unsigned int rtype)
 		return sizeof(struct endpoint);
 	case RTYPE_ASYNC_EP:
 		return sizeof(struct async_ep);
+	case RTYPE_MREGION:
+		return sizeof(struct mregion);
+	case RTYPE_MMAN:
+		return sizeof(struct mm);
 	default:
 		return 0;
 	}
@@ -74,6 +79,10 @@ void rtype_init(void *p, unsigned int rtype)
 		return endpoint_init(p);
 	case RTYPE_ASYNC_EP:
 		return async_init(p);
+	case RTYPE_MREGION:
+	case RTYPE_MMAN:
+		memset(p, 0, rtype_get_sizeof(rtype));
+		return;
 	default:
 		BUG();
 	}

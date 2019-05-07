@@ -1,4 +1,5 @@
 #include <l4/generic/pgdir.h>
+#include <l4/generic/allocpage.h>
 #include <l4/machine/mmu/types.h>
 #include <l4/machine/mmu/page.h>
 #include <l4/machine/mmu/pte.h>
@@ -34,4 +35,46 @@ void pgdir_switch(struct pgdir *pgdir, struct ipc_buf *ipcbuf_ptr)
 		BUG_ON(!pd || PgdirOffset(pd));
 		mmu_setPgdirPaddr(pd);
 	}
+}
+
+static pte_t *pgtab_fork(pte_t *pt)
+{
+	pte_t *new_pt = (pte_t*)alloc_page();
+	memcpy(new_pt, pt, PgtabSize * EntrySize);
+	pt = new_pt;
+	int i;
+	for (i = 0; i < PgtabSize; i++) {
+		pde_t pte = pt[i];
+		if (~pte & (PG_P|PG_W))
+			continue;
+	//printk("got pte=%p", pte);
+		void *pg = (void*)(pte & PGMASK);
+		void *new_pg = (void*)alloc_page();
+		memcpy(new_pg, pg, PageSize);
+		pt[i] = (va_t)pg | (pte & ~PGMASK);
+	}
+}
+
+static void pgd_forkcpy(pde_t *dst_pd, pde_t *src_pd)
+{
+	memcpy(dst_pd, src_pd, PgdirSize * EntrySize);
+	pde_t *pd = dst_pd;
+	int i;
+	for (i = PdeIndex(KernVirtEnd); i < PgdirSize; i++) {
+		pde_t pde = pd[i];
+		if (~pde & (PG_P|PG_W))
+			continue;
+		BUG_ON(pde & PG_PSE);
+		pte_t *pt = (pte_t*)(pde & PGMASK);
+		pt = pgtab_fork(pt);
+		pd[i] = (va_t)pt | (pde & ~PGMASK);
+	}
+}
+
+struct pgdir *pgdir_fork(struct pgdir *pgdir)
+{
+	struct pgdir *new_pd = (void*)alloc_page();
+	printk("new_pd=%p", new_pd);
+	pgd_forkcpy(new_pd->pd, pgdir->pd);
+	return new_pd;
 }

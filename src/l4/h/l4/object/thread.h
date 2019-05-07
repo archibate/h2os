@@ -16,6 +16,7 @@ struct ktcb
 {
 	struct list_node list;
 	struct hlist_node hlist;
+	struct hlist_node hlist_child;
 
 	struct ids_entry ide;
 
@@ -38,6 +39,9 @@ struct ktcb
 	struct mregion *sfipc_wilmreg;
 
 	struct endpoint ep;
+	struct endpoint ep_death;
+
+	struct hlist_head children;
 
 	struct ipc_buf *ipcbuf;
 
