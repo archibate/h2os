@@ -37,6 +37,7 @@ void pgdir_switch(struct pgdir *pgdir, struct ipc_buf *ipcbuf_ptr)
 	}
 }
 
+#if 0
 static pte_t *pgtab_forky(va_t va0, pte_t *pt)
 {
 	pte_t *new_pt = (pte_t*)alloc_page();
@@ -81,3 +82,4 @@ struct pgdir *pgdir_fork(struct pgdir *pgdir)
 	pgd_forkcpy(new_pd->pd, pgdir->pd);
 	return new_pd;
 }
+#endif

@@ -3,7 +3,7 @@
 #include <l4/generic/task-switch.h>
 #include <l4/generic/thread.h>
 #include <l4/generic/idget.h>
-#include <l4/generic/task-fork.h>
+//#include <l4/generic/task-fork.h>
 #include <l4/enum/thread-states.h>
 #include <l4/generic/endpoint.h>
 #include <l4/enum/errno.h>
@@ -56,6 +56,7 @@ int sys_wait_first(void)
 	return hlist_empty(&current->children) ? 1 : 2;
 }
 
+#if 0
 #include <l4/system/kstack.h>
 sl4id_t sys_fork(void)
 {
@@ -82,6 +83,7 @@ sl4id_t sys_fork(void)
 	BUG_ON(tcb->ide.id == 0);
 	return tcb->ide.id;
 }
+#endif
 
 int sys_sched_next(void)
 {

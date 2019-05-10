@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <spawn.h>
 
 int main(int argc, char **argv, char **envp)
 {
-	if (*++argv) exit(execv(*argv, argv));
+	if (*++argv) spawn(*argv, argv, envp, NULL);
 	while (*envp) puts(*envp++);
 }

@@ -58,30 +58,13 @@ void argv_exec(void)
 {
 	if (!argv[0])
 		return;
-	if (!fork()) {
-		//printk("child %s", argv[0]);
-		exit(do_execute());
-	} else {
-		//printk("parent wait!!!!!!!!!!");
-		wait();
-	}
+	do_execute();
 }
 
 int do_execute(void)
 {
-	int i;
-	if (!strcmp(argv[0], "echo")) {
-		for (i = 1; i < argc; i++) {
-			printf("%s%c", argv[i], argv[i+1] ? ' ' : '\n');
-		}
-		//printk("[+] echo done");
-		return 0;
-	} else if (!strcmp(argv[0], "true")) {
-		return 0;
-	} else if (!strcmp(argv[0], "false")) {
-		return 1;
-	} else {
-		//printk("calling execv(%s)", argv[0]);
-		return execv(argv[0], argv);
-	}
+	pid_t pid = spawn(argv[0], argv);
+	if (pid < 0)
+		return pid;
+	return wait4(pid);
 }

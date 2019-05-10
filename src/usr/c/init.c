@@ -1,6 +1,6 @@
 #include <unistd.h>
+#include <spawn.h>
 #include <fcntl.h>
-#include <stdio.h>
 
 int main(int argc, char *const *argv, char *const *envp)
 {
@@ -12,8 +12,7 @@ int main(int argc, char *const *argv, char *const *envp)
 	dup(1);
 
 	char *sh_argv[] = {"-sh", NULL};
-	if (!fork())
-		execve("/sh", sh_argv, envp);
-	else wait();
+	spawnp("/sh", sh_argv, envp, NULL);
+	wait();
 	return 1;
 }

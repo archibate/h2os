@@ -1,3 +1,2 @@
-thread_suspend has bug for async_listen??
-BUG_SYSTEM!! ud2!! UNREACHABLE()
-_sched_lower_priority has BUG!!
+http://www.sohu.com/a/307815715_115128
+fork() is to be elimated, sadly.

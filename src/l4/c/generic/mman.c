@@ -47,9 +47,11 @@ void mm_destroy(struct mm *mm)
 	pgdir_init(mm->pgdir);
 }
 
+#if 0
 struct mm *mm_fork(struct mm *mm)
 {
 	struct mm *new_mm = kcg_new(RTYPE_MMAN);
 	new_mm->pgdir = pgdir_fork(mm->pgdir);
 	return new_mm;
 }
+#endif

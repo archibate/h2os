@@ -9,7 +9,7 @@
 
 #define DEFAULT_EFLAGS (FL_1F | FL_IF | FL_IOPL(3))
 
-void task_newly_forked(struct ktcb *task)
+/*void task_newly_forked(struct ktcb *task)
 {
 	//printk("task_newly_forked");
 	//save_context(&task->context);
@@ -17,7 +17,7 @@ void task_newly_forked(struct ktcb *task)
 	task->context.sp = kSEFrame.sp;
 	task->context.pc = kSEFrame.pc;
 	task->context.eflags = DEFAULT_EFLAGS;
-}
+}*/
 
 void restore_context(const struct context *ctx)
 {
