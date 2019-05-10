@@ -1,4 +1,5 @@
 #include <l4/generic/context.h>
+#include <l4/generic/task-switch.h>
 #include <l4/system/kstack.h>
 #include <l4/system/asm/gdt.h>
 #include <l4/machine/asm/eflags.h>
@@ -7,6 +8,16 @@
 #include <memory.h>
 
 #define DEFAULT_EFLAGS (FL_1F | FL_IF | FL_IOPL(3))
+
+void task_newly_forked(struct ktcb *task)
+{
+	//printk("task_newly_forked");
+	//save_context(&task->context);
+	task->context.eax = 0;
+	task->context.sp = kSEFrame.sp;
+	task->context.pc = kSEFrame.pc;
+	task->context.eflags = DEFAULT_EFLAGS;
+}
 
 void restore_context(const struct context *ctx)
 {
@@ -44,6 +55,7 @@ void save_context(struct context *ctx)
 	extern void _NORETURN utcb_exiter(void);
 	extern void _NORETURN seframe_exiter(void);
 
+	//printk("%p", kErnelExiter);
 	if (kErnelExiter == utcb_exiter) {
 		BUG_ON(~kIFrame.cs & 3);
 		ctx->eax = kIFrame.eax;
@@ -57,7 +69,8 @@ void save_context(struct context *ctx)
 		ctx->sp = kIFrame.sp;
 		ctx->eflags = kIFrame.eflags;
 
-	} else if (kErnelExiter == seframe_exiter) {
+	} else if (/**1||**/kErnelExiter == seframe_exiter) {
+		//BUG();
 		ctx->eax = kSEFrame.eax;
 		ctx->sp = kSEFrame.sp;
 		ctx->pc = kSEFrame.pc;

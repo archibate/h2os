@@ -46,8 +46,8 @@ void _NORETURN __crt_start(void *ebss, int (*main)(int, char *const *, char *con
 
 	char *argv[MAX_ARGV+1];
 	char *envp[MAX_ENVP+1];
-	__crt_argc = crt_parse_once(argv, MAX_ARGV, &sp);
-	crt_parse_once(envp, MAX_ENVP, &sp);
+	__crt_argc = crt_parse_once(argv, MAX_ARGV, (char**)&sp);
+	crt_parse_once(envp, MAX_ENVP, (char**)&sp);
 	__crt_argv = argv;
 	__crt_envp = envp;
 

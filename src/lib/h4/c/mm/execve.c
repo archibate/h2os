@@ -24,6 +24,8 @@ int execve(const char *path, char *const *argv, char *const *envp)
 	for (p = envp; *p; p++)
 		ipc_putstr(*p, MAX_PERENV);
 	ipc_put8(0);
+	//printk("execve(%s) enter", path);
 	ipc_call(SVFD_MM);
+	//printk("execve(%s) leave", path);
 	return ipc_getw();
 }

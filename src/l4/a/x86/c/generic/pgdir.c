@@ -37,7 +37,7 @@ void pgdir_switch(struct pgdir *pgdir, struct ipc_buf *ipcbuf_ptr)
 	}
 }
 
-static pte_t *pgtab_fork(pte_t *pt)
+static pte_t *pgtab_forky(va_t va0, pte_t *pt)
 {
 	pte_t *new_pt = (pte_t*)alloc_page();
 	memcpy(new_pt, pt, PgtabSize * EntrySize);
@@ -48,15 +48,19 @@ static pte_t *pgtab_fork(pte_t *pt)
 		if (~pte & (PG_P|PG_W))
 			continue;
 	//printk("got pte=%p", pte);
-		void *pg = (void*)(pte & PGMASK);
+		//void *pg = (void*)(pte & PGMASK);
+		void *pg = (void*)(va0 + i * PageSize);
+		//printk("pg=%p", pg);
 		void *new_pg = (void*)alloc_page();
 		memcpy(new_pg, pg, PageSize);
-		pt[i] = (va_t)pg | (pte & ~PGMASK);
+		pt[i] = (va_t)new_pg | (pte & ~PGMASK);
 	}
+	return pt;
 }
 
 static void pgd_forkcpy(pde_t *dst_pd, pde_t *src_pd)
 {
+	BUG_ON((pa_t)src_pd != mmu_getPgdirPaddr());
 	memcpy(dst_pd, src_pd, PgdirSize * EntrySize);
 	pde_t *pd = dst_pd;
 	int i;
@@ -66,7 +70,7 @@ static void pgd_forkcpy(pde_t *dst_pd, pde_t *src_pd)
 			continue;
 		BUG_ON(pde & PG_PSE);
 		pte_t *pt = (pte_t*)(pde & PGMASK);
-		pt = pgtab_fork(pt);
+		pt = pgtab_forky(i * PageSize * PgtabSize, pt);
 		pd[i] = (va_t)pt | (pde & ~PGMASK);
 	}
 }
@@ -74,7 +78,6 @@ static void pgd_forkcpy(pde_t *dst_pd, pde_t *src_pd)
 struct pgdir *pgdir_fork(struct pgdir *pgdir)
 {
 	struct pgdir *new_pd = (void*)alloc_page();
-	printk("new_pd=%p", new_pd);
 	pgd_forkcpy(new_pd->pd, pgdir->pd);
 	return new_pd;
 }

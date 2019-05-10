@@ -231,28 +231,3 @@ int softfault_munmap(l4id_t mmc, word_t vaddr, size_t size)
 
 	return 0;
 }
-
-////////////
-
-#include <l4/generic/kcget.h>
-#include <l4/generic/mman.h>
-#include <l4/enum/rtype.h>
-
-static struct ktcb *mtcb_new(void)
-{
-	struct ktcb *tcb = kcg_new(RTYPE_THREAD);
-	return tcb;
-}
-
-struct ktcb *softfault_fork_and_tcb(l4id_t mmc)
-{
-	struct mm *mm = get_mmcmm(mmc);
-	struct mm *new_mm = mm_fork(mm);
-	if (!new_mm)
-		return NULL;
-
-	struct ktcb *tcb = mtcb_new();
-	tcb->mm = new_mm;
-	tcb->ipcbuf = (void*)alloc_page();
-	return tcb;
-}

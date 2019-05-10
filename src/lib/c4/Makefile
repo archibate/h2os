@@ -9,14 +9,14 @@ out/lib/libc4.a: $(OBJS)
 	@#cp -r $(ROOT)/out/lib/libc.a $@
 	$(AR) cqs $@ $(OBJS)
 
-ALL+=out/lib/crt0.o
-out/lib/crt0.o: crt/crt0.asm.o
+ALL+=out/lib/user.ld
+out/lib/user.ld: user.ld
 	@mkdir -p $(@D)
 	$(EL) cop $@
 	cp $< $@
 
-ALL+=out/lib/crt1.o
-out/lib/crt1.o: crt/crt1.c.o
+ALL+=out/lib/crt0.o
+out/lib/crt0.o: crt/crt0.c.o
 	@mkdir -p $(@D)
 	$(EL) cop $@
 	cp $< $@

@@ -38,6 +38,7 @@ int rand(void);
 #include <compiler.h>
 void _NORETURN exit(int status);
 void atexit(void (*proc)(void));
+void atexitarg(void (*proc)(void*), void *arg);
 #include <abort.h>
 
 

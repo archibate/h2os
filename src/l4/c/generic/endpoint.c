@@ -7,13 +7,13 @@
 
 struct ktcb *endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block, bool recv)
 {
-	BUG_ON(caller->state != THREAD_RUNNING);
+	BUG_ON(caller->state != THREAD_RUNNING && caller->state != THREAD_ZOMBIE);
 	struct ktcb *waiter = wq_pop(&ep->waiting);
 	if (waiter) {
 		BUG_ON(waiter->state != THREAD_WAITING);
 		waiter->state = THREAD_RUNNING;
 		thread_active(waiter);
-		if (recv) {
+		if (caller->state != THREAD_ZOMBIE && recv) {
 			caller->state = THREAD_ONRECV;
 			thread_suspend(caller);
 		}

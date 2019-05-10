@@ -5,6 +5,7 @@
 void ids_init(struct id_space *ids)
 {
 	memset(ids, 0, sizeof(*ids));
+	ids->idmax = 1;
 }
 
 static int id_hash(l4id_t id)

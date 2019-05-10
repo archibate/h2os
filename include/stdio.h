@@ -4,11 +4,13 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <compiler.h>
+#include <list.h>
 
 #define BUFSIZ 256
 
 typedef struct iobuf
 {
+	struct hlist_node hlist;
 	int fd;
 	char *p;
 	size_t n;

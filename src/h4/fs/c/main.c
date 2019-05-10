@@ -26,6 +26,15 @@
 #define IPCT_MPTAB 2
 #endif
 
+#if 0
+void *hook_malloc(size_t size)
+{
+	printk("fs: hook_malloc(%d)", size);
+	return malloc(size);
+}
+#define malloc hook_malloc
+#endif
+
 int dev_resolve(const char *name)
 {
 	if (!strcmp(name, "zero")) 

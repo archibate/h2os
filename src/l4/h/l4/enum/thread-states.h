@@ -7,3 +7,4 @@
 #define THREAD_ONCALL    4
 #define THREAD_ONRECV    5
 #define THREAD_LISTENING 6
+#define THREAD_ZOMBIE    7

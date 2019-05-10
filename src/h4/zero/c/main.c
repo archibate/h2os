@@ -14,6 +14,15 @@
 #include <numtools.h>
 #include <l4/machine/mmu/page.h>
 
+#if 0
+void *fuck_malloc(size_t size)
+{
+	printk("zero: fuck_malloc(%d)", size);
+	return malloc(size);
+}
+#define malloc fuck_malloc
+#endif
+
 #define ZERO_FRGSIZ 256
 
 /////////////////////////////////

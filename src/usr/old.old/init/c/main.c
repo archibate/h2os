@@ -1,8 +1,5 @@
-#include <h4/fs.h>
-#include <h4/file.h>
-#include <h4/mm.h>
-#include <h4/sys/types.h>
-#include <h4/sys/sched.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <stdio.h>
 
 int main(int argc, char *const *argv, char *const *envp)
@@ -16,12 +13,10 @@ int main(int argc, char *const *argv, char *const *envp)
 
 	printf("init started\n");
 
-	char *exec_argv[] = {"echo", "hello", "world", NULL};
-	char *exec_envp[] = {"PATH=/", NULL};
+	char *sh_argv[] = {"-sh", NULL};
 	if (!fork())
-		execve("/echo", exec_argv, exec_envp);
-	else
-		wait();
+		execve("/sh", sh_argv, envp);
+	else wait();
 	printf("error: init process exiting\n");
 	return 1;
 }

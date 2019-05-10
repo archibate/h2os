@@ -46,12 +46,17 @@ void thread_suspend(struct ktcb *x)
 		} else {
 			//printk("curr=%p", sched_get_curr());
 			sched_next();
+			//printk("list_del1");
 			list_del(&x->list);
+			//x->list.prev = 0;
 			//printk("wl%p", x->list.next);
 			//printk("curr=%p", sched_get_curr());
 		}
 	} else {
+		//printk("list_del2 enter");
+		//printk("%p(%p,%p)", x, x->list.prev, x->list.next);
 		list_del(&x->list);
+		//printk("list_del2 leave");
 	}
 }
 

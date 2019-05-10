@@ -8,7 +8,7 @@ int vfprintf
 	, va_list ap
 	)
 {
-	return vgprintf(fputc, fp, fmt, ap);
+	return vgprintf((void*)fputc, fp, fmt, ap);
 }
 
 

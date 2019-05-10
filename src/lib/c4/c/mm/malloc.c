@@ -50,8 +50,10 @@ static void *first_hard_sbrk(ptrdiff_t incptr)
 
 static void *soft_sbrk(ptrdiff_t incptr)
 {
+	//printk("soft_sbrk!!!");
 	void *oldbrk = currbrk;
 	currbrk += incptr;
+	//if (currbrk > maxbrk) printk("FUCKFUCKFUCKIT!!!!");//
 	BUG_ON(currbrk > maxbrk);
 	return oldbrk;
 }
@@ -66,6 +68,7 @@ static void set_break(void *p)
 
 void liballoc_init(void) // not called in h4 init modules
 {
+	//printk("liballoc_init");
 	heap_head = (HNODE*)my_sbrk(PGSIZE);
 	heap_head->allocated = 0;
 	heap_head->next = 0;
@@ -74,6 +77,7 @@ void liballoc_init(void) // not called in h4 init modules
 
 void liballoc_set_memory(void *begin, size_t size) // used in h4 init modules
 {
+	//printk("liballoc_set_memory(size=%d)", size);
 	my_sbrk = soft_sbrk;
 	currbrk = begin;
 	maxbrk = begin + size;

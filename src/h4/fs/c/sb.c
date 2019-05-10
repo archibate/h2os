@@ -74,7 +74,7 @@ sb_t *load_sb(int hd)
 	struct bs16 bs;
 	BUG_ON(pread(hd, &bs, sizeof(bs), sizeof(bpb)) != sizeof(bs));
 
-#define PRINT_SB_ONLOAD 0
+//#define PRINT_SB_ONLOAD 1
 #ifdef PRINT_SB_ONLOAD
 	printk("Loading a MS-DOS Volume:");
 	printk("Filesys type: %s", bs.fs_type);
@@ -90,7 +90,7 @@ sb_t *load_sb(int hd)
 	printk("Sec per Cluster: %d", bpb.spc);
 	printk("Total Secs: %d", bpb.tot_secs16 ? bpb.tot_secs16 : bpb.tot_secs32);
 #else
-	printk("Loading MS-DOS Volume %s...", bs.vol_lab);
+	printk("fs: Loading MS-DOS Volume %s...", bs.vol_lab);
 #endif
 
 	sb_t *sb = malloc(sizeof(sb_t));

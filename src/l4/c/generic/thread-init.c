@@ -29,6 +29,7 @@ void thread_revoke(struct ktcb *tcb)
 void thread_delete(struct ktcb *tcb)
 {
 	thread_revoke(tcb);
+	//printk("!!!");
 	hlist_del(&tcb->ide.hlist);
 	//hlist_del(&tcb->hlist);
 	//list_del(&tcb->list);

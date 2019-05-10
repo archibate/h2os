@@ -75,6 +75,7 @@ int main(void)
 	pause();
 	pause();
 
+#if 0
 	int fs, kbd, hello, cons, hda, fd;
 again:
 	cons = open("/dev/cons", O_WRONLY);
@@ -148,13 +149,16 @@ again:
 			int ch = hdpag[19];
 			fprintf(out, "got ch: [%c](%d/%#x)\n", ch, ch, ch);
 		} else if (ch == 'e') {
+#else
+			if (1) { if (1) {
+#endif
 			/*int exe = open("init", O_RDONLY);
 			  BUG_ON(exe < 0);
 			  ((void(*)(void))loadelf(-1, exe))();*/
 			char *exec_argv[] = {"-init", NULL};
 			char *exec_envp[] = {"PATH=/", NULL};
 			int ret = execve("/init", exec_argv, exec_envp);
-			printk("execve returned %d", ret);
+			printk("h4/init: execve returned %d", ret);
 			//printk("execve returned %d: %s", ret, strerror(ret));
 			BUG();
 		}

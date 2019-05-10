@@ -45,6 +45,8 @@ struct ktcb
 
 	struct ipc_buf *ipcbuf;
 
+	//bool bg_forked; // T:debug
+
 	// T: below move to kpcb and mm mm
 	struct mm *mm;
 
