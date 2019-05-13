@@ -50,6 +50,6 @@ struct ktcb
 	// T: below move to kpcb and mm mm
 	struct mm *mm;
 
-	l4fd_t fdtop;
-	struct fd_entry fds[MAX_FDS]; // T: maybe use hash table better?
+	//l4fd_t fdtop;
+	//struct fd_entry fds[MAX_FDS]; // T: maybe use hash table better?
 };

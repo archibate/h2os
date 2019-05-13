@@ -1,4 +1,4 @@
 #pragma once
 
-int sys_mmctl_setpcsp(l4id_t mmc, uintptr_t pc, uintptr_t sp);
-int sys_mmctl_destroy(l4id_t mmc);
+int sys_mm_new_thread(l4fd_t mmc, uintptr_t pc, uintptr_t sp);
+int sys_mm_destroy(l4fd_t mmc);

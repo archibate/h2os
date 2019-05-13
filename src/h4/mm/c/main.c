@@ -15,7 +15,7 @@
 #include "loader.h"
 #include "passarg.h"
 
-int mm_execve(int mmc, const char *path, char *const *argv, char *const *envp)
+int mm_spawn(const char *path, char *const *argv, char *const *envp)
 {
 #if 0
 	printk("mm_execve:");
@@ -33,12 +33,15 @@ int mm_execve(int mmc, const char *path, char *const *argv, char *const *envp)
 	if (fd < 0)
 		return fd;
 	uintptr_t pc, sp;
+	int mmc = sys_create_mm(1);
+	if (mmc < 0)
+		return mmc;
 	int ret = loadelf(mmc, fd, &pc);
 	close(fd);
 	if (ret < 0)
 		return ret;
 	stack_init(mmc, argv, envp, &sp);
-	sys_mmctl_setpcsp(mmc, pc, sp);
+	sys_mm_new_thread(mmc, pc, sp);
 	return 0;
 }
 
@@ -71,7 +74,7 @@ static void ipc_getstrarr(char *arr[], size_t maxlen, size_t maxcnt)
 
 const int libh4_serve_id = SVID_MM;
 
-int ipc_onexecve(void)
+int ipc_onspawn(void)
 {
 	char *path = ipc_getstr(MAX_PATH);
 	if (!path)
@@ -80,7 +83,7 @@ int ipc_onexecve(void)
 	ipc_getstrarr(argv, MAX_PERARG, MAX_ARGV);
 	char *envp[MAX_ENVP+1];
 	ipc_getstrarr(envp, MAX_PERENV, MAX_ENVP);
-	int ret = mm_execve(-1, path, argv, envp);
+	int ret = mm_spawn(path, argv, envp);
 	free(path);
 	char **p;
 	for (p = argv; *p; p++)
@@ -99,8 +102,8 @@ int main(void)
 		ipc_recv();
 		int nr = ipc_getw();
 		switch (nr) {
-		CASE(_MM_execve) {
-			int ret = ipc_onexecve();
+		CASE(_MM_spawn) {
+			int ret = ipc_onspawn();
 			ipc_rewindw(ret);
 		}
 		DEFAULT {

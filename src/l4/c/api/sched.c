@@ -85,7 +85,7 @@ sl4id_t sys_fork(void)
 }
 #endif
 
-int sys_sched_next(void)
+int sys_pause(void)
 {
 	//printk("!!%p", kErnelExiter);BUG();
 	sched_next();

@@ -1,6 +1,6 @@
 #include <l4/api/thread.h>
 #include <l4/generic/thread.h>
-#include <l4/generic/idget.h>
+#include <l4/generic/idspace.h>
 #include <l4/enum/thread-states.h>
 #include <l4/enum/thread-registers.h>
 #include <l4/enum/errno.h>
@@ -8,7 +8,7 @@
 
 int sys_thread_suspend(l4id_t tid)
 {
-	struct ktcb *tcb = id_get_thread(tid);
+	struct ktcb *tcb = LID(current->mm, ktcb, tid);
 	if (!tcb) return -ESRCH;
 
 	if (tcb->state != THREAD_RUNNING)
@@ -22,7 +22,7 @@ int sys_thread_suspend(l4id_t tid)
 int sys_thread_check(l4id_t tid)
 {
 	//printk("sys_thread_check(%d)", tid);
-	struct ktcb *tcb = id_get_thread(tid);
+	struct ktcb *tcb = LID(current->mm, ktcb, tid);
 	if (!tcb) return -ESRCH;
 
 	if (tcb->state != THREAD_SUSPEND)
@@ -33,7 +33,7 @@ int sys_thread_check(l4id_t tid)
 
 int sys_thread_set_register(l4id_t tid, unsigned int reg, word_t value)
 {
-	struct ktcb *tcb = id_get_thread(tid);
+	struct ktcb *tcb = LID(current->mm, ktcb, tid);
 	if (!tcb) return -ESRCH;
 
 	if (tcb->state != THREAD_SUSPEND)
@@ -53,7 +53,7 @@ int sys_thread_set_register(l4id_t tid, unsigned int reg, word_t value)
 
 int sys_thread_active(l4id_t tid)
 {
-	struct ktcb *tcb = id_get_thread(tid);
+	struct ktcb *tcb = LID(current->mm, ktcb, tid);
 	if (!tcb) return -ESRCH;
 
 	if (tcb->state != THREAD_SUSPEND)
@@ -66,7 +66,7 @@ int sys_thread_active(l4id_t tid)
 
 int sys_thread_set_priority(l4id_t tid, unsigned char priority)
 {
-	struct ktcb *tcb = id_get_thread(tid);
+	struct ktcb *tcb = LID(current->mm, ktcb, tid);
 	if (!tcb) return -ESRCH;
 
 	thread_set_priority(tcb, priority);
@@ -75,7 +75,7 @@ int sys_thread_set_priority(l4id_t tid, unsigned char priority)
 
 int sys_thread_get_priority(l4id_t tid)
 {
-	struct ktcb *tcb = id_get_thread(tid);
+	struct ktcb *tcb = LID(current->mm, ktcb, tid);
 	if (!tcb) return -ESRCH;
 
 	return tcb->priority;
@@ -83,7 +83,7 @@ int sys_thread_get_priority(l4id_t tid)
 
 int sys_thread_get_state(l4id_t tid)
 {
-	struct ktcb *tcb = id_get_thread(tid);
+	struct ktcb *tcb = LID(current->mm, ktcb, tid);
 	if (!tcb) return -ESRCH;
 
 	return tcb->state;

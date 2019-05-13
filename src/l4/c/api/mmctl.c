@@ -1,24 +1,29 @@
 #include <l4/generic/sched.h>
 #include <l4/generic/mman.h>
 #include <l4/api/mmctl.h>
-#include <l4/generic/softfault.h>
+//#include <l4/generic/softfault.h>
+#include <l4/generic/thread-new.h>
 #include <l4/enum/errno.h>
 #include <l4/enum/thread-states.h>
 #include <l4/misc/bug.h>
 
-int sys_mmctl_setpcsp(l4id_t mmc, uintptr_t pc, uintptr_t sp)
+int sys_mm_new_thread(l4fd_t mmc, uintptr_t pc, uintptr_t sp)
 {
-	if (mmc != -1)
-		return -EINVAL;
-	current->replying->context.pc = pc;
-	current->replying->context.sp = sp;
-	return 0;
+	struct mm *mm = LID(current->mm, mm, mmc);
+	if (!mm)
+		return -ESRCH;
+	struct ktcb *proc = new_thread();
+	proc->context.pc = pc;
+	proc->context.sp = sp;
+	return LIDNEW(mm, proc);
 }
 
-int sys_mmctl_destroy(l4id_t mmc)
+int sys_mm_destroy(l4fd_t mmc)
 {
-	if (mmc != -1)
-		return -EINVAL;
-	mm_destroy(current->replying->mm);
+	struct mm *mm = LID(current->mm, mm, mmc);
+	if (!mm)
+		return -ESRCH;
+	mm_destroy(mm);
+	LIDDEL(mm);
 	return 0;
 }

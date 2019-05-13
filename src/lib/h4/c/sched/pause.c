@@ -5,6 +5,6 @@
 
 int pause(void)
 {
-	sys_sched_next();
+	sys_pause();
 	return 0;
 }
