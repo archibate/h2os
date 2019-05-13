@@ -22,12 +22,10 @@ static int fd_verify(l4fd_t fd)
 	if (fd >= MAX_FDS)
 		return -ENFILE;
 
-	g_fde = ids_get(&current->fds);
+	g_fde = &current->mm->fds[fd];
 
-	if (g_fde == NULL)
+	if (g_fde->ep == NULL)
 		return -EBADF;
-
-	BUG_ON(g_fde->ep == NULL);
 
 	return 0;
 }

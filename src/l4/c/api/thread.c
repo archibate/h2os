@@ -1,4 +1,5 @@
 #include <l4/api/thread.h>
+#include <l4/generic/sched.h>
 #include <l4/generic/thread.h>
 #include <l4/generic/idspace.h>
 #include <l4/enum/thread-states.h>

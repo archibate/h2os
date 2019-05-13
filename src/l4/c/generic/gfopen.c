@@ -7,21 +7,21 @@
 static int alloc_fd(void)
 {
 	int i;
-	for (i = current->fdtop; i < MAX_FDS; i++)
-		if (current->fds[i].ep == NULL)
+	for (i = current->mm->fdtop; i < MAX_FDS; i++)
+		if (current->mm->fds[i].ep == NULL)
 			goto found;
 	return -1;
 found:
-	current->fdtop = i + 1;
+	current->mm->fdtop = i + 1;
 	return i;
 }
 
 static void free_fd(int fd)
 {
-	if (fd < current->fdtop)
-		current->fdtop = fd;
+	if (fd < current->mm->fdtop)
+		current->mm->fdtop = fd;
 
-	memset(&current->fds[fd], 0, sizeof(struct fd_entry));
+	memset(&current->mm->fds[fd], 0, sizeof(struct fd_entry));
 }
 
 sl4fd_t gf_open(struct endpoint *ep)
@@ -32,7 +32,7 @@ sl4fd_t gf_open(struct endpoint *ep)
 	if (fd < 0)
 		return -EMFILE;
 
-	struct fd_entry *fde = &current->fds[fd];
+	struct fd_entry *fde = &current->mm->fds[fd];
 
 	fde->ep = ep;
 
@@ -46,7 +46,7 @@ int gf_close(l4fd_t fd)
 
 	free_fd(fd);
 
-	struct fd_entry *fde = &current->fds[fd];
+	struct fd_entry *fde = &current->mm->fds[fd];
 
 	return 0;
 }
@@ -56,7 +56,7 @@ sl4fd_t gf_dup(l4fd_t fd)
 	if (fd >= MAX_FDS)
 		return -ENFILE;
 
-	struct fd_entry *fde = &current->fds[fd];
+	struct fd_entry *fde = &current->mm->fds[fd];
 	if (fde->ep == NULL)
 		return -EBADF;
 
@@ -64,7 +64,7 @@ sl4fd_t gf_dup(l4fd_t fd)
 	if (nfd < 0)
 		return -EMFILE;
 
-	struct fd_entry *nfde = &current->fds[nfd];
+	struct fd_entry *nfde = &current->mm->fds[nfd];
 
 	memcpy(nfde, fde, sizeof(struct fd_entry));
 
@@ -76,11 +76,11 @@ int gf_dup2(l4fd_t fd, l4fd_t dirfd)
 	if (fd >= MAX_FDS)
 		return -ENFILE;
 
-	struct fd_entry *fde = &current->fds[fd];
+	struct fd_entry *fde = &current->mm->fds[fd];
 	if (fde->ep == NULL)
 		return -EBADF;
 
-	struct fd_entry *nfde = &current->fds[dirfd];
+	struct fd_entry *nfde = &current->mm->fds[dirfd];
 	if (nfde->ep != NULL)
 		return -ECLOSAT;
 

@@ -5,7 +5,6 @@
 #include <l4/object/utcb.h>
 #include <l4/object/ipcbuf.h>
 #include <l4/object/identry.h>
-#include <l4/object/fdentry.h>
 #include <l4/object/context.h>
 #include <l4/object/msginfo.h>
 #include <l4/object/endpoint.h>
@@ -18,7 +17,8 @@ struct ktcb
 	struct hlist_node hlist;
 	struct hlist_node hlist_child;
 
-	struct ids_entry ide;
+	struct ids_entry lide;
+	struct ids_entry ide;//
 
 	unsigned char priority;
 	unsigned char state;
@@ -49,7 +49,4 @@ struct ktcb
 
 	// T: below move to kpcb and mm mm
 	struct mm *mm;
-
-	//l4fd_t fdtop;
-	//struct fd_entry fds[MAX_FDS]; // T: maybe use hash table better?
 };
