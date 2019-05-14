@@ -35,7 +35,6 @@ int loadelf(int mmc, int fd, uintptr_t *pc)
 		return -ENOEXEC;
 
 	//printk("mmc_destroy");//
-	sys_mmctl_destroy(mmc);
 
 	tprintk("Offset     PhysAddr   VirtAddr   Filesz     Memsz      Flg Align");
 	for (i = 0; i < e.e_phnum; i++) {
@@ -74,7 +73,7 @@ void loadprog(int mmc, int fd, struct Proghdr *ph)
 		prot |= PROT_WRITE;
 	if (ph->p_flags & PF_X)
 		prot |= PROT_EXEC;
-	emmap(mmc, fd, pa, filesz, prot);
+	BUG_ON(emmap(mmc, fd, pa, filesz, prot) < 0);
 	if (filesz < memsz) {
 		int zero = open("/dev/zero", O_RDONLY);
 		BUG_ON(zero < 0);

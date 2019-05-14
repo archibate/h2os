@@ -1,12 +1,14 @@
 #include <l4/api/asyncep.h>
 #include <l4/generic/sched.h>
 #include <l4/generic/asyncep.h>
-#include <l4/generic/idget.h>
+#include <l4/generic/idspace.h>
 #include <l4/enum/errno.h>
+
+IDSPACE(async_ep);
 
 int sys_async_pulse(l4id_t id)
 {
-	struct async_ep *aep = id_get_async_ep(id);
+	struct async_ep *aep = ID(async_ep, id);
 	if (!aep)
 		return -ESRCH;
 
@@ -16,7 +18,7 @@ int sys_async_pulse(l4id_t id)
 
 int sys_async_poll(l4id_t id)
 {
-	struct async_ep *aep = id_get_async_ep(id);
+	struct async_ep *aep = ID(async_ep, id);
 	if (!aep)
 		return -ESRCH;
 
@@ -26,7 +28,7 @@ int sys_async_poll(l4id_t id)
 
 int sys_async_listen(l4id_t id)
 {
-	struct async_ep *aep = id_get_async_ep(id);
+	struct async_ep *aep = ID(async_ep, id);
 	if (!aep)
 		return -ESRCH;
 

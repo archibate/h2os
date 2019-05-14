@@ -24,6 +24,10 @@ void init_usermods(void)
 		const void *begin = (void*)m[i].mod_start;
 		const void *end = (void*)m[i].mod_end;
 		tprintk("#%d  %#p->%#p  %s", i, begin, end, name);
+#ifdef CONFIG_DUMP_MODULE_PIDS
+		printk("[%2d] %s", load_module(begin, end), name);
+#else
 		load_module(begin, end);
+#endif
 	}
 }

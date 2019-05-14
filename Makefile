@@ -24,7 +24,7 @@ all: out
 ifdef MINGW
 BASE_PKGNAME+=lib/gcc
 endif
-BASE_PKGNAME+=lib l4 h4 usr grub
+BASE_PKGNAME+=lib h4 usr grub
 
 CLEAN+=out
 .PHONY: out

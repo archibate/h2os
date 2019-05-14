@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <spawn.h>
+#include <stddef.h>
 #include <fcntl.h>
 
 int main(int argc, char *const *argv, char *const *envp)

@@ -1,9 +1,7 @@
-#define CALL(func,...) extern void func(); func(__VA_ARGS__);
-
 void generic_setup(void)
 {
-	//CALL(init_mman);
-	CALL(init_kcg);
-	CALL(init_idg);
-	CALL(init_softirq_aeps);
+	extern void *__CTORS_BEGIN__[], *__CTORS_END__[];
+	void **p;
+	for (p = __CTORS_BEGIN__; p < __CTORS_END__; p++)
+		(*(void (**)(void))p)();
 }

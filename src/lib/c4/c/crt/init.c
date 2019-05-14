@@ -1,7 +1,8 @@
 #include <c4/libcrt.h>
-#include <h4/mm/init.h>
 #include <c4/liballoc.h>
-#include <h4/mm/defines.h>
+#include <h4/mm/init.h>
+#include <h4/sys/types.h>
+#include <h4/sys/spawn.h>
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdlib.h>

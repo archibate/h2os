@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <spawn.h>
 #define BLANK " \n\t\r"
 
 static int argc;
@@ -61,9 +62,10 @@ void argv_exec(void)
 	do_execute();
 }
 
+#define wait4(pid) /* TODO: MADA NOTHING */
 int do_execute(void)
 {
-	pid_t pid = spawn(argv[0], argv);
+	pid_t pid = spawn(argv[0], argv, NULL, NULL);
 	if (pid < 0)
 		return pid;
 	return wait4(pid);

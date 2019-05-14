@@ -3,7 +3,7 @@
 #include <l4/api/mmctl.h>
 #include <h4/mm/sysnr.h>
 #include <h4/servers.h>
-#include <h4/mm/defines.h>
+#include <h4/sys/spawn.h>
 #include <c4/liballoc.h>
 #include <h4/fs.h>
 #include <errno.h>
@@ -15,7 +15,7 @@
 #include "loader.h"
 #include "passarg.h"
 
-int mm_spawn(const char *path, char *const *argv, char *const *envp)
+int mm_spawn(int src_mmc, const char *path, char *const *argv, char *const *envp)
 {
 #if 0
 	printk("mm_execve:");
@@ -33,7 +33,7 @@ int mm_spawn(const char *path, char *const *argv, char *const *envp)
 	if (fd < 0)
 		return fd;
 	uintptr_t pc, sp;
-	int mmc = sys_create_mm(1);
+	int mmc = sys_create_mm(src_mmc);
 	if (mmc < 0)
 		return mmc;
 	int ret = loadelf(mmc, fd, &pc);
@@ -83,7 +83,7 @@ int ipc_onspawn(void)
 	ipc_getstrarr(argv, MAX_PERARG, MAX_ARGV);
 	char *envp[MAX_ENVP+1];
 	ipc_getstrarr(envp, MAX_PERENV, MAX_ENVP);
-	int ret = mm_spawn(path, argv, envp);
+	int ret = mm_spawn(-1, path, argv, envp);
 	free(path);
 	char **p;
 	for (p = argv; *p; p++)

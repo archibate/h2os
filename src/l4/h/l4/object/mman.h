@@ -12,12 +12,12 @@ struct mm
 	struct ids_entry lide;
 
 	struct id_space lids_ktcb;
+	struct id_space lids_mm;
+
+	struct hlist_head mregs;
+	struct pgdir *pgdir;
 
 	//struct id_space lids_fd_entry;
 	l4fd_t fdtop;
 	struct fd_entry fds[MAX_FDS]; // T: maybe use hash table better?
-
-	struct hlist_head mregs;
-
-	struct pgdir *pgdir;
 };

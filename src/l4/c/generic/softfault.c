@@ -2,6 +2,7 @@
 #include <l4/generic/mman.h>
 #include <l4/generic/ipc.h>
 #include <l4/generic/sched.h>
+#include <l4/generic/idspace.h>
 #include <l4/generic/thread.h>//
 #include <l4/enum/thread-states.h>//
 #include <l4/generic/softfault.h>
@@ -73,12 +74,17 @@ static int ipcbuf_read_mmapres(void *ipcbuf)
 	return succ;
 }
 
-#define get_mmcmm(mmc) ((mmc) == -1 ? current->replying->mm : current->mm)
+//#define get_mmcmm(mmc) ((mmc) == -1 ? current->replying->mm : current->mm)
 
 int softfault_mmap(l4id_t mmc, struct fd_entry *fde, word_t vaddr, size_t size, unsigned int flags, unsigned int prot)
 {
+	//printk("softfault_mmap: mmc=%d", mmc);
+	struct mm *mm = LID(current->mm, mm, mmc);
+	if (!mm)
+		return -ESRCH;
+
 	//printk("sm: %p", current->mm);
-	struct mregion *mreg = mm_new(current->mm, vaddr, vaddr + size, prot);
+	struct mregion *mreg = mm_new_mreg(current->mm, vaddr, vaddr + size, prot);
 	if (mreg == NULL)
 		return -EFAULT;
 
@@ -89,7 +95,8 @@ int softfault_mmap(l4id_t mmc, struct fd_entry *fde, word_t vaddr, size_t size, 
 	//printk("!!!!!callsfipc_Mmap");
 	current->sfipc_type = SFIPC_MMAP;
 	current->sfipc_wilmreg = mreg;
-	current->sfipc_mm = get_mmcmm(mmc);
+	current->sfipc_mm = mm;
+	//printk("sfm:%p!!!", current->sfipc_mm);
 
 	endp_call(&mreg->fde, true, true, -SFIPC_MMAP);
 	return 0;
@@ -100,8 +107,18 @@ void user_bad_fault(struct ktcb *proc)
 	panic("user_bad_fault(%p, %d)", proc->fault_vaddr, proc->fault_errcd);
 }
 
-void softfault_callback(l4id_t mmc, word_t vaddr, unsigned int errcd)
+int softfault_callback(l4id_t mmc, word_t vaddr, unsigned int errcd)
 {
+	printk("softfault_callback(%d, %p, %d)", mmc, vaddr, errcd);
+	struct mm *mm;
+	if (mmc) {
+		mm = LID(current->mm, mm, mmc);
+		if (!mm)
+			return -ESRCH;
+	} else {
+		mm = current->mm;
+		BUG_ON(!mm);
+	}
 	//printk("softfault_callback(%p, %d)", vaddr, errcd);
 	//current->state = THREAD_SUSPEND;
 	//thread_suspend(current);
@@ -109,12 +126,13 @@ void softfault_callback(l4id_t mmc, word_t vaddr, unsigned int errcd)
 
 	current->fault_vaddr = vaddr;
 	current->fault_errcd = errcd;
-	current->sfipc_mm = get_mmcmm(mmc);
+	current->sfipc_mm = mm;
+	//printk("sfc:%p!!!", current->sfipc_mm);
 
 	//printk("sc: %p", current->mm);
 	//printk("scsc %p", list_entry(current->mm->mregs.first, struct mregion, hlist)->start);
 	//printk("!softfault_callback(%p, %d)", vaddr, errcd);
-	struct mregion *mreg = mm_lookup(current->mm, vaddr);
+	struct mregion *mreg = mm_lookup_mreg(current->mm, vaddr);
 	if (mreg == NULL)
 		user_bad_fault(current);
 	//printk("scren!!");
@@ -125,6 +143,7 @@ void softfault_callback(l4id_t mmc, word_t vaddr, unsigned int errcd)
 	current->sfipc_type = SFIPC_FAULT;
 	endp_call(&mreg->fde, true, true, -SFIPC_FAULT);
 	//printk("soncall: %p->%p", current, sched_get_curr());
+	return 0;
 }
 
 static void softfault_onreply_fault(struct ktcb *target)
@@ -138,7 +157,9 @@ static void softfault_onreply_fault(struct ktcb *target)
 bad:		user_bad_fault(target);
 		return;
 	}
+	//printk("sof:%p!!!", target->sfipc_mm);
 	BUG_ON(target->sfipc_mm == NULL);
+	BUG_ON(target->sfipc_mm->pgdir == NULL);
 	int ret = arch_mm_map_page(target->sfipc_mm, target->fault_vaddr, succ, page);
 	target->sfipc_mm = NULL;
 	if (ret < 0) {
@@ -163,7 +184,7 @@ static void softfault_onreply_munmap(struct ktcb *target)
 {
 	int succ = ipcbuf_read_munmapres(current->ipcbuf);
 	if (succ >= 0) {
-		mm_del(target->sfipc_wilmreg);
+		mm_mreg_del(target->sfipc_wilmreg);
 	}
 	target->sfipc_mm = NULL;
 	target->sfipc_wilmreg = NULL;
@@ -175,7 +196,7 @@ static void softfault_onreply_mmap(struct ktcb *target)
 	target->context.eax = succ; //T: eax
 	if (succ < 0) {
 		//TOD: free that mreg
-		mm_del(target->sfipc_wilmreg);
+		mm_mreg_del(target->sfipc_wilmreg);
 	}
 	target->sfipc_mm = NULL;
 	target->sfipc_wilmreg = NULL;
@@ -196,7 +217,11 @@ void softfault_onreply(struct ktcb *target)
 
 int softfault_msync(l4id_t mmc, word_t vaddr, size_t size)
 {
-	struct mregion *mreg = mm_lookup(current->mm, vaddr);
+	struct mm *mm = LID(current->mm, mm, mmc);
+	if (!mm)
+		return -ESRCH;
+
+	struct mregion *mreg = mm_lookup_mreg(current->mm, vaddr);
 	if (mreg == NULL)
 		return -EFAULT;
 
@@ -207,14 +232,18 @@ int softfault_msync(l4id_t mmc, word_t vaddr, size_t size)
 	ipcbuf_write_msyncinfo(current->ipcbuf, off, size);
 
 	current->sfipc_type = SFIPC_MSYNC;
-	current->sfipc_mm = get_mmcmm(mmc);
+	current->sfipc_mm = mm;
 	endp_call(&mreg->fde, true, true, -SFIPC_MSYNC);
 	return 0;
 }
 
 int softfault_munmap(l4id_t mmc, word_t vaddr, size_t size)
 {
-	struct mregion *mreg = mm_lookup(current->mm, vaddr);
+	struct mm *mm = LID(current->mm, mm, mmc);
+	if (!mm)
+		return -ESRCH;
+
+	struct mregion *mreg = mm_lookup_mreg(current->mm, vaddr);
 	if (mreg == NULL)
 		return -EFAULT;
 
@@ -226,7 +255,7 @@ int softfault_munmap(l4id_t mmc, word_t vaddr, size_t size)
 
 	current->sfipc_wilmreg = mreg;
 	current->sfipc_type = SFIPC_MUNMAP;
-	current->sfipc_mm = get_mmcmm(mmc);
+	current->sfipc_mm = mm;
 	endp_call(&mreg->fde, true, true, -SFIPC_MUNMAP);
 
 	return 0;

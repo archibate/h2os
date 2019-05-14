@@ -13,7 +13,7 @@ static int id_hash(l4id_t id)
 	return ((id * 1103518245 + 1512314) >> 16) % ID_HASH_MAX;
 }
 
-struct ids_entry *ids_lookup(struct id_space *ids, l4id_t id)
+struct ids_entry *ids_get(struct id_space *ids, l4id_t id)
 {
 	int h = id_hash(id);
 	struct hlist_head *hh = &ids->ht[h];
@@ -47,7 +47,8 @@ void *ids_add(struct id_space *ids, struct ids_entry *ide)
 	return NULL;
 }
 
-struct ids_entry *ids_del(struct id_space *ids, l4id_t id)
+#if 0
+struct ids_entry *ids_unset(struct id_space *ids, l4id_t id)
 {
 	int h = id_hash(id);
 	struct hlist_head *hh = &ids->ht[h];
@@ -60,17 +61,17 @@ struct ids_entry *ids_del(struct id_space *ids, l4id_t id)
 	}
 	return NULL;
 }
+#endif
 
-l4id_t ids_new_entry(struct id_space *ids, struct ids_entry *ide)
+void ide_del(struct ids_entry *ide)
 {
-#if 0
-	do ide->id = (rand() % 244) * RAND_MAX + rand();
-	while (ids_add(ids, ide));
-	return ide->id;
-#else
+	hlist_del(&ide->hlist);
+}
+
+l4id_t ids_new(struct id_space *ids, struct ids_entry *ide)
+{
 	l4id_t id = ids->idmax++; // T: use idtop大法 instread
 	ide->id = id;
 	BUG_ON(ids_add(ids, ide) != NULL);
 	return id;
-#endif
 }

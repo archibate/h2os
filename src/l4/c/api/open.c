@@ -1,12 +1,14 @@
 #include <l4/api/open.h>
-#include <l4/generic/idget.h>
 #include <l4/generic/gfopen.h>
+#include <l4/generic/idspace.h>
 #include <l4/object/thread.h>
 #include <l4/enum/errno.h>
 
+IDSPACE(ktcb);
+
 sl4fd_t sys_connect(l4id_t tid)
 {
-	struct ktcb *tcb = id_get_thread(tid);
+	struct ktcb *tcb = ID(ktcb, tid);
 	if (!tcb) return -ESRCH;
 
 	return gf_open(&tcb->ep);

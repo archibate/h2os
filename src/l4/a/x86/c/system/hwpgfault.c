@@ -13,6 +13,6 @@ void hwpgfault(ulong vaddr, uint errcd)
 	}
 
 	sched_enter();
-	softfault_callback(0, vaddr, errcd);
+	BUG_ON(softfault_callback(0, vaddr, errcd) <= 0);
 	sched_leave();
 }

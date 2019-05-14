@@ -14,8 +14,8 @@ void _NORETURN arch_startup(void)
 	CALL(init_tss);
 	CALL(init_kdrvs);
 	CALL(init_kfers);
-	CALL(init_usermods);
 	CALL(generic_setup);
+	CALL(init_usermods);
 	CALL(move_to_user);
 	UNREACHABLE();
 }

@@ -21,7 +21,7 @@ static void try_openat(key_t key, int fd)
 
 void __libh4_init(void)
 {
-	printk("libh4_serve_id=%d", libh4_serve_id);
+	//printk("libh4_serve_id=%d", libh4_serve_id);
 	if (libh4_serve_id >= 0)
 		ipc_serve(libh4_serve_id);
 	pause();

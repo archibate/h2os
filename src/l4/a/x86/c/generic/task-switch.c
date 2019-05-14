@@ -15,6 +15,10 @@ void task_switch(struct ktcb *old_task, struct ktcb *new_task)
 		printk("(sp[1]=%p)", ((void**)old_task->context.sp)[1]);
 	}
 #endif
+	/*BUG_ON(!new_task);
+	BUG_ON(!new_task->mm);
+	BUG_ON(!new_task->mm->pgdir);
+	BUG_ON(!new_task->ipcbuf);*/
 	pgdir_switch(new_task->mm->pgdir, new_task->ipcbuf);
 #if 0
 	if (new_task->bg_forked) {

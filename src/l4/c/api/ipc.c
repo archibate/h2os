@@ -101,6 +101,7 @@ int sys_munmap(l4id_t mmc, void *p, size_t size)
 #include <l4/generic/softfault.h>//
 int sys_test_fault(l4id_t mmc, void *p, unsigned int errcd)
 {
+	// if (!mmc) return -EINVAL;??
 	softfault_callback(mmc, (word_t)p, errcd);
 	return 0;
 }

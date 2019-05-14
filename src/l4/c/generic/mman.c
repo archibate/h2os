@@ -1,12 +1,23 @@
 #include <l4/generic/mman.h>
 #include <l4/generic/mregion.h>
 #include <l4/generic/pgdir.h>
-#include <l4/generic/kcget.h>
-#include <l4/enum/rtype.h>
-//#include <l4/machine/mmu/page.h>
-#include <bug.h>
+#include <l4/generic/kcache.h>
+#include <l4/generic/idspace.h>
+#include <l4/generic/allocpage.h>
+#include <l4/machine/mmu/page.h>
+#include <l4/misc/bug.h>
 
-struct mregion *mm_new(struct mm *mm, word_t start, word_t end, unsigned int prot)
+KCACHE(mregion);
+
+void mm_init(struct mm *mm)
+{
+	ids_init(&mm->lids_mm);
+	ids_init(&mm->lids_ktcb);
+	mm->pgdir = (struct pgdir *)alloc_page();
+	pgdir_init(mm->pgdir);
+}
+
+struct mregion *mm_new_mreg(struct mm *mm, word_t start, word_t end, unsigned int prot)
 {
 	struct mregion *mreg;
 	hlist_for_each_entry2(mreg, &mm->mregs, hlist) {
@@ -14,7 +25,7 @@ struct mregion *mm_new(struct mm *mm, word_t start, word_t end, unsigned int pro
 			return NULL;
 	}
 
-	mreg = kcg_new(RTYPE_MREGION);
+	mreg = KCNEW(mregion);
 
 	hlist_add_head(&mreg->hlist, &mm->mregs);
 
@@ -25,7 +36,7 @@ struct mregion *mm_new(struct mm *mm, word_t start, word_t end, unsigned int pro
 	return mreg;
 }
 
-struct mregion *mm_lookup(struct mm *mm, word_t addr)
+struct mregion *mm_lookup_mreg(struct mm *mm, word_t addr)
 {
 	struct mregion *mreg;
 	hlist_for_each_entry2(mreg, &mm->mregs, hlist) {
@@ -36,22 +47,14 @@ struct mregion *mm_lookup(struct mm *mm, word_t addr)
 	return NULL;
 }
 
-void mm_del(struct mregion *mreg)
+void mm_mreg_del(struct mregion *mreg)
 {
 	hlist_del(&mreg->hlist);
-	kcg_delete(RTYPE_MREGION, mreg);
+	KCDEL(mregion, mreg);
 }
 
 void mm_destroy(struct mm *mm)
 {
 	pgdir_init(mm->pgdir);
+	//struct ktcb *tcb; LID_FOREACH(tcb, mm, ktcb) { thread_delete(tcb); }
 }
-
-#if 0
-struct mm *mm_fork(struct mm *mm)
-{
-	struct mm *new_mm = kcg_new(RTYPE_MMAN);
-	new_mm->pgdir = pgdir_fork(mm->pgdir);
-	return new_mm;
-}
-#endif
