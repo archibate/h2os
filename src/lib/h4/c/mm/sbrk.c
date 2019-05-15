@@ -4,6 +4,7 @@
 #include <l4/api/mmap.h>
 #include <l4/machine/mmu/page.h>
 #include <errno.h>
+#include <bug.h>
 
 static void *curr_brk, *min_brk;
 

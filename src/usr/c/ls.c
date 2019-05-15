@@ -40,12 +40,35 @@ out:	*buf++ = 0;
 
 	return;
 }
+
 // }}}
+
+void printdostime(uint16_t time)
+{
+	struct dos_ts {
+		uint16_t sec2 : 5;
+		uint16_t min : 6;
+		uint16_t hour : 5;
+	} *t = (void*)&time;
+	printf("%02d:%02d:%02d", t->hour, t->min, t->sec2 * 2);
+}
+
+void printdosdate(uint16_t date)
+{
+	struct dos_ds {
+		uint16_t day : 5;
+		uint16_t mon : 4;
+		uint16_t year1980 : 7;
+	} *d = (void*)&date;
+	printf("%04d/%02d/%02d", d->year1980 + 1980, d->mon, d->day);
+}
 
 void showde(struct dirent *de)
 {
+	const char *scale = "BKMG";
 	char name[NAME_MAX+1];
 	char attr[] = "?---";
+	size_t size = de->size;
 	egetname(de, name);
 	if (!name[0]) return;
 	if (de->attr & T_VOL) attr[0] = 'v';
@@ -56,17 +79,23 @@ void showde(struct dirent *de)
 	if (de->attr & T_RO ) attr[1] = 'r';
 	if (de->attr & T_HID) attr[2] = 'i';
 	if (de->attr & T_SYS) attr[3] = 's';
-	printf("%s  %s\n", attr, name);
+	while (size >= 4096 && *scale)
+		size /= 4096, scale++;
+	printf("%s ", attr);
+	printdosdate(de->cdate);
+	printf(" ");
+	printdostime(de->ctime);
+	printf(" % 4d%c %s\n", size, *scale, name);
 }
 
 void ls(const char *path)
 {
 	FILE *fp = fopen(path, "d");
-	if (!fp) { perror(path); goto out; }
+	if (!fp) { perror(path); return; }
 	struct dirent de;
 	while (fread(&de, sizeof(de), 1, fp) == 1)
 		showde(&de);
-out:	fclose(fp);
+	fclose(fp);
 }
 
 int main(int argc, char **argv)

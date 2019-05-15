@@ -22,8 +22,8 @@ l4id_t sys_getpid(void)
 int sys_exit(void)
 {
 	//printk("sys_exit(%p)", current);
-	current->state = THREAD_ZOMBIE;
-	thread_suspend(current);
+	current->is_zombie = true;
+	endpoint_call(&current->mm->parent->ep_chld, current, true, true);
 	/*while (NULL != endpoint_call(&current->ep_death, current, true, false));
 	BUG_ON(sched_get_curr() == current);*/
 	//current->we_callback = on_wait_exit_reply;//TODO
@@ -37,22 +37,25 @@ int sys_exit(void)
 	return 0;
 }
 
-#define WIN
 int sys_wait_first(void)
 {
-	/*if (hlist_empty(&current->children))
+	if (!current->mm->num_children)
+		return 0;
+	endpoint_wait(&current->mm->ep_chld, current, true);
+	return current->mm->num_children--;
+#if 0
+	if (hlist_empty(&current->children))
 		return 0;
 	struct ktcb *tcb = hlist_entry(__hlist_pop(&current->children), struct ktcb, hlist_child);
 	endpoint_wait(&tcb->ep_death, current, true);
 	//printk("sys_wait~~~");
-#ifdef WIN
 	if (tcb->state == THREAD_SUSPEND) {
 		tcb->state = THREAD_RUNNING;
 		thread_active(tcb);
 	}
-#endif
-	return hlist_empty(&current->children) ? 1 : 2;*/
+	return hlist_empty(&current->children) ? 1 : 2;
 	sys_exit();//
+#endif
 }
 
 int sys_pause(void)

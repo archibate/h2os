@@ -1,1 +1,2 @@
-for x in `<h4.txt`; do echo ===========$x==========>&2; rm -f pub/$x.pkg && make run >/dev/null && ./ipm archive $x >/dev/null; done
+#for x in `<h4.txt`; do echo ===========$x==========>&2; rm -f pub/$x.pkg && make run >/dev/null && ./ipm archive $x >/dev/null; done
+for x in `<h4.txt`; do ./ipm archive $x; done

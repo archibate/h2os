@@ -3,6 +3,7 @@
 void cat(const char *s)
 {
 	FILE *fp = !strcmp(s, "-") ? stdin : fopen(s, "r");
+	if (!fp) { perror(s); return; }
 	char buf[1024];
 	while (fgets(buf, sizeof(buf), fp))
 		fputs(buf, stdout);

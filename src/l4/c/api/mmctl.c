@@ -18,6 +18,8 @@ sl4id_t sys_create_mm(l4id_t mmc)
 	struct mm *mm = KCNEW(mm);
 	mm_init(mm);
 	mm_copy_fds(mm, src_mm);
+	src_mm->num_children++;
+	mm->parent = src_mm;
 	return LIDNEW(current->mm, mm, mm);
 }
 
