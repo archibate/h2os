@@ -62,7 +62,7 @@ void argv_exec(void)
 	do_execute();
 }
 
-#define wait4(pid) /* TODO: MADA NOTHING */
+#define wait4(pid) wait() //T
 int do_execute(void)
 {
 	pid_t pid = spawn(argv[0], argv, NULL, NULL);

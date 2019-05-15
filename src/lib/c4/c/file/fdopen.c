@@ -20,6 +20,6 @@ static void _DTOR files_dtor(void)
 {
 	FILE *fp;
 	hlist_for_each_entry2(fp, &files, hlist) {
-		fclose(fp);
+		fdclose(fp);
 	}
 }

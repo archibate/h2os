@@ -4,5 +4,6 @@
 
 int perror(const char *s)
 {
-	return fprintf(stderr, "%s: %s", s, strerror(errno));
+	fprintf(stderr, "%s: %s\n", s, strerror(errno));
+	return 0;
 }

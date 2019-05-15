@@ -15,10 +15,19 @@
 #include "loader.h"
 #include "passarg.h"
 
+#if 0
+void *hook_malloc(size_t size)
+{
+	printk("mm: hook_malloc(%d)", size);
+	return malloc(size);
+}
+#define malloc hook_malloc
+#endif
+
 int mm_spawn(int src_mmc, const char *path, char *const *argv, char *const *envp)
 {
 #if 0
-	printk("mm_execve:");
+	printk("mm_spawn:");
 	printk("  path: %s", path);
 	char *const *p;
 	printk("  argv:");
@@ -41,7 +50,7 @@ int mm_spawn(int src_mmc, const char *path, char *const *argv, char *const *envp
 	if (ret < 0)
 		return ret;
 	stack_init(mmc, argv, envp, &sp);
-	sys_mm_new_thread(mmc, pc, sp);
+	BUG_ON(sys_mm_new_thread(mmc, pc, sp) < 0);
 	return 0;
 }
 

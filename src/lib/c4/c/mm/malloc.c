@@ -50,10 +50,9 @@ static void *first_hard_sbrk(ptrdiff_t incptr)
 
 static void *soft_sbrk(ptrdiff_t incptr)
 {
-	//printk("soft_sbrk!!!");
+	//printk("ss: [%p->%p]%p", currbrk, currbrk + incptr, maxbrk);
 	void *oldbrk = currbrk;
 	currbrk += incptr;
-	//if (currbrk > maxbrk) printk("FUCKFUCKFUCKIT!!!!");//
 	BUG_ON(currbrk > maxbrk);
 	return oldbrk;
 }
@@ -81,6 +80,8 @@ void liballoc_set_memory(void *begin, size_t size) // used in h4 init modules
 	my_sbrk = soft_sbrk;
 	currbrk = begin;
 	maxbrk = begin + size;
+	currbrk = (void*)RoundUp(PGSIZE, (uintptr_t)currbrk);//
+	maxbrk = (void*)RoundDown(PGSIZE, (uintptr_t)maxbrk);//
 	liballoc_init();
 }
 
@@ -121,6 +122,8 @@ void *amalloc(size_t len, size_t align)
 	if (align < sizeof(int))
 		align = sizeof(int);
 
+	//printk("amalloc: len=%d, align=%d", len, align);
+
 	HNODE *curr, *icurr, **pprev = &heap_head;
 	for (curr = heap_head; curr->next; curr = curr->next)
 	{
@@ -150,6 +153,7 @@ void *amalloc(size_t len, size_t align)
 	curr = icurr;
 
 	HNODE *next = (HNODE*)((void*)curr + len);
+	//printk("curr:%p, next:%p", curr, next);
 	set_break(next + 1);
 	curr->next = next;
 	next->prev = curr;

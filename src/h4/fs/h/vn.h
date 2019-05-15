@@ -14,6 +14,7 @@ typedef struct virfile
 		VN_REGFAT,
 		VN_ROOTDIR,
 	} type;
+	unsigned int refcount;
 	//int cache_id;
 	size_t size;
 	uint32_t clus_start;

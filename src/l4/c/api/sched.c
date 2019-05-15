@@ -24,8 +24,8 @@ int sys_exit(void)
 	//printk("sys_exit(%p)", current);
 	current->state = THREAD_ZOMBIE;
 	thread_suspend(current);
-	while (NULL != endpoint_call(&current->ep_death, current, true, false));
-	BUG_ON(sched_get_curr() == current);
+	/*while (NULL != endpoint_call(&current->ep_death, current, true, false));
+	BUG_ON(sched_get_curr() == current);*/
 	//current->we_callback = on_wait_exit_reply;//TODO
 	//endpoint_call(&current->ep_death, current, true, false);
 	//printk("sys_exited!");
@@ -40,7 +40,7 @@ int sys_exit(void)
 #define WIN
 int sys_wait_first(void)
 {
-	if (hlist_empty(&current->children))
+	/*if (hlist_empty(&current->children))
 		return 0;
 	struct ktcb *tcb = hlist_entry(__hlist_pop(&current->children), struct ktcb, hlist_child);
 	endpoint_wait(&tcb->ep_death, current, true);
@@ -51,7 +51,8 @@ int sys_wait_first(void)
 		thread_active(tcb);
 	}
 #endif
-	return hlist_empty(&current->children) ? 1 : 2;
+	return hlist_empty(&current->children) ? 1 : 2;*/
+	sys_exit();//
 }
 
 int sys_pause(void)

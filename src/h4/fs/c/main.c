@@ -27,9 +27,9 @@
 #endif
 
 #if 0
-void *hook_malloc(size_t size)
+static void *hook_malloc(size_t size)
 {
-	printk("fs: hook_malloc(%d)", size);
+	printk("fs: main.c: hook_malloc(%d)", size);
 	return malloc(size);
 }
 #define malloc hook_malloc
@@ -320,7 +320,7 @@ const int libh4_serve_id = SVID_FS;
 
 int main(void)
 {
-	static char buffer[4096*32];
+	static char buffer[4096*512];
 	liballoc_set_memory(buffer, sizeof(buffer));
 
 #ifdef USEFAT

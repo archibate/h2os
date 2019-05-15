@@ -79,9 +79,15 @@ static int ipcbuf_read_mmapres(void *ipcbuf)
 int softfault_mmap(l4id_t mmc, struct fd_entry *fde, word_t vaddr, size_t size, unsigned int flags, unsigned int prot)
 {
 	//printk("softfault_mmap: mmc=%d", mmc);
-	struct mm *mm = LID(current->mm, mm, mmc);
-	if (!mm)
-		return -ESRCH;
+	struct mm *mm;
+	if (mmc) {
+		mm = LID(current->mm, mm, mmc);
+		if (!mm)
+			return -ESRCH;
+	} else {
+		mm = current->mm;
+		BUG_ON(!mm);
+	}
 
 	//printk("sm: %p", current->mm);
 	struct mregion *mreg = mm_new_mreg(current->mm, vaddr, vaddr + size, prot);
@@ -109,7 +115,7 @@ void user_bad_fault(struct ktcb *proc)
 
 int softfault_callback(l4id_t mmc, word_t vaddr, unsigned int errcd)
 {
-	printk("softfault_callback(%d, %p, %d)", mmc, vaddr, errcd);
+	//printk("softfault_callback(%d, %p, %d)", mmc, vaddr, errcd);
 	struct mm *mm;
 	if (mmc) {
 		mm = LID(current->mm, mm, mmc);
@@ -217,9 +223,15 @@ void softfault_onreply(struct ktcb *target)
 
 int softfault_msync(l4id_t mmc, word_t vaddr, size_t size)
 {
-	struct mm *mm = LID(current->mm, mm, mmc);
-	if (!mm)
-		return -ESRCH;
+	struct mm *mm;
+	if (mmc) {
+		mm = LID(current->mm, mm, mmc);
+		if (!mm)
+			return -ESRCH;
+	} else {
+		mm = current->mm;
+		BUG_ON(!mm);
+	}
 
 	struct mregion *mreg = mm_lookup_mreg(current->mm, vaddr);
 	if (mreg == NULL)
@@ -239,9 +251,15 @@ int softfault_msync(l4id_t mmc, word_t vaddr, size_t size)
 
 int softfault_munmap(l4id_t mmc, word_t vaddr, size_t size)
 {
-	struct mm *mm = LID(current->mm, mm, mmc);
-	if (!mm)
-		return -ESRCH;
+	struct mm *mm;
+	if (mmc) {
+		mm = LID(current->mm, mm, mmc);
+		if (!mm)
+			return -ESRCH;
+	} else {
+		mm = current->mm;
+		BUG_ON(!mm);
+	}
 
 	struct mregion *mreg = mm_lookup_mreg(current->mm, vaddr);
 	if (mreg == NULL)

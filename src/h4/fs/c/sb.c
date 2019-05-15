@@ -6,7 +6,7 @@
 #include <bug.h>
 #include <panic.h>//
 
-#if 1
+#if 0
 static void printhex(unsigned char *dat, int len)
 {
 	int i;
@@ -90,7 +90,7 @@ sb_t *load_sb(int hd)
 	printk("Sec per Cluster: %d", bpb.spc);
 	printk("Total Secs: %d", bpb.tot_secs16 ? bpb.tot_secs16 : bpb.tot_secs32);
 #else
-	printk("fs: Loading MS-DOS Volume %s...", bs.vol_lab);
+	printk("fs: Loading MS-DOS Volume [%s]...", bs.vol_lab);
 #endif
 
 	sb_t *sb = malloc(sizeof(sb_t));

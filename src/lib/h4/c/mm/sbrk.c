@@ -20,9 +20,11 @@ void *sbrk(ptrdiff_t incptr)
 	if (incptr > 0) {
 		int zero = open("/dev/zero", O_RDONLY);
 		ret = sys_mmap(0, zero, curr_brk, incptr);
-		void *p;
-		for (p = curr_brk; p < curr_brk + incptr; p += PageSize)
-			sys_test_fault(0, p, 6);
+		if (ret >= 0) {
+			void *p;
+			for (p = curr_brk; p < curr_brk + incptr; p += PageSize)
+				BUG_ON(sys_test_fault(0, p, 6) < 0);
+		}
 		close(zero);
 	} else if (incptr < 0) {
 		void *new_brk = curr_brk + incptr;

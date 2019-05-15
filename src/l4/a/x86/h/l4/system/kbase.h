@@ -9,9 +9,7 @@
 #define KernIPCBuffer   0x3fe000
 #define KernPgdirAddr   0x3ff000
 #define KernPoolBegin	0x400000
-#define KernPoolEnd	0xbff000
-#define KernSigma0Begin 0xbff000
-#define KernSigma0End   0xc00000
-#define KernPhysEnd	0xc00000
-#define KernVirtBegin   0xc00000
+#define KernPoolEnd	0xf00000
+#define KernPhysEnd	0xf00000
+#define KernVirtBegin   0xf00000
 #define KernVirtEnd     0x1000000

@@ -158,6 +158,7 @@ again:
 			char *exec_argv[] = {"-init", NULL};
 			char *exec_envp[] = {"PATH=/", NULL};
 			BUG_ON(_spawn("/init", exec_argv, exec_envp) > 0);
+			wait();
 		}
 	}
 

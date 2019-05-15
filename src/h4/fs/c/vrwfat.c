@@ -113,9 +113,17 @@ ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 	size_t bsize = sb->bsize;
 	uint32_t clus = v->clus_start;
 
-	if (off + len > v->size) {
-		printk(KL_WARN "off + len > v->size: notsup, returning EINVAL");
+	if (off > v->size) {
+		printk(KL_WARN "vread/vwrite: off > v->size: invalid offset");
 		return -EINVAL;
+	}
+	if (off + len > v->size) {
+		if (wr) {
+			printk(KL_WARN "vwrite: off + len > v->size: a notsup");
+			return -ENOTSUP;
+		} else {
+			len = v->size - off;
+		}
 	}
 
 	for (; off >= sb->bsize; off -= sb->bsize) {

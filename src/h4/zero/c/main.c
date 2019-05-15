@@ -297,7 +297,7 @@ const int libh4_serve_id = SVID_ZERO;
 
 int main(void)
 {
-	static char buffer[4096*64];
+	static char buffer[4096*1024];
 	liballoc_set_memory(buffer, sizeof(buffer));
 
 	while (1) {

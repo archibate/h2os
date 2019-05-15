@@ -12,8 +12,18 @@
 // TODO: check http://blog.chinaunix.net/uid-23141914-id-211775.html for more
 // details about FAT cluster cache (LRU)!!!!!!!!!
 
+#if 0
+static void *hook_malloc(size_t size)
+{
+	printk("fs: vn.c: hook_malloc(%d)", size);
+	return malloc(size);
+}
+#define malloc hook_malloc
+#endif
+
 vn_t *vdup(vn_t *v)
 {
+	v->refcount++;
 	return v;
 }
 
@@ -43,12 +53,14 @@ vn_t *sb_openroot(sb_t *sb)
 	v->sb = sb;
 	v->size = sb->root_ents * DESIZE;
 	v->type = VN_ROOTDIR;
+	v->attr = T_DIR;
 	return v;
 }
 
 int vclose(vn_t *v)
 {
-	free(v);
+	if (!--v->refcount)
+		free(v);
 	return 0;
 }
 
