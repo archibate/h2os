@@ -4,6 +4,6 @@
 
 int main(int argc, char **argv, char **envp)
 {
-	if (*++argv) spawn(*argv, argv, envp, NULL);
-	while (*envp) puts(*envp++);
+	if (*++argv) { spawn(*argv, argv, envp, NULL); wait(); }
+	else while (*envp) puts(*envp++);
 }

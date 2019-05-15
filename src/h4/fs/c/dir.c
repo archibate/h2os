@@ -110,7 +110,7 @@ vn_t *dir_vopen(vn_t *dir, const char *path, unsigned int flags)
 	if (!*strskipin(path, "/"))
 		return vdup(dir);
 
-	if (!(flags & O_CREAT)) {
+	if (1/*T*/ || !(flags & O_CREAT)) {
 		de_t e;
 		errno = dir_gete(dir, path, &e);
 		if (errno)

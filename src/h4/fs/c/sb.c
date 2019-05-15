@@ -64,6 +64,10 @@ static void fat_12to32(uint32_t *fat, uint8_t *img, size_t size)
 		fat[i + 1] = (img[j + 1] >> 4 | img[j + 2] << 4) & 0xfff;
 		j += 3;
 	}
+	for (i = 0; i < size / 2; i++) {
+		if (fat[i] >= 0xff0)
+			fat[i] += 0xfffffff0 - 0xff0;
+	}
 	return;
 }
 
@@ -97,16 +101,17 @@ sb_t *load_sb(int hd)
 	sb->hd = hd;
 	sb->bsize = bpb.bps * bpb.spc;
 	sb->root_ents = bpb.root_ents;
-	sb->rofs = true; // rwfs not supported yet
+	sb->rofs = false;
 
-	off_t fat_base = bpb.bps * bpb.resv_secs;
+	sb->fat_base = bpb.bps * bpb.resv_secs;
 	size_t fat_size = bpb.bps * bpb.fat_secs16;
 
-	sb->root_beg = fat_base + fat_size * bpb.num_fats;
+	sb->root_beg = sb->fat_base + fat_size * bpb.num_fats;
 	sb->begin = sb->root_beg + sb->root_ents * DESIZE - 2 * sb->bsize;//??
+	sb->free_clus = 1;
 
 	uint8_t *fat12 = malloc(fat_size);
-	BUG_ON(pread(hd, fat12, fat_size, fat_base) != fat_size);
+	BUG_ON(pread(hd, fat12, fat_size, sb->fat_base) != fat_size);
 	//printk("read fat at fat_base=%#x, fat_size=%#x", fat_base, fat_size);//
 	fat_size = fat_size * 3 / 2;
 	uint32_t *fat32 = malloc(fat_size);

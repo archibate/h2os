@@ -6,7 +6,9 @@ typedef struct superblk
 	size_t bsize;
 	size_t begin;
 	size_t root_beg;
+	size_t fat_base;
 	uint32_t *fat;
+	uint32_t free_clus;
 	bool rofs;
 	size_t fat_size;
 	size_t root_ents;

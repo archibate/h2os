@@ -10,6 +10,7 @@
 #include <h4/file/api.h>
 #include "error.h"
 #include <bug.h>
+#include <panic.h>
 #include <list.h>
 
 #if 0
@@ -106,12 +107,46 @@ out:
 }
 #endif
 
+static void sb_update_fat_at(sb_t *sb, uint32_t cl)
+{
+	uint32_t c = sb->fat[cl];
+	uint8_t buf[3];
+	off_t base = sb->fat_base + (cl / 2) * 3;
+	if (c >= 0xfffffff0)
+		c -= 0xfffffff0 - 0xff0;
+	BUG_ON(pread(sb->hd, &buf, sizeof(buf), base) != sizeof(buf));
+	if (cl % 2 == 0) {
+		buf[0] = c & 0xff;
+		buf[1] &= 0xf0;
+		buf[1] |= (c >> 8) & 0x0f;
+	} else {
+		buf[1] &= 0x0f;
+		buf[1] |= (c << 4) & 0xf0;
+		buf[2] = (c >> 4) & 0xff;
+	}
+	BUG_ON(pwrite(sb->hd, &buf, sizeof(buf), base) != sizeof(buf));
+}
+
+static uint32_t fat_sb_allocate_cluster(sb_t *sb)
+{
+	uint32_t cl;
+	BUG_ON(!sb->free_clus);
+	for (cl = sb->free_clus; cl < sb->fat_size / sizeof(uint32_t); cl++) {
+		if (sb->fat[cl] == 0) {
+			sb->fat[cl] = 0xfffffffb;
+			sb_update_fat_at(sb, cl);
+			return cl;
+		}
+	}
+	panic("fs: disk out of cluster");
+}
+
 ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 {
 	//printk("fat_v%s(%p, %d, %d)", wr ? "write" : "read", buf, len, off);
 	sb_t *sb = v->sb;
 	size_t bsize = sb->bsize;
-	uint32_t clus = v->clus_start;
+	uint32_t clus = v->clus_start, cl;
 
 	if (off > v->size) {
 		printk(KL_WARN "vread/vwrite: off > v->size: invalid offset");
@@ -119,8 +154,7 @@ ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 	}
 	if (off + len > v->size) {
 		if (wr) {
-			printk(KL_WARN "vwrite: off + len > v->size: a notsup");
-			return -ENOTSUP;
+			v->size = off + len;
 		} else {
 			len = v->size - off;
 		}
@@ -128,9 +162,17 @@ ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 
 	for (; off >= sb->bsize; off -= sb->bsize) {
 		//printk("clus=%d", clus);
-		clus = sb->fat[clus];
-		if (clus >= 0xfffffff0)
+		cl = sb->fat[clus];
+		switch (cl) {
+		case 0x00000000:
+		case 0xfffffff7:
 			return -EIO;
+		}
+		if (cl >= 0xfffffff8) {
+			cl = fat_sb_allocate_cluster(sb);
+			sb->fat[clus] = cl;
+		}
+		clus = cl;
 	}
 
 	//printk("clus=%d", clus);

@@ -50,7 +50,8 @@ void printdostime(uint16_t time)
 		uint16_t min : 6;
 		uint16_t hour : 5;
 	} *t = (void*)&time;
-	printf("%02d:%02d:%02d", t->hour, t->min, t->sec2 * 2);
+	//printf("%02d:%02d:%02d", t->hour, t->min, t->sec2 * 2);
+	printf("%02d:%02d", t->hour, t->min);
 }
 
 void printdosdate(uint16_t date)
@@ -60,7 +61,8 @@ void printdosdate(uint16_t date)
 		uint16_t mon : 4;
 		uint16_t year1980 : 7;
 	} *d = (void*)&date;
-	printf("%04d/%02d/%02d", d->year1980 + 1980, d->mon, d->day);
+	//printf("%04d/%02d/%02d", d->year1980 + 1980, d->mon, d->day);
+	printf("%02d/%02d", d->mon, d->day);
 }
 
 void showde(struct dirent *de)
@@ -81,11 +83,11 @@ void showde(struct dirent *de)
 	if (de->attr & T_SYS) attr[3] = 's';
 	while (size >= 4096 && *scale)
 		size /= 4096, scale++;
-	printf("%s ", attr);
+	printf("%s % 5.5d ", attr, egetclus(de));
 	printdosdate(de->cdate);
 	printf(" ");
 	printdostime(de->ctime);
-	printf(" % 4d%c %s\n", size, *scale, name);
+	printf(" % 4d%c %s%s", size, *scale, name, attr[0]=='d'?"/\n":"\n");
 }
 
 void ls(const char *path)
