@@ -256,7 +256,10 @@ void file_serve_ipc(vn_t *v)
 		//printk("file_pread(%d, %d)", len, off);
 		ipc_seek_setw(1);
 		void *buf = ipc_getbuf(&len);
-		ssize_t ret = file_read(v, buf, len, off);
+		void *p = malloc(len);
+		memcpy(p, buf, len);
+		ssize_t ret = file_read(v, p, len, off);
+		free(p);
 		ipc_rewindw(ret);
 	} break;
 
@@ -266,7 +269,10 @@ void file_serve_ipc(vn_t *v)
 		off_t off = ipc_getw();
 		//printk("file_pwrite(%d, %d)", len, off);
 		const void *buf = ipc_getbuf(&len);
-		ssize_t ret = file_write(v, buf, len, off);
+		void *p = malloc(len);
+		memcpy(p, buf, len);
+		ssize_t ret = file_write(v, p, len, off);
+		free(p);
 		ipc_rewindw(ret);
 	} break;
 
@@ -276,8 +282,11 @@ void file_serve_ipc(vn_t *v)
 		//printk("file_read(%d)", len);
 		ipc_seek_setw(1);
 		void *buf = ipc_getbuf(&len);
+		void *p = malloc(len);
+		memcpy(p, buf, len);
 		off_t off = ipc_getoffset();
-		ssize_t ret = file_read(v, buf, len, off);
+		ssize_t ret = file_read(v, p, len, off);
+		free(p);
 		if (ret > 0)
 			off += ret;
 		ipc_setoffset(off);
@@ -289,8 +298,11 @@ void file_serve_ipc(vn_t *v)
 		size_t len = ipc_getw();
 		//printk("file_write(%d)", len);
 		const void *buf = ipc_getbuf(&len);
+		void *p = malloc(len);
+		memcpy(p, buf, len);
 		off_t off = ipc_getoffset();
-		ssize_t ret = file_write(v, buf, len, off);
+		ssize_t ret = file_write(v, p, len, off);
+		free(p);
 		if (ret > 0)
 			off += ret;
 		ipc_setoffset(off);

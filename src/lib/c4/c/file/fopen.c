@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <dirent.h>
 #include <errno.h>
 
 FILE *fopen(const char *name, const char *mode)
@@ -9,7 +10,7 @@ FILE *fopen(const char *name, const char *mode)
 	if (strchr(mode, 'r')) m |= O_RDONLY;
 	if (strchr(mode, 'w')) m |= O_WRONLY;
 	if (strchr(mode, 'a')) m |= O_WRONLY | O_APPEND;
-	if (strchr(mode, '+')) m |= O_CREAT;
+	if (strchr(mode, '+')) m |= O_CREAT | T_REG;
 	if (strchr(mode, 'd')) m |= O_DIR;
 	int fd = open(name, m);
 	if (fd < 0) {

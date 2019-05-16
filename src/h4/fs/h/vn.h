@@ -21,6 +21,7 @@ typedef struct virfile
 	uint32_t attr;
 	sb_t *sb;
 	uint32_t exflags;
+	off_t dehdoff;
 } vn_t;
 
 ssize_t vread(vn_t *v, void *buf, size_t len, off_t off);

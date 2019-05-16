@@ -65,8 +65,10 @@ static void fat_12to32(uint32_t *fat, uint8_t *img, size_t size)
 		j += 3;
 	}
 	for (i = 0; i < size / 2; i++) {
-		if (fat[i] >= 0xff0)
-			fat[i] += 0xfffffff0 - 0xff0;
+		if (fat[i] >= 0xff0) {
+			//fat[i] += 0xfffffff0 - 0xff0;
+			//printk("%d: %X", i, fat[i]);
+		}
 	}
 	return;
 }

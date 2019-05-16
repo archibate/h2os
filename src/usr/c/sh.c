@@ -14,11 +14,22 @@ static void argv_exec(void);
 static int do_execute(void);
 int main(int _argc, char **_argv)
 {
+	FILE *fin = stdin;
+	if (_argv[1]) {
+		fin = fopen(_argv[1], "r");
+		if (!fin) {
+			perror(_argv[1]);
+			return 1;
+		}
+	}
 	static char buf[1024];
 	while (1) {
-		printf("sh> ");
-		fflush(stdout);
-		fgets(buf, sizeof(buf), stdin);
+		if (fin == stdin) {
+			printf("sh> ");
+			fflush(stdout);
+		}
+		if (!fgets(buf, sizeof(buf), fin))
+			break;
 		cmdl_parse(buf);
 		argv_exec();
 	}
@@ -57,16 +68,17 @@ void argv_done(void)
 
 void argv_exec(void)
 {
-	if (!argv[0])
-		return;
-	do_execute();
+	if (argv[0])
+		do_execute();
 }
 
 #define wait4(pid) wait() //T
 int do_execute(void)
 {
 	pid_t pid = spawn(argv[0], argv, NULL, NULL);
-	if (pid < 0)
+	if (pid < 0) {
+		perror(argv[0]);
 		return pid;
+	}
 	return wait4(pid);
 }

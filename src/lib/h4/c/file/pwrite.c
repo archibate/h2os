@@ -6,6 +6,7 @@
 static ssize_t frag_pwrite(int fd, const void *buf, size_t len, off_t off)
 {
 	ipc_rewindw(_FILE_pwrite);
+	//printk("hdpwr: buf=[%s], len=%d, off=%d", buf, len, off);
 	ipc_putw(len);
 	ipc_putw(off);
 	ipc_write(buf, len);

@@ -7,6 +7,7 @@
 #include <malloc.h>
 #include <numtools.h>
 #include <printk.h>
+#include <stddef.h>
 #include <h4/file/api.h>
 #include "error.h"
 #include <bug.h>
@@ -141,38 +142,56 @@ static uint32_t fat_sb_allocate_cluster(sb_t *sb)
 	panic("fs: disk out of cluster");
 }
 
+static uint32_t sb_kick_cluster(sb_t *sb, uint32_t *pclus)
+{
+	uint32_t cl = *pclus;
+	switch (cl) {
+		case 0x00000000:
+		case 0xfffffff7:
+			return 0;
+	}
+	if (cl >= 0xfffffff8) {
+		//printk("!!!Doing EOF cluster extend (experimental)");
+		cl = fat_sb_allocate_cluster(sb);
+		*pclus = cl;
+	}
+	return cl;
+}
+
+static void vn_dent_update_vsize(vn_t *v)
+{
+	BUG_ON(pwrite(v->sb->hd, &v->size, sizeof(v->size), v->dehdoff + offsetof(de_t, size)) != sizeof(v->size));
+}
+
 ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 {
 	//printk("fat_v%s(%p, %d, %d)", wr ? "write" : "read", buf, len, off);
 	sb_t *sb = v->sb;
 	size_t bsize = sb->bsize;
-	uint32_t clus = v->clus_start, cl;
+	uint32_t clus = sb_kick_cluster(sb, &v->clus_start);
+	if (!clus)
+		return -EIO;
 
 	if (off > v->size) {
 		printk(KL_WARN "vread/vwrite: off > v->size: invalid offset");
 		return -EINVAL;
 	}
+	//if (wr) { printk("vwrite[%s](%d, %d)", buf, len, off); }
 	if (off + len > v->size) {
 		if (wr) {
+			//printk("vwrite: extend %d to %d", v->size, off + len);
 			v->size = off + len;
+			vn_dent_update_vsize(v);
 		} else {
 			len = v->size - off;
 		}
 	}
 
+		//if (1||clus >= 0xff0) printk("clus=%d", clus);
 	for (; off >= sb->bsize; off -= sb->bsize) {
-		//printk("clus=%d", clus);
-		cl = sb->fat[clus];
-		switch (cl) {
-		case 0x00000000:
-		case 0xfffffff7:
+		clus = sb_kick_cluster(sb, &sb->fat[clus]);
+		if (!clus)
 			return -EIO;
-		}
-		if (cl >= 0xfffffff8) {
-			cl = fat_sb_allocate_cluster(sb);
-			sb->fat[clus] = cl;
-		}
-		clus = cl;
 	}
 
 	//printk("clus=%d", clus);
@@ -189,8 +208,7 @@ go:
 		CLMAX(m, bsize - off);
 		off_t cbase = v->sb->begin + bsize * clus;
 
-		//printk("cbase=%#x", cbase);
-
+		//if (wr) printk("[%s]", buf);
 		if (wr)
 			pwrite(v->sb->hd, buf, m, cbase + off);
 		else

@@ -261,6 +261,7 @@ void ide_serve_ipc(void)
 		off_t off = ipc_getw();
 		//printk("ide_pwrite(%d, %d)", len, off);
 		const void *buf = ipc_getbuf(&len);
+		//printk("ide_pwrite: buf=[%s], len=%d, off=%d", buf, len, off);
 		ssize_t ret = ide_pwrite(buf, len, off);
 		ipc_rewindw(ret);
 	} break;

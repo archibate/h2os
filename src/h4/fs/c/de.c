@@ -2,6 +2,8 @@
 #include <string.h>
 #include <panic.h>
 #include <lohitools.h>
+#include <numtools.h>
+#include <errno.h>
 #include <bug.h>
 #include <printk.h>//
 
@@ -42,6 +44,38 @@ void egetname(const de_t *e, char *buf)
 out:	*buf++ = 0;
 
 	return;
+}
+
+int esetname(const de_t *e, const char *name)
+{
+	char *p;
+	size_t len, lena;
+	const char *n, *na = name;
+	memset(e->name, ' ', sizeof(e->name));
+	memset(e->ext, ' ', sizeof(e->ext));
+	while (n = strchr(na, '.'))
+		na = n + 1;
+	if (na != name) {
+		len = na - 1 - name;
+		lena = strlen(na);
+		if (lena > sizeof(e->ext))
+			return -ENAMETOOLONG;
+		memcpy(e->ext, na, lena);
+	} else {
+		len = strlen(name);
+	}
+	if (len > sizeof(e->name))
+		return -ENAMETOOLONG;
+	memcpy(e->name, name, len);
+	for (p = &e->name[0]; p < &e->name[8]; p++) {
+		if ('a' <= *p && *p <= 'z')
+			*p -= 'a' - 'A';
+	}
+	for (p = &e->ext[0]; p < &e->ext[3]; p++) {
+		if ('a' <= *p && *p <= 'z')
+			*p -= 'a' - 'A';
+	}
+	return 0;
 }
 
 int ecmpname(const de_t *e, const char *name)

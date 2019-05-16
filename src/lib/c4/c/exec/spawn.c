@@ -22,10 +22,8 @@ int spawn(const char *name, char *const *argv, char *const *envp, const struct s
 		path[le++] = '/';
 		strcpy(path + le, name);
 		ret = spawnp(path, argv, envp, sat);
-		if (ret >= 0)
-			return ret;
-		if (ret != -ENOENT)
-			return ret;
+		if (ret >= 0 || ret != -ENOENT)
+			break;
 	} while ((ps += le + 1)[-1]);
 	return ret;
 }

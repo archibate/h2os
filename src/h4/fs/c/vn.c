@@ -159,11 +159,13 @@ static ssize_t __vrw_rootdir(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 
 static ssize_t __vrw(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 {
-	if (off < 0 || off > v->size)
+	if (off < 0)
 		return -EINVAL;
-
-	//if (!wr)
-	CLMAX(len, v->size);
+	if (!wr) {
+		if (off > v->size)
+			return -EINVAL;
+		CLMAX(len, v->size - off);
+	}
 
 	switch (v->type) {
 	case VN_REGFAT:

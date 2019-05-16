@@ -12,7 +12,7 @@ int main(int argc, char *const *argv, char *const *envp)
 	open("/dev/cons", O_WRONLY);
 	dup(1);
 
-	char *sh_argv[] = {"-sh", NULL};
+	char *sh_argv[] = {"-sh", "/rcS", NULL};
 	spawnp("/sh", sh_argv, envp, NULL);
 	wait();
 	return 1;

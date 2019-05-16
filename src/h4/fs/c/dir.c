@@ -1,4 +1,5 @@
 #include "dir.h"
+#include "de.h"
 #include <string.h>
 #include <errno.h>
 #include <bug.h>
@@ -7,7 +8,23 @@
 
 //extern const char *g_path;//
 
-static int dir_lookup(vn_t *dir, const char *name, de_t *e)
+int dir_addent(vn_t *dir, de_t *e)
+{
+	de_t _e;
+	int n;
+	for (n = 0; n < dir->size / DESIZE; n++) {
+		if (DESIZE != vread(dir, &_e, DESIZE, n * DESIZE))
+			return -EIO;
+		if (_e.attr == 0)
+			break;
+	}
+	if (DESIZE != vwrite(dir, e, DESIZE, n * DESIZE))
+		return -EIO;
+		//printk("!!!made_dirent%d!!!", ret);
+	return 0;
+}
+
+int dir_lookup(vn_t *dir, const char *name, de_t *e)
 {
 	//printk("dir_lookup(%s)", name);//
 	int n;
@@ -28,21 +45,7 @@ static int dir_lookup(vn_t *dir, const char *name, de_t *e)
 	return -ENOENT;
 }
 
-static char *cutpath(const char *path, char *name)
-{
-	path = strskipin(path, "/");
-	char *end = strchrl(path, '/');
-	//printk("cputpath(%s, %s)", path, end);//
-
-	if (end - path > NAME_MAX)
-		return NULL;
-
-	strncpy(name, path, end - path);
-	//printk("cputpath: name=%s", name);//
-
-	return end;
-}
-
+#if 0 // {{{
 static int __dir_getve(vn_t *dir, const char *path, de_t *e,
 		vn_t **ppv, char **endp, bool parent)
 {
@@ -68,6 +71,12 @@ static int __dir_getve(vn_t *dir, const char *path, de_t *e,
 		if (path == NULL)
 			return -ENAMETOOLONG;
 
+		if (parent && *path == 0) {
+			*ppv = dir;
+			*endp = (char*)path;
+			return 0;
+		}
+
 		//g_path = path;
 		ret = dir_lookup(dir, name, e);
 		//g_path = NULL;
@@ -85,8 +94,10 @@ static int __dir_getve(vn_t *dir, const char *path, de_t *e,
 
 		dir = vopendir(sb, e);
 		//printk("e->name=[%s], dir=%p, errno=%d", e->name, dir, errno);
-		if (dir == NULL)
+		if (dir == NULL) {
+			BUG_ON(errno <= 0);
 			return -errno;
+		}
 
 		runned = true;
 	}
@@ -96,45 +107,4 @@ int dir_gete(vn_t *dir, const char *path, de_t *e)
 {
 	return __dir_getve(dir, path, e, NULL, NULL, false);
 }
-
-vn_t *dir_getpv(vn_t *dir, const char *path, char **endp)
-{
-	de_t e;
-	vn_t *v;
-	errno = -__dir_getve(dir, path, &e, &v, endp, true);
-	return errno ? NULL : v;
-}
-
-vn_t *dir_vopen(vn_t *dir, const char *path, unsigned int flags)
-{
-	if (!*strskipin(path, "/"))
-		return vdup(dir);
-
-	if (1/*T*/ || !(flags & O_CREAT)) {
-		de_t e;
-		errno = dir_gete(dir, path, &e);
-		if (errno)
-			return NULL;
-
-		if ((e.attr & T_RO) && (flags & O_WRONLY))
-			return error(EPERM);
-
-		vn_t *v;
-		if (flags & O_DIR)
-			v = vopendir(dir->sb, &e);
-		else
-			v = vopenfile(dir->sb, &e);
-
-		if (v != NULL)
-			v->exflags = flags;
-		//else printk("!!!!!!!!!!!%s", strerror(errno));
-
-		return v;
-
-	} else {
-		if (dir->sb->rofs)
-			return error(EROFS);
-
-		BUG(); // file creation not impelemented
-	}
-}
+#endif // }}}
