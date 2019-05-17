@@ -16,7 +16,7 @@ int spawn(const char *name, char *const *argv, char *const *envp, const struct s
 		return execvp(name, argv);
 	if (!(ps = getenv("PATH")) || !*ps)
 		return -ENOENT;
-	while (1) {
+	do {
 		le = strchrl(ps, ':') - ps;
 		memcpy(path, ps, le);
 		path[le++] = '/';
@@ -24,6 +24,6 @@ int spawn(const char *name, char *const *argv, char *const *envp, const struct s
 		ret = spawnp(path, argv, envp, sat);
 		if (ret >= 0 || ret != -ENOENT)
 			break;
-	} while ((ps += le + 1)[-1]);
+	} while ((ps += le)[-1]);
 	return ret;
 }

@@ -21,7 +21,8 @@ vn_t *dir_vopen(vn_t *dir, const char *path, unsigned int flags)
 	int ret;
 	off_t depos;
 
-	if (!*strskipin(path, "/"))
+	path = strskipin(path, "/");
+	if (!*path || !strcmp(path, "."))
 		return vdup(dir);
 
 #if 0 // {{{
@@ -69,6 +70,10 @@ vn_t *dir_vopen(vn_t *dir, const char *path, unsigned int flags)
 	if (v != NULL) {
 		v->exflags = flags;
 		v->dehdoff = depos;
+		if ((flags & (O_WRONLY | O_NOTRUNC)) == O_WRONLY) {
+			v->size = 0;
+			vupdate(v);
+		}
 	}
 	return v;
 }

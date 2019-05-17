@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <spawn.h>
+#include <errno.h>
 #define BLANK " \n\t\r"
 
 static int argc;
@@ -77,7 +78,12 @@ int do_execute(void)
 {
 	pid_t pid = spawn(argv[0], argv, NULL, NULL);
 	if (pid < 0) {
-		perror(argv[0]);
+		if (pid == -ENOENT) {
+			fprintf(stderr, "%s: command not found\n", argv[0]);
+		} else {
+			errno = -pid;
+			perror(argv[0]);
+		}
 		return pid;
 	}
 	return wait4(pid);
