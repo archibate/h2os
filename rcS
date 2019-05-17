@@ -1,5 +1,1 @@
-cat h4.txt
-cp h4.txt hello.txt
-echo ================
-cat hello.txt
 sh

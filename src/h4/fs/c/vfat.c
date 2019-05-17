@@ -151,26 +151,36 @@ static uint32_t sb_kick_cluster(sb_t *sb, uint32_t *pclus)
 			return 0;
 	}
 	if (cl >= 0xfffffff8) {
-		//printk("!!!Doing EOF cluster extend (experimental)");
 		cl = fat_sb_allocate_cluster(sb);
+		printk("!!!Doing EOF cluster extend to %d(experimental)", cl);
 		*pclus = cl;
 	}
 	return cl;
 }
 
-static void vn_dent_update_vsize(vn_t *v)
+static uint32_t sb_return_cluster(sb_t *sb, uint32_t *pclus)
 {
-	BUG_ON(pwrite(v->sb->hd, &v->size, sizeof(v->size), v->dehdoff + offsetof(de_t, size)) != sizeof(v->size));
+	uint32_t cl = *pclus;
+	if (cl >= 0xfffffff7)
+		return 0;
+	return cl;
 }
 
 ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 {
+	bool update = false;
+	uint32_t (*kicker)(sb_t *, uint32_t *) = wr ? sb_kick_cluster : sb_return_cluster;
 	//printk("fat_v%s(%p, %d, %d)", wr ? "write" : "read", buf, len, off);
 	sb_t *sb = v->sb;
 	size_t bsize = sb->bsize;
-	uint32_t clus = sb_kick_cluster(sb, &v->clus_start);
+	uint32_t clus_start = v->clus_start;
+	uint32_t clus = kicker(sb, &clus_start);
 	if (!clus)
 		return -EIO;
+	if (v->clus_start != clus_start) {
+		v->clus_start = clus_start;
+		update = true;
+	}
 
 	if (off > v->size) {
 		printk(KL_WARN "vread/vwrite: off > v->size: invalid offset");
@@ -181,15 +191,18 @@ ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 		if (wr) {
 			//printk("vwrite: extend %d to %d", v->size, off + len);
 			v->size = off + len;
-			vn_dent_update_vsize(v);
+			update = true;
 		} else {
 			len = v->size - off;
 		}
 	}
 
+	if (update)
+		vupdate(v);
+
 		//if (1||clus >= 0xff0) printk("clus=%d", clus);
 	for (; off >= sb->bsize; off -= sb->bsize) {
-		clus = sb_kick_cluster(sb, &sb->fat[clus]);
+		clus = kicker(sb, &sb->fat[clus]);
 		if (!clus)
 			return -EIO;
 	}
@@ -206,13 +219,13 @@ ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 go:
 		m = n;
 		CLMAX(m, bsize - off);
-		off_t cbase = v->sb->begin + bsize * clus;
 
-		//if (wr) printk("[%s]", buf);
+		v->lastpos = v->sb->begin + bsize * clus + off;
+
 		if (wr)
-			pwrite(v->sb->hd, buf, m, cbase + off);
+			pwrite(v->sb->hd, buf, m, v->lastpos);
 		else
-			pread(v->sb->hd, buf, m, cbase + off);
+			pread(v->sb->hd, buf, m, v->lastpos);
 
 		n -= m;
 		buf += m;

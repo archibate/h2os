@@ -15,7 +15,7 @@ int dir_addent(vn_t *dir, de_t *e)
 	for (n = 0; n < dir->size / DESIZE; n++) {
 		if (DESIZE != vread(dir, &_e, DESIZE, n * DESIZE))
 			return -EIO;
-		if (_e.attr == 0)
+		if (_e.name[0] == 0)
 			break;
 	}
 	if (DESIZE != vwrite(dir, e, DESIZE, n * DESIZE))
@@ -35,6 +35,7 @@ int dir_lookup(vn_t *dir, const char *name, de_t *e)
 		//printk("!A[%s]", g_path);//
 		if (DESIZE != vread(dir, e, DESIZE, n * DESIZE))
 			return -EIO;
+		//printk("!!!!dir_lookup:%d", dir->lastpos);
 		//printk("!B[%s]", g_path);//
 		//if (e->name[0]) printk("dir_lookup: %.11s", e->name);//
 		//printk("!!!%d", e->attr);//

@@ -19,6 +19,7 @@ vn_t *dir_vopen(vn_t *dir, const char *path, unsigned int flags)
 {
 	de_t e;
 	int ret;
+	off_t depos;
 
 	if (!*strskipin(path, "/"))
 		return vdup(dir);
@@ -46,12 +47,14 @@ vn_t *dir_vopen(vn_t *dir, const char *path, unsigned int flags)
 		//printk("e->name=[%s]", e.name);
 		if (ret >= 0)
 			ret = dir_addent(p, &e);
-		BUG_ON(dir_lookup(p, name, &e) < 0);
+		//BUG_ON(dir_lookup(p, name, &e) < 0);
 		if (ret < 0)
 			return error(ret);
 
 	} else if (ret < 0)
 		return error(ret);
+
+	depos = p->lastpos;
 
 	if ((e.attr & T_RO) && (flags & O_WRONLY))
 		return error(EPERM);
@@ -63,8 +66,9 @@ vn_t *dir_vopen(vn_t *dir, const char *path, unsigned int flags)
 	else
 		v = vopenfile(dir->sb, &e);
 
-	if (v != NULL)
+	if (v != NULL) {
 		v->exflags = flags;
-
+		v->dehdoff = depos;
+	}
 	return v;
 }

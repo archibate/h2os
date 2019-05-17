@@ -21,6 +21,7 @@ typedef struct virfile
 	uint32_t attr;
 	sb_t *sb;
 	uint32_t exflags;
+	off_t lastpos;
 	off_t dehdoff;
 } vn_t;
 
@@ -30,4 +31,5 @@ vn_t *__vopen(sb_t *sb, de_t *e);
 vn_t *vopenfile(sb_t *sb, de_t *e);
 vn_t *vopendir(sb_t *sb, de_t *e);
 vn_t *vdup(vn_t *v);
+void vupdate(vn_t *v);
 int vclose(vn_t *v);
