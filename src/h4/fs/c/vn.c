@@ -36,11 +36,12 @@ vn_t *__vopen(sb_t *sb, de_t *e)
 		return error(EROFS);
 	}
 #endif//}}}
-	vn_t *v = malloc(sizeof(vn_t));
+	vn_t *v = zalloc(sizeof(vn_t));
 	v->attr = e->attr;
 	v->size = e->size;
 	v->sb = sb;
 	v->type = VN_REGFAT;
+	v->refcount = 1;
 
 	v->clus_start = egetclus(e);
 
@@ -49,11 +50,13 @@ vn_t *__vopen(sb_t *sb, de_t *e)
 
 vn_t *sb_openroot(sb_t *sb)
 {
-	vn_t *v = malloc(sizeof(vn_t));
+	vn_t *v = zalloc(sizeof(vn_t));
 	v->sb = sb;
 	v->size = sb->root_ents * DESIZE;
 	v->type = VN_ROOTDIR;
 	v->attr = T_DIR;
+	v->refcount = 1;
+	v->exflags = O_RDWR | O_DIR;
 	return v;
 }
 
@@ -69,6 +72,24 @@ void vupdate(vn_t *v)
 	e.size = v->size;
 
 	BUG_ON(pwrite(v->sb->hd, &e, DESIZE, v->dehdoff) != DESIZE);
+}
+
+int vdeunlink(vn_t *v)
+{
+	if (v->type != VN_REGFAT)
+		return -EPERM;
+
+	if (v->refcount > 1)
+		return -EBUSY;
+
+	if (v->sb->rofs)
+		return -EROFS;
+
+	de_t e;
+	memset(&e, 0, sizeof(e));
+	BUG_ON(pwrite(v->sb->hd, &e, DESIZE, v->dehdoff) != DESIZE);
+
+	return 0;
 }
 
 int vclose(vn_t *v)

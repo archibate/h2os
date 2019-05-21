@@ -9,6 +9,8 @@ void copy(const char *src, const char *dst)
 	char buf[1024];
 	while (fgets(buf, sizeof(buf), fin))
 		fputs(buf, fout);
+	if (ferror(fin)) perror(src);
+	if (ferror(fout)) perror(dst);
 	fclose(fout);
 	fclose(fin);
 }

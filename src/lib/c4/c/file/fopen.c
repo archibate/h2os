@@ -12,6 +12,7 @@ FILE *fopen(const char *name, const char *mode)
 	if (strchr(mode, 'a')) m |= O_WRONLY | O_APPEND;
 	if (strchr(mode, '+')) m |= O_CREAT | T_REG;
 	if (strchr(mode, 'd')) m |= O_DIR;
+	if (strchr(mode, 'e')) m |= O_EXCL;
 	int fd = open(name, m);
 	if (fd < 0) {
 		errno = -fd;

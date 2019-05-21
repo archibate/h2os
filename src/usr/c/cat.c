@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 
-void cat(const char *s)
+void cat(const char *path)
 {
-	FILE *fp = !strcmp(s, "-") ? stdin : fopen(s, "r");
-	if (!fp) { perror(s); return; }
+	FILE *fp = !strcmp(path, "-") ? stdin : fopen(path, "r");
+	if (!fp) { perror(path); return; }
 	char buf[1024];
 	while (fgets(buf, sizeof(buf), fp))
 		fputs(buf, stdout);
+	if (ferror(fp)) perror(path);
 	if (fp != stdin)
 		fclose(fp);
 }

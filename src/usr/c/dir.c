@@ -68,28 +68,32 @@ void printdosdate(uint16_t date)
 void showde(struct dirent *de)
 {
 	const char *scale = "BKMG";
+	const char *typestr = NULL;
 	char name[NAME_MAX+1];
-	char attr[] = "?---";
+	char attr[] = "---";
 	size_t size = de->size;
 	egetname(de, name);
 	if (!name[0]) return;
-	if (de->attr & T_VOL) attr[0] = 'v';
-	else if (de->attr & T_DIR) attr[0] = 'd';
-	else if (de->attr & T_REG) attr[0] = '-';
-	else if (de->attr & T_LNK) attr[0] = 'l';
-	else if (de->attr & T_NOD) attr[0] = 'n';
-	if (de->attr & T_RO ) attr[1] = 'r';
-	if (de->attr & T_HID) attr[2] = 'i';
-	if (de->attr & T_SYS) attr[3] = 's';
+	if (de->attr & T_VOL) typestr = "<VOL>";
+	else if (de->attr & T_DIR) typestr = "<DIR>";
+	else if (de->attr & T_REG) typestr = NULL;
+	else if (de->attr & T_LNK) typestr = "<LNK>";
+	else if (de->attr & T_NOD) typestr = "<NOD>";
+	else typestr = "<???>";
+	if (de->attr & T_RO ) attr[0] = 'r';
+	if (de->attr & T_HID) attr[1] = 'i';
+	if (de->attr & T_SYS) attr[2] = 's';
 	while (size >= 4096 && *scale)
 		size /= 4096, scale++;
-	printf("%s % 5.5d ", attr, egetclus(de));
-#if 0
+	//printf("%s % 5.5d ", attr, egetclus(de));
+#if 1
 	printdosdate(de->cdate);
 	printf(" ");
 	printdostime(de->ctime);
 #endif
-	printf(" % 4d%c %s%s", size, *scale, name, attr[0]=='d'?"/\n":"\n");
+	if (typestr == NULL) printf(" % 4d%c", size, *scale);
+	else printf(" % 6s", typestr);
+	printf(" %s%s", name, attr[0]=='d'?"/\n":"\n");
 }
 
 void ls(const char *path)

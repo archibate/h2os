@@ -8,15 +8,15 @@
 #include <errno.h>
 #include <printk.h>//
 
-int open(const char *path, unsigned int flags)
+int open(const char *path, int flags)
 {
-	ipc_rewindw(_FS_open);
-	ipc_putw(flags);
-	ipc_write(path, strlen(path) + 1);
 	int fd = ipc_dup(SVFD_FS);
 	//printk("ipc_dup: fd=%d", fd);
 	if (fd < 0)
 		return fd;
+	ipc_rewindw(_FS_open);
+	ipc_putw(flags);
+	ipc_write(path, strlen(path) + 1);
 	ipc_call(fd);
 	int ret = ipc_getw();
 	//printk("ipc_call: ret=%d", ret);

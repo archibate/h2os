@@ -20,7 +20,7 @@ int dir_addent(vn_t *dir, de_t *e)
 	}
 	if (DESIZE != vwrite(dir, e, DESIZE, n * DESIZE))
 		return -EIO;
-		//printk("!!!made_dirent%d!!!", ret);
+	//printk("%p!!!made_dirent!!![%s]", dir, e->name);
 	return 0;
 }
 

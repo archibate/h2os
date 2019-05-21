@@ -1,0 +1,27 @@
+#include "dir.h"
+#include "de.h"
+#include <string.h>
+#include <errno.h>
+#include <bug.h>
+#include "error.h"
+#include <printk.h>//
+#include <string.h>
+
+int dir_mkdir(vn_t *dir, const char *path)
+{
+	vn_t *v = dir_vopen(dir, path, O_DIR | O_CREAT | O_EXCL | T_DIR);
+	if (v == NULL)
+		return -errno;
+	vclose(v);
+	return 0;
+}
+
+int dir_mklnk(vn_t *dir, const char *path, const char *target)
+{
+	vn_t *v = dir_vopen(dir, path, O_WRONLY | O_CREAT | T_LNK);
+	if (v == NULL)
+		return -errno;
+	vwrite(v, target, strnlen(target, MAX_PATH), 0);
+	vclose(v);
+	return 0;
+}

@@ -7,3 +7,4 @@
 #define O_DIR     (1<<11)
 #define O_APPEND  (1<<12)
 #define O_NOTRUNC (1<<13)
+#define O_EXCL    (1<<14)

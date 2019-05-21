@@ -2,7 +2,7 @@
 #include <h4/sys/ipc.h>
 #include <h4/fs/api.h>
 
-int openat(int dirfd, const char *path, unsigned int flags)
+int openat(int dirfd, const char *path, int flags)
 {
 	int fd = open(path, flags);
 	if (fd != dirfd) {

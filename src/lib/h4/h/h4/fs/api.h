@@ -1,4 +1,7 @@
 #pragma once
 
-int open(const char *path, unsigned int flags);
-int openat(int dirfd, const char *path, unsigned int flags);
+int open(const char *path, int flags);
+int openat(int dirfd, const char *path, int flags);
+int mkdir(const char *path, int mode);
+int symlink(const char *oldpath, const char *newpath);
+int unlink(const char *path);

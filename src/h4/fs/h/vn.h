@@ -32,4 +32,5 @@ vn_t *vopenfile(sb_t *sb, de_t *e);
 vn_t *vopendir(sb_t *sb, de_t *e);
 vn_t *vdup(vn_t *v);
 void vupdate(vn_t *v);
+int vdeunlink(vn_t *v);
 int vclose(vn_t *v);

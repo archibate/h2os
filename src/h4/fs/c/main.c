@@ -51,6 +51,18 @@ int dev_resolve(const char *name)
 		return -ENOENT;
 }
 
+int do_unlink(const char *path)
+{
+	//return dir_unlink(fat_root, path);
+	extern vn_t *fat_root;
+	vn_t *v = dir_vopen(fat_root, path, 0);
+	if (!v)
+		return -errno;
+	int ret = vdeunlink(v);
+	vclose(v);
+	return ret;
+}
+
 int do_open(const char *path, unsigned int flags)
 {
 	//printk("do_open(%s, %d)", path, flags);
@@ -365,6 +377,18 @@ int main(void)
 			}
 			path = strdup(path);
 			int ret = do_open(path, flags);
+			free(path);
+			ipc_rewindw(ret);
+		}
+		CASE(_FS_unlink) {
+			size_t len = MAXPATH;
+			char *path = ipc_getbuf(&len);
+			if (strnlen(path, len) >= MAXPATH) {
+				ipc_rewindw(-ENAMETOOLONG);
+				BREAK;
+			}
+			path = strdup(path);
+			int ret = do_unlink(path);
 			free(path);
 			ipc_rewindw(ret);
 		}

@@ -142,45 +142,48 @@ static uint32_t fat_sb_allocate_cluster(sb_t *sb)
 	panic("fs: disk out of cluster");
 }
 
-static uint32_t sb_kick_cluster(sb_t *sb, uint32_t *pclus)
+static int sb_kick_cluster(sb_t *sb, uint32_t *pclus)
 {
 	uint32_t cl = *pclus;
 	switch (cl) {
 		case 0x00000000:
 		case 0xfffffff7:
-			return 0;
+			return -1;
 	}
 	if (cl >= 0xfffffff8) {
 		cl = fat_sb_allocate_cluster(sb);
 		printk("!!!Doing EOF cluster extend to %d(experimental)", cl);
 		*pclus = cl;
+		return 1;
 	}
-	return cl;
+	return 0;
 }
 
-static uint32_t sb_return_cluster(sb_t *sb, uint32_t *pclus)
+static int sb_return_cluster(sb_t *sb, uint32_t *pclus)
 {
 	uint32_t cl = *pclus;
 	if (cl >= 0xfffffff7)
-		return 0;
-	return cl;
+		return -1;
+	return 0;
 }
 
 ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 {
+	if (!len)
+		return 0;
 	bool update = false;
-	uint32_t (*kicker)(sb_t *, uint32_t *) = wr ? sb_kick_cluster : sb_return_cluster;
+	int (*kicker)(sb_t *, uint32_t *) = wr ? sb_kick_cluster : sb_return_cluster;
 	//printk("fat_v%s(%p, %d, %d)", wr ? "write" : "read", buf, len, off);
 	sb_t *sb = v->sb;
 	size_t bsize = sb->bsize;
-	uint32_t clus_start = v->clus_start;
-	uint32_t clus = kicker(sb, &clus_start);
-	if (!clus)
+	switch (kicker(sb, &v->clus_start)) {
+	case -1:
 		return -EIO;
-	if (v->clus_start != clus_start) {
-		v->clus_start = clus_start;
+	case 1:
 		update = true;
 	}
+	uint32_t clus = v->clus_start;
+	//if (wr) printk("vwrite!%d", clus);
 
 	if (off > v->size) {
 		printk(KL_WARN "vread/vwrite: off > v->size: invalid offset");
@@ -202,9 +205,13 @@ ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 
 		//if (1||clus >= 0xff0) printk("clus=%d", clus);
 	for (; off >= sb->bsize; off -= sb->bsize) {
-		clus = kicker(sb, &sb->fat[clus]);
-		if (!clus)
+		switch (kicker(sb, &sb->fat[clus])) {
+		case -1:
 			return -EIO;
+		case 1:
+			sb_update_fat_at(sb, clus);
+		}
+		clus = sb->fat[clus];
 	}
 
 	//printk("clus=%d", clus);
@@ -213,9 +220,13 @@ ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 	if (n > 0)
 		goto go;
 	while (n > 0) {
-		clus = sb->fat[clus];
-		if (clus >= 0xfffffff0)
+		switch (kicker(sb, &sb->fat[clus])) {
+		case -1:
 			return -EIO;
+		case 1:
+			sb_update_fat_at(sb, clus);
+		}
+		clus = sb->fat[clus];
 go:
 		m = n;
 		CLMAX(m, bsize - off);
