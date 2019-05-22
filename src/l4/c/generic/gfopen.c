@@ -44,9 +44,14 @@ int gf_close(l4fd_t fd)
 	if (fd >= MAX_FDS)
 		return -ENFILE;
 
-	free_fd(fd);
-
 	struct fd_entry *fde = &current->mm->fds[fd];
+	if (fde->ep == NULL)
+		return -EBADF;
+
+	/*if (--fde->ep->refcount <= 0)//T:fde_close
+		endpoint_close(fde->ep);*/
+
+	free_fd(fd);
 
 	return 0;
 }

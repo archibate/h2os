@@ -33,6 +33,7 @@ void server(void)
 	pipctl(fd, 0);
 	FILE *fp = fdopen(fd, "r");
 	reader(fp);
+	pipctl(fd, -1);
 	fclose(fp);
 	wait();
 }
@@ -42,6 +43,7 @@ void client(int fd)
 	pipctl(fd, 1);
 	FILE *fp = fdopen(fd, "w");
 	writer(fp);
+	pipctl(fd, -1);
 	fclose(fp);
 }
 

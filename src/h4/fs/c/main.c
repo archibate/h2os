@@ -349,6 +349,41 @@ void file_serve_ipc(vn_t *v)
 }
 
 #ifdef USEPIPE
+int do_pipctl(struct pipe *pip, int iswr)
+{
+	int otype = ipc_getoffset();
+	//int ret = pipe_control(pip, iswr); ipc_rewindw(ret);
+	switch (iswr) {
+	case 1:
+		if (otype != 0)
+			return -ENOTSUP;
+		ipc_setoffset(2);
+		return 0;
+	case 0:
+		if (otype != 0)
+			return -ENOTSUP;
+		ipc_setoffset(1);
+		return 0;
+	case -1:
+		switch (otype) {
+		case 0:
+			return -ENOTSUP;
+		case 2:
+			//printk("pipe_writer_close!!");
+			pip->writer_closed = true;
+			break;
+		case 1:
+			//printk("pipe_reader_close!!");
+			pip->reader_closed = true;
+			break;
+		default:
+			BUG();
+		};
+		return 0;
+	}
+	return -ENOTSUP;
+}
+
 void pipe_serve_ipc(struct pipe *pip)
 {
 	unsigned int nr = ipc_getw();
@@ -385,14 +420,9 @@ void pipe_serve_ipc(struct pipe *pip)
 
 	case _FILE_pipctl:
 	{
-		if (ipc_getoffset() != 0) {
-			ipc_rewindw(-ENOTSUP);
-			break;
-		}
 		int iswr = ipc_getw();
-		ipc_setoffset(iswr ? 2 : 1);
-		//int ret = pipe_control(pip, iswr); ipc_rewindw(ret);
-		ipc_rewindw(0);
+		int ret = do_pipctl(pip, iswr);
+		ipc_rewindw(ret);
 	} break;
 
 	case _FILE_read:
@@ -428,7 +458,7 @@ void pipe_serve_ipc(struct pipe *pip)
 		ssize_t ret = pipe_write(pip, buf, len);
 		//printk("%p: pipe_write(%d): %d", pip, len, ret);
 		//BUG();
-		BUG_ON(pipe_empty(pip));
+		//BUG_ON(pipe_empty(pip));
 		//free(p);
 		ipc_rewindw(ret);
 	} break;

@@ -7,4 +7,5 @@ struct endpoint
 {
 	struct ids_entry ide;
 	wait_queue_head_t calling, waiting;
+	int refcount;
 };

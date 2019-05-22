@@ -5,6 +5,7 @@
 struct pipe {
 	uint32_t rd, wr;
 	char buf[PIPSIZ];
+	bool reader_closed, writer_closed;
 };
 
 static struct pipe *new_pipe(void)
@@ -40,7 +41,7 @@ static char pipe_get(struct pipe *pip)
 static ssize_t pipe_read(struct pipe *pip, char *buf, size_t len)
 {
 	if (pipe_empty(pip))
-		return -EAGAIN;
+		return pip->writer_closed ? 0 : -EAGAIN;
 
 	int n;
 	for (n = 0; n < len && !pipe_empty(pip); n++)
@@ -52,7 +53,7 @@ static ssize_t pipe_read(struct pipe *pip, char *buf, size_t len)
 static ssize_t pipe_write(struct pipe *pip, const char *buf, size_t len)
 {
 	if (pipe_full(pip))
-		return -EAGAIN;
+		return pip->reader_closed ? 0 : -EAGAIN;
 
 	int n;
 	for (n = 0; n < len && !pipe_full(pip); n++)
