@@ -8,5 +8,7 @@ int dir_lookup(vn_t *dir, const char *name, de_t *e);
 vn_t *dir_getpv(vn_t *dir, const char *path, char *name);
 vn_t *dir_vopen(vn_t *dir, const char *path, unsigned int flags);
 int dir_unlink(vn_t *dir, const char *path);
+//int dir_linkvn(vn_t *dir, const char *path, vn_t *v);
 //int dir_mkdir(vn_t *dir, const char *path);
+//int dir_rmdir(vn_t *dir, const char *path);
 //int dir_mklnk(vn_t *dir, const char *path, const char *target);

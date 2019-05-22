@@ -5,9 +5,9 @@
 void move(const char *src, const char *dst)
 {
 	int ret = link(src, dst);
-	if (ret < 0) { errno = -ret; fprintf(stderr, "mv %s %s", src, dst); perror(""); }
+	if (ret < 0) { errno = -ret; fprintf(stderr, "link %s->%s", src, dst); perror(""); return; }
 	ret = unlink(src);
-	if (ret < 0) { errno = -ret; fprintf(stderr, "mv %s %s", src, dst); perror(""); unlink(dst); }
+	if (ret < 0) { errno = -ret; fprintf(stderr, "unlink %s", src, dst); perror(""); unlink(dst); }
 }
 
 int main(int argc, char **argv)

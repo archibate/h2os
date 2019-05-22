@@ -1,5 +1,3 @@
-#define USEFAT 1
-#define USEMPT 1
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 #include <h4/fs/sysnr.h>
@@ -16,15 +14,15 @@
 #include <h4/fs/oflags.h>
 #include <l4/machine/mmu/page.h>
 #include <numtools.h>
-#ifdef USEFAT
-#include "vn.h"
 #include "dir.h"
-#define IPCT_FILE  1
+#include "vn.h"
+#ifdef USEPIPE
+#include "pipe.h"
+#define IPCT_PIPE  3
 #endif
-#ifdef USEMPT
 #include <list.h>
+#define IPCT_FILE  1
 #define IPCT_MPTAB 2
-#endif
 
 #if 0
 static void *hook_malloc(size_t size)
@@ -51,6 +49,25 @@ int dev_resolve(const char *name)
 		return -ENOENT;
 }
 
+int do_link(const char *oldpath, const char *newpath)
+{
+	printk("do_link: [%s]->[%s]", oldpath, newpath);
+	extern vn_t *fat_root;
+	vn_t *vsrc = dir_vopen(fat_root, oldpath, 0);
+	if (!vsrc)
+		return -errno;
+	uint32_t src_attr = vsrc->attr & 0xff;
+	//printk("do_link: src_attr=%d", src_attr);
+	vn_t *vdst = dir_vopen(fat_root, newpath, O_CREAT | O_EXCL | src_attr);
+	if (!vdst)
+		return -errno;
+	int ret = vdelink2(vsrc, vdst);
+	//printk("do_link: vdelink: %d->%d", vsrc->dehdoff, vdst->dehdoff);
+	vclose(vsrc);
+	vclose(vdst);
+	return ret;
+}
+
 int do_unlink(const char *path)
 {
 	//return dir_unlink(fat_root, path);
@@ -70,7 +87,6 @@ int do_open(const char *path, unsigned int flags)
 	if (!strncmp(path, "/dev/", strlen("/dev/")))
 		return dev_resolve(path + strlen("/dev/"));
 
-#ifdef USEFAT
 	extern vn_t *fat_root;
 	vn_t *v = dir_vopen(fat_root, path, flags);
 	if (!v)
@@ -79,12 +95,8 @@ int do_open(const char *path, unsigned int flags)
 	ipc_setbadge((uintptr_t)v);
 	ipc_settype(IPCT_FILE);
 	return 0;
-#else
-	return -ENOENT;
-#endif
 }
 
-#ifdef USEFAT
 ssize_t file_write(vn_t *v, const char *buf, size_t len, off_t off)
 {
 	if (!(v->exflags & O_WRONLY))
@@ -119,7 +131,6 @@ void file_close(vn_t *v)
 	free(v);
 }
 
-#ifdef USEMPT
 struct mpage_table
 {
 	struct hlist_head head;
@@ -235,7 +246,6 @@ void file_mpt_serve_ipc(struct mpage_table *mpt)
 	}
 	ipc_reply();
 }
-#endif
 
 void file_serve_ipc(vn_t *v)
 {
@@ -243,7 +253,6 @@ void file_serve_ipc(vn_t *v)
 	//printk("!!!nr=%d", nr);
 	switch (nr) {
 
-#ifdef USEMPT
 	case _FILE_mmap:
 	{
 		off_t base = ipc_getoffset();
@@ -259,7 +268,6 @@ void file_serve_ipc(vn_t *v)
 			ipc_rewindw(errno);
 		}
 	} break;
-#endif
 
 	case _FILE_pread:
 	{
@@ -338,7 +346,88 @@ void file_serve_ipc(vn_t *v)
 	}
 	ipc_reply();
 }
+
+#ifdef USEPIPE
+void pipe_serve_ipc(struct pipe *pip)
+{
+	unsigned int nr = ipc_getw();
+	//printk("!!!nr=%d", nr);
+	switch (nr) {
+
+	case _FILE_pwrite:
+	case _FILE_pread:
+	case _FILE_lseek:
+	{
+		ipc_rewindw(-ESPIPE);
+	} break;
+
+#if 0
+	case _FILE_read:
+	{
+		size_t len = ipc_getw();
+		//printk("pipe_read(%d)", len);
+		ipc_seek_setw(1);
+		void *buf = ipc_getbuf(&len);
+		ssize_t ret = pipe_read(pip, buf, len);
+		ipc_rewindw(ret);
+	} break;
+
+	case _FILE_write:
+	{
+		size_t len = ipc_getw();
+		//printk("pipe_write(%d)", len);
+		const void *buf = ipc_getbuf(&len);
+		ssize_t ret = pipe_write(pip, buf, len);
+		ipc_rewindw(ret);
+	} break;
+#else
+
+	case _FILE_read:
+	{
+		size_t len = ipc_getw();
+		//printk("pipe_read(%d)", len);
+		ipc_seek_setw(1);
+		void *buf = ipc_getbuf(&len);
+		void *p = malloc(len);
+		memcpy(p, buf, len);
+		ssize_t ret = pipe_read(pip, p, len);
+		free(p);
+		ipc_rewindw(ret);
+	} break;
+
+	case _FILE_write:
+	{
+		size_t len = ipc_getw();
+		//printk("pipe_write(%d)", len);
+		const void *buf = ipc_getbuf(&len);
+		void *p = malloc(len);
+		memcpy(p, buf, len);
+		ssize_t ret = pipe_write(pip, p, len);
+		free(p);
+		ipc_rewindw(ret);
+	} break;
 #endif
+
+	default:
+		ipc_rewindw(-ENOTSUP);
+	}
+	ipc_reply();
+}
+#endif
+
+char *ipc_getpath(void)
+{
+	size_t maxlen = MAXPATH;
+	char *path = ipc_getbuf(&maxlen);
+	size_t len = strnlen(path, maxlen);
+	if (len >= maxlen)
+		return NULL;
+	//BUG_ON(ipc_tell() != 4);
+	//printk("%d", ipc_tell());
+	//ipc_seek_set(4 + len + 1);
+	//ipc_seek_cur(len + 1);
+	return strdup(path);
+}
 
 const int libh4_serve_id = SVID_FS;
 
@@ -347,51 +436,71 @@ int main(void)
 	static char buffer[4096*512];
 	liballoc_set_memory(buffer, sizeof(buffer));
 
-#ifdef USEFAT
 	extern void fat_init(void);
 	fat_init();
-#endif
 
 	while (1) {
 		ipc_recv();
 
 		void *p = (void*)ipc_getbadge();
 		switch (ipc_gettype()) {
-#ifdef USEFAT
 		case IPCT_FILE: file_serve_ipc(p); ipc_reply(); continue;
-#endif
-#ifdef USEMPT
 		case IPCT_MPTAB: file_mpt_serve_ipc(p); ipc_reply(); continue;
+#ifdef USEPIPE
+		case IPCT_PIPE: pipe_serve_ipc(p); ipc_reply(); continue;
 #endif
 		}
 
 		int nr = ipc_getw();
 		switch (nr) {
 		CASE(_FS_open) {
-			size_t len = MAXPATH;
 			unsigned int flags = ipc_getw();
-			char *path = ipc_getbuf(&len);
-			if (strnlen(path, len) >= MAXPATH) {
+			char *path = ipc_getpath();
+			if (path == NULL) {
 				ipc_rewindw(-ENAMETOOLONG);
 				BREAK;
 			}
-			path = strdup(path);
 			int ret = do_open(path, flags);
 			free(path);
 			ipc_rewindw(ret);
 		}
-		CASE(_FS_unlink) {
-			size_t len = MAXPATH;
-			char *path = ipc_getbuf(&len);
-			if (strnlen(path, len) >= MAXPATH) {
+		CASE(_FS_link) {
+	//printk("ipc1[%s]", ipc_getbuf(NULL)+1);
+			char *oldpath = ipc_getpath();
+			if (oldpath == NULL) {
 				ipc_rewindw(-ENAMETOOLONG);
 				BREAK;
 			}
-			path = strdup(path);
+	//printk("ipc2[%s]", ipc_getbuf(NULL)+1);
+			ipc_seek_set(4 + strlen(oldpath) + 1);//T
+			char *newpath = ipc_getpath();
+			if (newpath == NULL) {
+				ipc_rewindw(-ENAMETOOLONG);
+				BREAK;
+			}
+			int ret = do_link(oldpath, newpath);
+			free(oldpath);
+			free(newpath);
+			ipc_rewindw(ret);
+		}
+		CASE(_FS_unlink) {
+			char *path = ipc_getpath();
+			if (path == NULL) {
+				ipc_rewindw(-ENAMETOOLONG);
+				BREAK;
+			}
 			int ret = do_unlink(path);
 			free(path);
 			ipc_rewindw(ret);
 		}
+#ifdef USEPIPE
+		CASE(_FS_pipe) {
+			struct pipe *pip = new_pipe();
+			ipc_setbadge((uintptr_t)pip);
+			ipc_settype(IPCT_PIPE);
+			ipc_rewindw(0);
+		}
+#endif
 		DEFAULT {
 			ipc_rewindw(-ENOTSUP);
 		}

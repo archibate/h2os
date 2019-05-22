@@ -1,2 +1,5 @@
-mkdir bin
+mkdir etc
+cp readme.md etc/readme.md
+mv h4.txt etc/h4.txt
+ls etc
 sh

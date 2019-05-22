@@ -61,8 +61,8 @@ void printdosdate(uint16_t date)
 		uint16_t mon : 4;
 		uint16_t year1980 : 7;
 	} *d = (void*)&date;
-	//printf("%04d/%02d/%02d", d->year1980 + 1980, d->mon, d->day);
-	printf("%02d/%02d", d->mon, d->day);
+	printf("%04d/%02d/%02d", d->year1980 + 1980, d->mon, d->day);
+	//printf("%02d/%02d", d->mon, d->day);
 }
 
 void showde(struct dirent *de)
@@ -79,20 +79,20 @@ void showde(struct dirent *de)
 	else if (de->attr & T_REG) typestr = NULL;
 	else if (de->attr & T_LNK) typestr = "<LNK>";
 	else if (de->attr & T_NOD) typestr = "<NOD>";
-	else typestr = "<???>";
+	//else typestr = "<???>";
 	if (de->attr & T_RO ) attr[0] = 'r';
 	if (de->attr & T_HID) attr[1] = 'i';
 	if (de->attr & T_SYS) attr[2] = 's';
-	while (size >= 4096 && *scale)
+	while (size >= 2*4096 && *scale)
 		size /= 4096, scale++;
 	//printf("%s % 5.5d ", attr, egetclus(de));
 #if 1
 	printdosdate(de->cdate);
-	printf(" ");
+	printf("  ");
 	printdostime(de->ctime);
 #endif
-	if (typestr == NULL) printf(" % 4d%c", size, *scale);
-	else printf(" % 6s", typestr);
+	if (typestr == NULL) printf("  % 4d%c", size, *scale);
+	else printf("  % 6s", typestr);
 	printf(" %s%s", name, attr[0]=='d'?"/\n":"\n");
 }
 

@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <fcntl.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
 
 void touch(const char *path)
 {
-	int fd = open(path, O_CREAT);
+	int fd = open(path, O_CREAT | T_REG);
 	if (fd < 0) { errno = -fd; perror(path); }
 	else close(fd);
 }

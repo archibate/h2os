@@ -21,9 +21,11 @@ vn_t *dir_vopen(vn_t *dir, const char *path, unsigned int flags)
 	int ret;
 	off_t depos;
 
+	//printk("dvopen in");
 	path = strskipin(path, "/");
 	if (!*path || !strcmp(path, "."))
 		return vdup(dir);
+	//printk("dvopen out");
 
 #if 0 // {{{
 	if (!(flags & O_CREAT)) {
@@ -82,6 +84,7 @@ vn_t *dir_vopen(vn_t *dir, const char *path, unsigned int flags)
 		v->exflags = flags;
 		//printk("dvopen: %p: clus_start=%#x", v, v->clus_start);
 		v->dehdoff = depos;
+		//printk("dvopen: [%p:%d]", v, v->dehdoff);
 		if ((flags & (O_WRONLY | O_NOTRUNC)) == O_WRONLY) {
 			v->size = 0;
 			vupdate(v);

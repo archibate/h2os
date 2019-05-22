@@ -81,7 +81,7 @@ void showde(struct dirent *de)
 	if (de->attr & T_RO ) attr[1] = 'r';
 	if (de->attr & T_HID) attr[2] = 'i';
 	if (de->attr & T_SYS) attr[3] = 's';
-	while (size >= 4096 && *scale)
+	while (size >= 2*4096 && *scale)
 		size /= 4096, scale++;
 	printf("%s % 5.5d ", attr, egetclus(de));
 #if 0

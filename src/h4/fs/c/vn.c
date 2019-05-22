@@ -74,6 +74,27 @@ void vupdate(vn_t *v)
 	BUG_ON(pwrite(v->sb->hd, &e, DESIZE, v->dehdoff) != DESIZE);
 }
 
+int vdelink2(vn_t *vsrc, vn_t *vdst)
+{
+	if (vsrc->sb != vdst->sb)
+		return -EXDEV;
+
+	if (vsrc->type != VN_REGFAT && vdst->type != VN_REGFAT)
+		return -EPERM;
+
+	if (vdst->sb->rofs)
+		return -EROFS;
+
+	de_t e;
+	BUG_ON(pread(vsrc->sb->hd, &e, DESIZE, vsrc->dehdoff) != DESIZE);
+	BUG_ON(pwrite(vdst->sb->hd, &e, DESIZE, vdst->dehdoff) != DESIZE);
+	/*printk("vdelink2: [%p:%d]->[%p:%d]",
+			vsrc, vsrc->dehdoff,
+			vdst, vdst->dehdoff);*/
+
+	return 0;
+}
+
 int vdeunlink(vn_t *v)
 {
 	if (v->type != VN_REGFAT)
