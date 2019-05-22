@@ -1,6 +1,6 @@
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
-#include <h4/fs/api.h>
+#include <h4/fs/pipe.h>
 #include <h4/fs/sysnr.h>
 #include <h4/filedes.h>
 #include <string.h>
