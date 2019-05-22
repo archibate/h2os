@@ -13,3 +13,4 @@
 #define _FILE_lseek  5
 #define _FILE_ioctl  6
 #define _FILE_close  7
+#define _FILE_pipctl 8

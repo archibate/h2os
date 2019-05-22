@@ -38,6 +38,8 @@ uintptr_t ipc_getbadge(void);
 void ipc_setbadge(uintptr_t badge);
 uintptr_t ipc_getoffset(void);
 void ipc_setoffset(uintptr_t offset);
+void ipc_settype(uintptr_t type);
+uintptr_t ipc_gettype(void);
 bool ipc_isclose(void);
 //void ipc_setfdreply(int fd);
 //int ipc_getreplyfd(void);

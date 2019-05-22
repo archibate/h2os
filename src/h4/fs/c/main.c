@@ -1,3 +1,4 @@
+#define USEPIPE
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 #include <h4/fs/sysnr.h>
@@ -382,28 +383,53 @@ void pipe_serve_ipc(struct pipe *pip)
 	} break;
 #else
 
+	case _FILE_pipctl:
+	{
+		if (ipc_getoffset() != 0) {
+			ipc_rewindw(-ENOTSUP);
+			break;
+		}
+		int iswr = ipc_getw();
+		ipc_setoffset(iswr ? 2 : 1);
+		//int ret = pipe_control(pip, iswr); ipc_rewindw(ret);
+		ipc_rewindw(0);
+	} break;
+
 	case _FILE_read:
 	{
+		if (ipc_getoffset() != 1) {
+			ipc_rewindw(-EPERM);
+			break;
+		}
 		size_t len = ipc_getw();
 		//printk("pipe_read(%d)", len);
 		ipc_seek_setw(1);
 		void *buf = ipc_getbuf(&len);
-		void *p = malloc(len);
-		memcpy(p, buf, len);
-		ssize_t ret = pipe_read(pip, p, len);
-		free(p);
+		/*void *p = malloc(len);
+		memcpy(p, buf, len);*/
+		//if (!pipe_empty(pip)) BUG();
+		ssize_t ret = pipe_read(pip, buf, len);
+		//printk("%p: pipe_read(%d): %d", pip, len, ret);
+		//free(p);
 		ipc_rewindw(ret);
 	} break;
 
 	case _FILE_write:
 	{
+		if (ipc_getoffset() != 2) {
+			ipc_rewindw(-EPERM);
+			break;
+		}
 		size_t len = ipc_getw();
 		//printk("pipe_write(%d)", len);
 		const void *buf = ipc_getbuf(&len);
-		void *p = malloc(len);
-		memcpy(p, buf, len);
-		ssize_t ret = pipe_write(pip, p, len);
-		free(p);
+		/*void *p = malloc(len);
+		memcpy(p, buf, len);*/
+		ssize_t ret = pipe_write(pip, buf, len);
+		//printk("%p: pipe_write(%d): %d", pip, len, ret);
+		//BUG();
+		BUG_ON(pipe_empty(pip));
+		//free(p);
 		ipc_rewindw(ret);
 	} break;
 #endif
@@ -498,6 +524,7 @@ int main(void)
 			struct pipe *pip = new_pipe();
 			ipc_setbadge((uintptr_t)pip);
 			ipc_settype(IPCT_PIPE);
+			ipc_setoffset(0);
 			ipc_rewindw(0);
 		}
 #endif

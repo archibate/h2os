@@ -3,14 +3,19 @@
 #include <h4/sys/types.h>
 #include <h4/sys/ipc.h>
 #include <compiler.h>
-#include <errno.h>
+#include <errno.h>//
 
 static ssize_t frag_read(int fd, void *buf, size_t len)
 {
+again://
 	ipc_rewindw(_FILE_read);
 	ipc_putw(len);
 	ipc_call(fd);
 	ssize_t ret = ipc_getw();
+	if (ret == -EAGAIN) {//
+		pause();//
+		goto again;//
+	}//
 	if (likely(ret > 0)) {
 		if (unlikely(ret > len))
 			return -EBADSVC;

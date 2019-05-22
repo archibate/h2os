@@ -8,3 +8,4 @@ off_t lseek(int fd, off_t off, int whence);
 int dup2(int fd, int dirfd);
 int close(int fd);
 int dup(int fd);
+int pipctl(int fd, int iswr);

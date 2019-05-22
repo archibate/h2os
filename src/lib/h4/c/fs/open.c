@@ -20,11 +20,11 @@ int open(const char *path, int flags)
 	ipc_call(fd);
 	int ret = ipc_getw();
 	//printk("ipc_call: ret=%d", ret);
-	if (ret < 0)
-		return ret;
-	else if (ret == 0)
+	if (ret == 0)
 		return fd;
 	ipc_close(fd);
+	if (ret < 0)
+		return ret;
 	//printk("ipc_open(%d)", ret);
 	return ipc_open(ret);
 }
