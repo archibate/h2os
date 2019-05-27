@@ -15,6 +15,7 @@ static void wq_add(wait_queue_head_t *wq, struct ktcb *tcb)
 
 static struct ktcb *wq_pop(wait_queue_head_t *wq)
 {
+	//BUG_ON(wq == (wait_queue_head_t *) 0x124);//
 	if (hlist_empty(&wq->h))
 		return NULL;
 	return hlist_entry(__hlist_pop(&wq->h), struct ktcb, hlist);

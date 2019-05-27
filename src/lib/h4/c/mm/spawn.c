@@ -14,9 +14,10 @@ static void ipc_putstr(const char *s, size_t maxlen)
 	ipc_put8(0);
 }
 
-pid_t _spawn(const char *path, char *const *argv, char *const *envp, const struct spawnattr *sat) /* sat unused for now */
+pid_t _spawn(const char *path, char *const *argv, char *const *envp, const struct spawnattr *sat)
 {
 	ipc_rewindw(_MM_spawn);
+	ipc_write(sat, sizeof(*sat));
 	ipc_putstr(path, MAX_PATH);
 	char *const *p;
 	for (p = argv; *p; p++)

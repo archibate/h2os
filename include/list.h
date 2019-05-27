@@ -133,6 +133,7 @@ static inline void hlist_node_init(struct hlist_node *node)
 	node->pprev = NULL;
 }
 
+#include<bug.h>//
 static inline void __hlist_del(struct hlist_node *n)
 {
 	*n->pprev = n->next;
@@ -142,6 +143,7 @@ static inline void __hlist_del(struct hlist_node *n)
 
 static inline void hlist_del(struct hlist_node *n)
 {
+	BUG_ON(!n->pprev);
 	__hlist_del(n);
 	n->next = NULL;
 	n->pprev = NULL;

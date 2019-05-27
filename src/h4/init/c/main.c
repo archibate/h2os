@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <panic.h>
 #include <bug.h>
 
 #if 0//{{{
@@ -159,6 +160,7 @@ again:
 			char *exec_envp[] = {"PATH=/", NULL};
 			BUG_ON(_spawn("/init", exec_argv, exec_envp) > 0);
 			wait();
+			panic("init exited");
 		}
 	}
 

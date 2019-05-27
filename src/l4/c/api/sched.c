@@ -23,6 +23,10 @@ int sys_exit(void)
 {
 	//printk("sys_exit(%p)", current);
 	current->is_zombie = true;
+	//printk("!!%p", &current->mm->parent->ep_chld.waiting);
+	//hlist_empty(&current->mm->parent->ep_chld.waiting.h);
+	BUG_ON(!current->mm->parent);
+	//BUG_ON(&current->mm->parent->ep_chld.waiting.h == (void *) 0x124);//
 	endpoint_call(&current->mm->parent->ep_chld, current, true, true);
 	/*while (NULL != endpoint_call(&current->ep_death, current, true, false));
 	BUG_ON(sched_get_curr() == current);*/

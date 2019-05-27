@@ -42,7 +42,7 @@ void thread_delete(struct ktcb *tcb)
 {
 	thread_revoke(tcb);
 	//printk("!!!");
-	IDDEL(tcb);
+	LIDDEL(tcb);
 	KCDEL(ktcb, tcb);
 	//hlist_del(&tcb->hlist);
 	//list_del(&tcb->list);

@@ -1,9 +1,11 @@
 #include <h4/sys/types.h>
+#include <h4/sys/spawn.h>
 #include <h4/sys/ipc.h>
 #include <l4/api/mmctl.h>
 #include <h4/mm/sysnr.h>
 #include <h4/servers.h>
 #include <h4/sys/spawn.h>
+#include <h4/filedes.h>
 #include <c4/liballoc.h>
 #include <h4/fs.h>
 #include <errno.h>
@@ -24,7 +26,7 @@ void *hook_malloc(size_t size)
 #define malloc hook_malloc
 #endif
 
-int mm_spawn(int src_mmc, const char *path, char *const *argv, char *const *envp)
+int mm_spawn(int src_mmc, const char *path, char *const *argv, char *const *envp, struct spawnattr *sat)
 {
 #if 0
 	printk("mm_spawn:");
@@ -39,17 +41,27 @@ int mm_spawn(int src_mmc, const char *path, char *const *argv, char *const *envp
 #endif
 
 	int fd = open(path, O_RDONLY);
+	//if (fd < 0) printk("fd=%d", fd);
 	if (fd < 0)
 		return fd;
 	uintptr_t pc, sp;
 	int mmc = sys_create_mm(src_mmc);
+	//if (mmc < 0) printk("mmc=%d", mmc);
 	if (mmc < 0)
 		return mmc;
 	int ret = loadelf(mmc, fd, &pc);
 	close(fd);
+	//if (ret < 0) printk("ret=%d", ret);
 	if (ret < 0)
 		return ret;
 	stack_init(mmc, argv, envp, &sp);
+	sys_mm_btw_fdup2(src_mmc, sat->stdio[0], mmc, 0);
+	sys_mm_btw_fdup2(src_mmc, sat->stdio[1], mmc, 1);
+	sys_mm_btw_fdup2(src_mmc, sat->stdio[2], mmc, 2);
+	//if (sat->stdio[0] != 0 || sat->stdio[1] != 1)
+	//printk("!!!%d!%d!%d!", sat->stdio[0], sat->stdio[1], sat->stdio[2]);
+	sys_mm_btw_fdup2(src_mmc, SVFD_FS, mmc, SVFD_FS);
+	sys_mm_btw_fdup2(src_mmc, SVFD_MM, mmc, SVFD_MM);
 	BUG_ON(sys_mm_new_thread(mmc, pc, sp) < 0);
 	return 0;
 }
@@ -85,6 +97,8 @@ const int libh4_serve_id = SVID_MM;
 
 int ipc_onspawn(void)
 {
+	struct spawnattr sat;
+	ipc_read(&sat, sizeof(sat));
 	char *path = ipc_getstr(MAX_PATH);
 	if (!path)
 		return -EINVAL;
@@ -92,7 +106,7 @@ int ipc_onspawn(void)
 	ipc_getstrarr(argv, MAX_PERARG, MAX_ARGV);
 	char *envp[MAX_ENVP+1];
 	ipc_getstrarr(envp, MAX_PERENV, MAX_ENVP);
-	int ret = mm_spawn(-1, path, argv, envp);
+	int ret = mm_spawn(-1, path, argv, envp, &sat);
 	free(path);
 	char **p;
 	for (p = argv; *p; p++)

@@ -8,6 +8,7 @@
 struct ktcb *endpoint_call(struct endpoint *ep, struct ktcb *caller, bool block, bool recv)
 {
 	BUG_ON(caller->state != THREAD_RUNNING);
+	//BUG_ON(&ep->waiting == (wait_queue_head_t *) 0x124);//
 	struct ktcb *waiter = wq_pop(&ep->waiting);
 	if (waiter) {
 		BUG_ON(waiter->state != THREAD_WAITING);
