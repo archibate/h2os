@@ -24,7 +24,7 @@ static int fd_verify(l4fd_t fd)
 
 	g_fde = &current->mm->fds[fd];
 
-	if (g_fde->ep == NULL) printk("!!!!%p/%d", current->mm, fd);
+	//if (g_fde->ep == NULL) printk("!!!!%p/%d", current->mm, fd);////
 	if (g_fde->ep == NULL)
 		return -EBADF;
 

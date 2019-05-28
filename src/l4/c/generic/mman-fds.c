@@ -10,7 +10,7 @@ int mm_copy_fd(struct mm *dst_mm, struct mm *src_mm, l4fd_t fdst, l4fd_t fsrc)
 	if (!src->ep) return -EBADF;
 	if (dst->ep) return -ECLOSAT;
 	src->ep->refcount++;
-	printk("mm_copy_fd: %p/%d->%p/%d", src_mm, fsrc, dst_mm, fdst);
+	//printk("mm_copy_fd: %p/%d->%p/%d", src_mm, fsrc, dst_mm, fdst);////
 	memcpy(dst, src, sizeof(struct fd_entry));
 	BUG_ON(dst->ep == NULL);
 	//if (fdst > dst_mm->fdtop)

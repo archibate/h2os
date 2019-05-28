@@ -52,8 +52,11 @@ static ssize_t pipe_read(struct pipe *pip, char *buf, size_t len)
 
 static ssize_t pipe_write(struct pipe *pip, const char *buf, size_t len)
 {
+	if (pip->reader_closed)
+		return len;//T:-EPIPE
+
 	if (pipe_full(pip))
-		return pip->reader_closed ? 0 : -EAGAIN;
+		return -EAGAIN;
 
 	int n;
 	for (n = 0; n < len && !pipe_full(pip); n++)

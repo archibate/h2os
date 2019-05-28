@@ -5,5 +5,6 @@
 
 int close(int fd)
 {
+	if (fd == 1) pipctl(fd, -1);//TODO
 	ipc_close(fd);
 }

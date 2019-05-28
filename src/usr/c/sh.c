@@ -73,12 +73,12 @@ void cmds_init(void)
 void cmds_exec(void)
 {
 	struct cmdent *curr;
+	//for (curr = cmds_head; curr; curr = curr->prev) { }
 	while ((curr = cmds_head)) {
 		cmds_head = curr->prev;
-		printk("cmds_exec: %s", curr->argv[0]);
 		do_execute(curr->argv, &curr->sat);
 		sat_destroy(&curr->sat);
-		//free(curr);
+		//free(curr);//T:bug when free
 	}
 	wait();
 }
@@ -141,7 +141,7 @@ void argv_init(void)
 void argv_done(void)
 {
 	cmds_head->argv[cmds_head->argc] = NULL;
-	printk("argv_done: %s", cmds_head->argv[0]);
+	//printk("argv_done: %s", cmds_head->argv[0]);
 }
 
 int do_execute(char **argv, struct spawnattr *sat)
@@ -182,6 +182,7 @@ void sat_destroy(struct spawnattr *sat)
 {
 	int i;
 	for (i = 0; i < 3; i++)
-		if (sat->stdio[i] >= 3)
+		if (sat->stdio[i] >= 3) {
 			close(sat->stdio[i]);
+		}
 }

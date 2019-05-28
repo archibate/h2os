@@ -440,6 +440,7 @@ void pipe_serve_ipc(struct pipe *pip)
 		//if (!pipe_empty(pip)) BUG();
 		ssize_t ret = pipe_read(pip, buf, len);
 		//printk("%p: pipe_read(%d): %d", pip, len, ret);
+		//if (ret > 0) printk("pipe_read[%s]", buf);
 		//free(p);
 		ipc_rewindw(ret);
 	} break;
@@ -453,6 +454,7 @@ void pipe_serve_ipc(struct pipe *pip)
 		size_t len = ipc_getw();
 		//printk("pipe_write(%d)", len);
 		const void *buf = ipc_getbuf(&len);
+		//printk("pipe_write[%s]", buf);
 		/*void *p = malloc(len);
 		memcpy(p, buf, len);*/
 		ssize_t ret = pipe_write(pip, buf, len);
