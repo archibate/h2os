@@ -2,9 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <dirent.h>
 #include <spawn.h>
 #include <errno.h>
 #define BLANK " \n\t\r"
+#include <bug.h>
 
 struct cmdent {
 	struct cmdent *prev;
@@ -17,6 +20,8 @@ struct cmdent {
 
 static struct cmdent *cmds_head;
 static void cmdl_parse(char *);
+static void argv_takred_add(char *path, int n, int flags);
+static void cmd_takred(char *cmd);
 static void cmd_add(char *);
 static void cmds_init(void);
 static void cmds_exec(void);
@@ -83,6 +88,53 @@ void cmds_exec(void)
 	wait();
 }
 
+void argv_takred_add(char *path, int n, int flags)
+{
+	printk("takred_add(%s, %d, %d)", path, n, flags);
+	if (!(n >= 0 && n < 3))
+		return;
+	int fd = open(path, flags);
+	if (fd < 0) {
+		errno = -fd;
+		perror(path);
+	}
+	cmds_head->sat.stdio[n] = fd;
+}
+
+void cmd_takred(char *cmd)
+{
+	int n, last_n, flags, last_flags;
+	char *p = cmd, *path, *last_path = NULL;
+	while ((p = strchrin(p, "<>"))) {
+		path = p + 1;
+		if (*p == '>') {
+			flags = O_WRONLY | O_CREAT | T_REG;
+			n = 1;
+			if (p[1] == '>') {
+				flags |= O_APPEND;
+				n = 2;
+			}
+		} else {
+			flags = O_RDONLY;
+			n = 0;
+		}
+		if (cmd != p && '0' <= p[-1] && p[-1] <= '9') {
+			n = p[-1] - '0';
+			p[-1] = 0;
+		}
+		*p++ = 0;
+		if (*p == '>')
+			*p++ = 0;
+		path = strtrimin(path, BLANK);
+		if (last_path)
+			argv_takred_add(last_path, last_n, last_flags);
+		last_path = path;
+		last_flags = flags;
+		last_n = n;
+	}
+	if (last_path)
+		argv_takred_add(last_path, last_n, last_flags);
+}
 #if 0
 void cmd_takred(char *cmd)
 {
@@ -109,6 +161,7 @@ void cmd_add(char *cmd)
 {
 	char *ep;
 	argv_init();
+	cmd_takred(cmd);
 	while (*(cmd = strskipin(cmd, BLANK))) {
 		ep = strchrin(cmd, BLANK);
 		if (ep) *ep = 0;

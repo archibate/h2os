@@ -1,2 +1,3 @@
-ls|cat
+hello > hello.txt
+cat hello.txt
 sh
