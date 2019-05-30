@@ -83,7 +83,7 @@ void cmds_exec(void)
 		cmds_head = curr->prev;
 		do_execute(curr->argv, &curr->sat);
 		sat_destroy(&curr->sat);
-		//free(curr);//T:bug when free
+		free(curr);//T:bug when free
 	}
 	wait();
 }

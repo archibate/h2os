@@ -67,6 +67,7 @@ void printdosdate(uint16_t date)
 
 void showde(struct dirent *de)
 {
+#if 0
 	const char *scale = "BKMG";
 	char name[NAME_MAX+1];
 	char attr[] = "?---";
@@ -90,6 +91,12 @@ void showde(struct dirent *de)
 	printdostime(de->ctime);
 #endif
 	printf(" % 4d%c %s%s", size, *scale, name, attr[0]=='d'?"/\n":"\n");
+#else
+	char name[NAME_MAX+1];
+	egetname(de, name);
+	if (!name[0]) return;
+	puts(name);
+#endif
 }
 
 void ls(const char *path)

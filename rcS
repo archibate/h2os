@@ -1,3 +1,2 @@
-hello > hello.txt
-cat hello.txt
+ls | xargs echo mv % bin/%
 sh
