@@ -14,6 +14,8 @@ typedef uintptr_t addr_t;
 #include <assert.h> // assert
 #include <bug.h> // BUG_ON
 
+#undef free // TODO: bug on free
+
 typedef struct HNODE {
 	struct HNODE *next, *prev;
 	size_t allocated;

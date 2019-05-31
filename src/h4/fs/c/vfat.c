@@ -152,7 +152,7 @@ static int sb_kick_cluster(sb_t *sb, uint32_t *pclus)
 	}
 	if (cl >= 0xfffffff8) {
 		cl = fat_sb_allocate_cluster(sb);
-		printk("!!!Doing EOF cluster extend to %d(experimental)", cl);
+		//printk("!!!Doing EOF cluster extend to %d(experimental)", cl);
 		*pclus = cl;
 		return 1;
 	}
@@ -190,6 +190,7 @@ ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 		return -EINVAL;
 	}
 	//if (wr) { printk("vwrite[%s](%d, %d)", buf, len, off); }
+	//if (wr) { printk("vwrite[%02X](%d, %d)", *(unsigned char*)buf, len, off); }
 	if (off + len > v->size) {
 		if (wr) {
 			//printk("vwrite: extend %d to %d", v->size, off + len);
@@ -214,7 +215,7 @@ ssize_t __vrw_regfat(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 		clus = sb->fat[clus];
 	}
 
-	//printk("clus=%d", clus);
+	//if (wr) printk("clus=%d (%d)", clus, sb->fat[clus]);
 
 	size_t m, n = len;
 	if (n > 0)
@@ -242,6 +243,7 @@ go:
 		buf += m;
 		off = 0;
 	}
+	//if (!wr) { printk("vread[%02X](%d, %d)", *(unsigned char*)buf, len, off); }
 
 	return len - n;
 }

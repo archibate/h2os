@@ -25,6 +25,7 @@ ssize_t fread(void *buf, size_t size, size_t nmemb, FILE *fp)
 	if (len > BUFSIZ) {
 		//printk("BB!!!!");
 		r = read(fp->fd, buf, len);
+		//printk("BB %d/%d (%02X)", r, len, *(unsigned char*)buf);
 		if (r < 0) {
 			errno = fp->err = -r;
 			return r;

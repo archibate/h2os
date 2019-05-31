@@ -7,8 +7,13 @@ void copy(const char *src, const char *dst)
 	FILE *fout = fopen(dst, "w+");
 	if (!fout) { perror(dst); fclose(fin); return; }
 	char buf[1024];
-	while (fgets(buf, sizeof(buf), fin))
-		fputs(buf, fout);
+	/*while (fgets(buf, sizeof(buf), fin))
+		fputs(buf, fout);*/
+	ssize_t ret;
+	while (0 < (ret = fread(buf, 1, sizeof(buf), fin))) {
+		//printk("(%02X) ret=%d", (unsigned char) buf[0], ret);
+		fwrite(buf, ret, 1, fout);
+	}
 	if (ferror(fin)) perror(src);
 	if (ferror(fout)) perror(dst);
 	fclose(fout);

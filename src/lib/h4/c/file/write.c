@@ -31,6 +31,7 @@ ssize_t write(int fd, const void *buf, size_t len)
 		if (ret < 0)
 			return !lened ? ret : lened;
 		lened += ret;
+		buf += ret;
 		if (ret != m)
 			break;
 	}

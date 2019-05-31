@@ -33,9 +33,13 @@ ssize_t read(int fd, void *buf, size_t len)
 		size_t m = len;
 		CLMAX(m, FRAG_SIZE);
 		ssize_t ret = frag_read(fd, buf, m);
+		/*if (len == 1024) {//
+			printk("frag_read: %d/%d (%02X)", ret, m, *(unsigned char*)buf);
+		}//  */
 		if (ret < 0)
 			return !lened ? ret : lened;
 		lened += ret;
+		buf += ret;
 		if (ret != m)
 			break;
 	}

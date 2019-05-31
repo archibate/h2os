@@ -96,6 +96,7 @@ static ssize_t __vrw(vn_t *v, void *buf, size_t len, off_t off, bool wr)
 			return -EINVAL;
 		CLMAX(len, v->size - off);
 	}
+	//else { printk("vwrite(%d, %d)", len, off); }
 
 	switch (v->type) {
 	case VN_REGFAT:

@@ -1,2 +1,5 @@
-ls | xargs echo mv % bin/%
+cp hello halo
+file hello
+file halo
+halo
 sh
