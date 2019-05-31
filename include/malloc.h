@@ -8,4 +8,4 @@ void *calloc(size_t nmemb, size_t size);
 void *amalloc(size_t len, size_t align);
 void *realloc(void *p, size_t size);
 void free(void *p);
-#define free(p) (p) // TODO: Nothing to do, due to free BUG
+//#define free(p) (p) // TODO: Nothing to do, due to free BUG
